@@ -10,33 +10,30 @@ Template Version 9.0-DE. (basiert auf der AsciiDoc Version), Juli 2025
 Created, maintained and © by Dr. Peter Hruschka, Dr. Gernot Starke and
 contributors. Siehe <https://arc42.org>.
 
-# Einführung und Ziele {#section-introduction-and-goals}
+# Einführung und Ziele
 
-## Aufgabenstellung {#_aufgabenstellung}
+## Aufgabenstellung
 
-## Qualitätsziele {#_qualitätsziele}
+## Qualitätsziele
 
-## Stakeholder {#_stakeholder}
+## Stakeholder
 
-+-----------------+-----------------+-----------------------------------+
-| Rolle           | Kontakt         | Erwartungshaltung                 |
-+=================+=================+===================================+
-| *\<Rolle-1\>*   | *\<Kontakt-1\>* | *\<Erwartung-1\>*                 |
-+-----------------+-----------------+-----------------------------------+
-| *\<Rolle-2\>*   | *\<Kontakt-2\>* | *\<Erwartung-2\>*                 |
-+-----------------+-----------------+-----------------------------------+
+| Rolle         | Kontakt         | Erwartungshaltung |
+|---------------|-----------------|-------------------|
+| *\<Rolle-1\>* | *\<Kontakt-1\>* | *\<Erwartung-1\>* |
+| *\<Rolle-2\>* | *\<Kontakt-2\>* | *\<Erwartung-2\>* |
 
-# Randbedingungen {#section-architecture-constraints}
+# Randbedingungen
 
-# Kontextabgrenzung {#section-context-and-scope}
+# Kontextabgrenzung
 
-## Fachlicher Kontext {#_fachlicher_kontext}
+## Fachlicher Kontext
 
 **\<Diagramm und/oder Tabelle\>**
 
 **\<optional: Erläuterung der externen fachlichen Schnittstellen\>**
 
-## Technischer Kontext {#_technischer_kontext}
+## Technischer Kontext
 
 **\<Diagramm oder Tabelle\>**
 
@@ -44,27 +41,24 @@ contributors. Siehe <https://arc42.org>.
 
 **\<Mapping fachliche auf technische Schnittstellen\>**
 
-# Lösungsstrategie {#section-solution-strategy}
+# Lösungsstrategie
 
-# Bausteinsicht {#section-building-block-view}
+# Bausteinsicht
 
-## Whitebox Gesamtsystem {#_whitebox_gesamtsystem}
+## Whitebox Gesamtsystem
 
 ***\<Übersichtsdiagramm\>***
 
-Begründung
+Begründung  
+*\<Erläuternder Text\>*
 
-:   *\<Erläuternder Text\>*
+Enthaltene Bausteine  
+*\<Beschreibung der enthaltenen Bausteine (Blackboxen)\>*
 
-Enthaltene Bausteine
+Wichtige Schnittstellen  
+*\<Beschreibung wichtiger Schnittstellen\>*
 
-:   *\<Beschreibung der enthaltenen Bausteine (Blackboxen)\>*
-
-Wichtige Schnittstellen
-
-:   *\<Beschreibung wichtiger Schnittstellen\>*
-
-### \<Name Blackbox 1\> {#_name_blackbox_1}
+### \<Name Blackbox 1\>
 
 *\<Zweck/Verantwortung\>*
 
@@ -78,133 +72,127 @@ Wichtige Schnittstellen
 
 *\<(optional) Offene Punkte/Probleme/Risiken\>*
 
-### \<Name Blackbox 2\> {#_name_blackbox_2}
+### \<Name Blackbox 2\>
 
 *\<Blackbox-Template\>*
 
-### \<Name Blackbox n\> {#_name_blackbox_n}
+### \<Name Blackbox n\>
 
 *\<Blackbox-Template\>*
 
-### \<Name Schnittstelle 1\> {#_name_schnittstelle_1}
+### \<Name Schnittstelle 1\>
 
-...​
+…​
 
-### \<Name Schnittstelle m\> {#_name_schnittstelle_m}
+### \<Name Schnittstelle m\>
 
-## Ebene 2 {#_ebene_2}
+## Ebene 2
 
-### Whitebox *\<Baustein 1\>* {#_whitebox_baustein_1}
-
-*\<Whitebox-Template\>*
-
-### Whitebox *\<Baustein 2\>* {#_whitebox_baustein_2}
+### Whitebox *\<Baustein 1\>*
 
 *\<Whitebox-Template\>*
 
-...​
-
-### Whitebox *\<Baustein m\>* {#_whitebox_baustein_m}
+### Whitebox *\<Baustein 2\>*
 
 *\<Whitebox-Template\>*
 
-## Ebene 3 {#_ebene_3}
+…​
 
-### Whitebox \<\_Baustein x.1\_\> {#_whitebox_baustein_x_1}
-
-*\<Whitebox-Template\>*
-
-### Whitebox \<\_Baustein x.2\_\> {#_whitebox_baustein_x_2}
+### Whitebox *\<Baustein m\>*
 
 *\<Whitebox-Template\>*
 
-### Whitebox \<\_Baustein y.1\_\> {#_whitebox_baustein_y_1}
+## Ebene 3
+
+### Whitebox \<\_Baustein x.1\_\>
 
 *\<Whitebox-Template\>*
 
-# Laufzeitsicht {#section-runtime-view}
+### Whitebox \<\_Baustein x.2\_\>
 
-## *\<Bezeichnung Laufzeitszenario 1\>* {#_bezeichnung_laufzeitszenario_1}
+*\<Whitebox-Template\>*
+
+### Whitebox \<\_Baustein y.1\_\>
+
+*\<Whitebox-Template\>*
+
+# Laufzeitsicht
+
+## *\<Bezeichnung Laufzeitszenario 1\>*
 
 - \<hier Laufzeitdiagramm oder Ablaufbeschreibung einfügen\>
 
 - \<hier Besonderheiten bei dem Zusammenspiel der Bausteine in diesem
   Szenario erläutern\>
 
-## *\<Bezeichnung Laufzeitszenario 2\>* {#_bezeichnung_laufzeitszenario_2}
+## *\<Bezeichnung Laufzeitszenario 2\>*
 
-...​
+…​
 
-## *\<Bezeichnung Laufzeitszenario n\>* {#_bezeichnung_laufzeitszenario_n}
+## *\<Bezeichnung Laufzeitszenario n\>*
 
-...​
+…​
 
-# Verteilungssicht {#section-deployment-view}
+# Verteilungssicht
 
-## Infrastruktur Ebene 1 {#_infrastruktur_ebene_1}
+## Infrastruktur Ebene 1
 
 ***\<Übersichtsdiagramm\>***
 
-Begründung
+Begründung  
+*\<Erläuternder Text\>*
 
-:   *\<Erläuternder Text\>*
+Qualitäts- und/oder Leistungsmerkmale  
+*\<Erläuternder Text\>*
 
-Qualitäts- und/oder Leistungsmerkmale
+Zuordnung von Bausteinen zu Infrastruktur  
+*\<Beschreibung der Zuordnung\>*
 
-:   *\<Erläuternder Text\>*
+## Infrastruktur Ebene 2
 
-Zuordnung von Bausteinen zu Infrastruktur
-
-:   *\<Beschreibung der Zuordnung\>*
-
-## Infrastruktur Ebene 2 {#_infrastruktur_ebene_2}
-
-### *\<Infrastrukturelement 1\>* {#_infrastrukturelement_1}
+### *\<Infrastrukturelement 1\>*
 
 *\<Diagramm + Erläuterungen\>*
 
-### *\<Infrastrukturelement 2\>* {#_infrastrukturelement_2}
+### *\<Infrastrukturelement 2\>*
 
 *\<Diagramm + Erläuterungen\>*
 
-...​
+…​
 
-### *\<Infrastrukturelement n\>* {#_infrastrukturelement_n}
+### *\<Infrastrukturelement n\>*
 
 *\<Diagramm + Erläuterungen\>*
 
-# Querschnittliche Konzepte {#section-concepts}
+# Querschnittliche Konzepte
 
-## *\<Konzept 1\>* {#_konzept_1}
-
-*\<Erklärung\>*
-
-## *\<Konzept 2\>* {#_konzept_2}
+## *\<Konzept 1\>*
 
 *\<Erklärung\>*
 
-...​
-
-## *\<Konzept n\>* {#_konzept_n}
+## *\<Konzept 2\>*
 
 *\<Erklärung\>*
 
-# Architekturentscheidungen {#section-design-decisions}
+…​
 
-# Qualitätsanforderungen {#section-quality-scenarios}
+## *\<Konzept n\>*
 
-## Übersicht der Qualitätsanforderungen {#_übersicht_der_qualitätsanforderungen}
+*\<Erklärung\>*
 
-## Qualitätsszenarien {#_qualitätsszenarien}
+# Architekturentscheidungen
 
-# Risiken und technische Schulden {#section-technical-risks}
+# Qualitätsanforderungen
 
-# Glossar {#section-glossary}
+## Übersicht der Qualitätsanforderungen
 
-+----------------------+-----------------------------------------------+
-| Begriff              | Definition                                    |
-+======================+===============================================+
-| *\<Begriff-1\>*      | *\<Definition-1\>*                            |
-+----------------------+-----------------------------------------------+
-| *\<Begriff-2*        | *\<Definition-2\>*                            |
-+----------------------+-----------------------------------------------+
+## Qualitätsszenarien
+
+# Risiken und technische Schulden
+
+# Glossar
+
+| Begriff         | Definition         |
+|-----------------|--------------------|
+| *\<Begriff-1\>* | *\<Definition-1\>* |
+| *\<Begriff-2*   | *\<Definition-2\>* |
