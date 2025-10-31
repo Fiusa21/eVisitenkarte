@@ -1,0 +1,8 @@
+# Common operating system files
+.DS_Store
+.env
+
+# IntelliJ IDEA project files (if not already in sub-folders)
+.idea/
+
+# Your other root-level ignored files (if any)
