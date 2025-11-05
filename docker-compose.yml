@@ -1,0 +1,68 @@
+version: '3.8'
+
+services:
+  #keycloak
+  keycloak:
+    image: quay.io/keycloak/keycloak:23.0.7
+    container_name: keycloak
+
+    ports:
+      - "8080:8080"
+    environment:
+      KEYCLOAK_ADMIN: ${KEYCLOAK_ADMIN_USER:-admin}
+      KEYCLOAK_ADMIN_PASSWORD: ${KEYCLOAK_ADMIN_PASSWORD:-admin}
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://keycloak-db/keycloak # Connect to keycloak-db service
+      KC_DB_USERNAME: ${KEYCLOAK_DB_USER:-keycloak}
+      KC_DB_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak}
+      KC_HEALTH_ENABLED: "true"
+      KC_FEATURES: "declarative-user-profile,admin-fine-grained-authz"
+      KC_HTTP_ENABLED: "true"
+      KC_HOSTNAME_STRICT_HTTPS: "false"
+      KC_HOSTNAME: localhost
+    command: start-dev
+    volumes:
+      - keycloak_data:/opt/keycloak/data
+    depends_on:
+      - keycloak-db
+    networks:
+      - app-network
+
+  keycloak-db:
+    image: postgres:15-alpine
+    container_name: keycloak-db
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: ${KEYCLOAK_DB_USER:-keycloak}
+      POSTGRES_PASSWORD: ${KEYCLOAK_DB_PASSWORD:-keycloak}
+    volumes:
+      - keycloak_db_data:/var/lib/postgresql/data # This is correct for a volume mount
+    networks: # This is a key
+      - app-network
+
+  # Your Application Database (PostgreSQL)
+  app-db:
+    image: postgres:15-alpine
+    container_name: app-db
+    # Map to host. Your backend will connect to localhost:5432
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: ${APP_DB_NAME:-mydatabase}
+      POSTGRES_USER: ${APP_DB_USER:-myuser}
+      POSTGRES_PASSWORD: ${APP_DB_PASSWORD:-mypassword!}
+    volumes:
+      - app_db_data:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+# Volumes for persistent data
+volumes:
+  keycloak_data:
+  keycloak_db_data:
+  app_db_data:
+
+# Network definition (optional, but good practice for internal container comms)
+networks:
+  app-network:
+    driver: bridge
