@@ -1,10 +1,11 @@
 <template>
   <div class="user-layout">
     <header class="main-header">
-      <div class="logo">My Project</div>
+      <div class="admin-slider">
+        <div class="text">Admin Modus</div>
+        <AdminToggle class="admin-toggle" toggle-id="admin-mode-toggle" v-model="isAdminMode" /> 
+      </div>
       <nav>
-        <router-link to="/home" class="nav-link">Home</router-link>
-        <router-link to="/profile" class="nav-link">Profile</router-link>
         <button @click="logout" class="logout-button">Logout</button>
       </nav>
     </header>
@@ -18,8 +19,26 @@
 <script>
 // Composition API for Vue 3
 import { useRouter } from 'vue-router'; 
+import { ref } from 'vue';
+import AdminToggle from '@/components/AdminSlider.vue';
+
+
 
 export default {
+
+  name: 'UserLayout',
+  components: { AdminToggle },
+  setup() {
+    const isAdminMode = ref(false); // Initial state is OFF
+
+    // WATCHER LOGIC (Important for your requirement)
+    // You would add logic here to watch isAdminMode and route to the AdminDashboard
+    // or AdminLayout when it changes to true.
+    
+    return {
+      isAdminMode,
+    };
+  },
   // Name the component
   name: 'UserLayout',
   setup() {
@@ -43,25 +62,22 @@ export default {
 <style scoped>
 /* Basic Flexbox and Grid for Layout */
 .user-layout {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background-color: #f4f7f9; /* Light background */
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f900;
 }
 
 .main-header {
-  background-color: #007bff; /* Primary color */
+  background-color: transparent; /* Primary color */
   color: white;
   padding: 15px 30px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-}
-
-.logo {
-  font-size: 1.5rem;
-  font-weight: bold;
 }
 
 nav {
@@ -82,16 +98,51 @@ nav {
 }
 
 .logout-button {
+  font-size: 1.5em;
+  font-family: 'Dosis', sans-serif;
   background: none;
-  border: 1px solid white;
+  border: none;
   color: white;
   padding: 5px 10px;
-  border-radius: 4px;
   cursor: pointer;
+  outline: none;
+}
+
+.logout-button:hover{
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.logout-button:active {
+  transform: translateY(2px);
 }
 
 .main-content {
-  flex-grow: 1; /* Ensures content takes up remaining vertical space */
-  padding: 30px;
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    box-sizing: border-box;
+    background-color: transparent;
+}
+
+/* Admin slider + label aligned vertically in the center */
+.admin-slider {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.text {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  line-height: 1; /* tighter baseline so it centers nicely next to the switch */
+}
+
+.admin-toggle {
+  display: inline-flex;
+  align-items: center;
 }
 </style>
