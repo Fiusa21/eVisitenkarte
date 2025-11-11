@@ -8,4 +8,5 @@ app.get('/', (req, res) => {
 
 app.listen(3000, function(){
     console.log("Server started");
+    console.log("available at localhost:3000");
 })
