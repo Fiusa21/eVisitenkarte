@@ -26,7 +26,7 @@ export default defineConfig({
 
       },
       '/resources': {
-        target: 'http://localhost:8080', // Point to your Keycloak server
+        target: 'http://localhost:8080',
         changeOrigin: true,
         ws: true,
 
