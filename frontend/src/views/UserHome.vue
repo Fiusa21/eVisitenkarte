@@ -173,7 +173,7 @@ export default {
 .display-field {
   background-color: #ffffff;
   padding: 10px 12px;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1.0rem;
   line-height: 1.5;
   min-height: 1.5em; 
@@ -200,7 +200,7 @@ export default {
   background-color: white;
   color: black;
   padding: 15px;
-  border-radius: 6px;
+  border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   display: flex;
   align-items: center;

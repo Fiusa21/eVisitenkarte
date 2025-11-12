@@ -89,7 +89,7 @@ nav {
   color: white;
   text-decoration: none;
   padding: 5px 10px;
-  border-radius: 4px;
+  border-radius: 8px;
   transition: background-color 0.2s;
 }
 
@@ -106,6 +106,7 @@ nav {
   padding: 5px 10px;
   cursor: pointer;
   outline: none;
+  border-radius: 8px;
 }
 
 .logout-button:hover{
