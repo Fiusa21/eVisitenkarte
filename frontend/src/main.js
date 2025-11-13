@@ -21,9 +21,15 @@ keycloak.init({
 }).then((authenticated) => {
     if (authenticated) {
         console.log('User authenticated');
-        // Make Keycloak instance available globally or inject into components
-        app.config.globalProperties.$keycloak = keycloak;
-        app.mount('#app');
+
+        //TODO: use in class, set authentication header
+        console.log(keycloak.token);
+        console.log(keycloak.tokenParsed);
+        keycloak.loadUserInfo().then(r => {
+            console.log(keycloak.userInfo);
+        });
+
+        //app.mount('#app');
     } else {
         console.warn('User not authenticated, redirecting to login...');
 
