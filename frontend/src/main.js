@@ -1,10 +1,16 @@
-import './assets/main.css'
+import './assets/main.css';
+import { createApp } from 'vue';
+import App from './App.vue';
+import router from '@/router';
 
 import { createApp } from 'vue'
 import App from './App.vue'
 import Keycloak from 'keycloak-js';
 
 createApp(App).mount('#app')
+const app = createApp(App);
+app.use(router);
+app.mount('#app');
 
 const keycloakConfig = {
     url: 'http://localhost:5173/',
