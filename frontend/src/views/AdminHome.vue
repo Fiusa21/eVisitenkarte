@@ -7,14 +7,15 @@
       </div>
     </div>
     
-    <div class="main-content-wrapper">
-      <div class="dashboard-layouts-container">
+    
+    <div class="dashboard-layouts-container">
         <div
           v-for="layout in layouts"
           :key="layout.id"
           class="business-cards"
-          > {{ layout.name }}</div>
-      </div>
+          > {{ layout.name }}
+        </div>
+        <div class="add-layout">+</div>
     </div>
   </div>
 </template>
@@ -24,7 +25,7 @@ import { ref } from 'vue';
 
 // Add logic here later, e.g., fetching user-specific data
 export default {
-  name: 'UserHome',
+  name: 'AdminHome',
   setup() {
      const layouts = ref([
       { id: 1, name: 'Layout 1', imagePlaceholder: 'Image of Layout 1' },
@@ -80,27 +81,18 @@ export default {
   margin-top: -5px;
 }
 
-/*user-info and dashboard-layouts-container*/
-.main-content-wrapper{
-  display: flex;
-  justify-content: flex-start; 
-  align-items: flex-start; 
-  gap: 200px; /* Space between the two columns */
-  margin-top: 25px;
-  padding: 0 30px;
-  width: 90%; 
-
-}
-
 .dashboard-layouts-container {
   flex-grow: 1; 
   display: flex; /*Horrizontal*/
   flex-wrap: wrap; /*Wrap cards to the next line*/
   gap:30px; /*Place between cards*/
   justify-content: flex-start; /*Cards start right*/
-  max-height: 565px; 
+  align-items: center;
+  max-height: 560px; 
+  max-width: 1024px;
   overflow-y: auto;
-  padding-bottom: 20px;
+  padding: 0 30px;
+  margin-top: 25px;
 }
 
 .business-cards {
@@ -121,5 +113,21 @@ export default {
   font-weight: 700;
   font-size: 1.2rem;
   background-image: linear-gradient(to right, #ffffff, #000000); /*Mimic style in cards*/
+}
+
+.add-layout{
+  width: 296px; 
+  height: 128px;
+  border: solid 1px black;
+  border-radius: 8px;
+  background-color: rgba(168, 168, 168, 0.39);
+  color: black;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.2rem;
 }
 </style>
