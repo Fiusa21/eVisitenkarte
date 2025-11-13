@@ -6,16 +6,16 @@
         <p>eVisitenkarten Editor</p>
       </div>
     </div>
-    
-    
-    <div class="dashboard-layouts-container">
-        <div
-          v-for="layout in layouts"
-          :key="layout.id"
-          class="business-cards"
-          > {{ layout.name }}
+    <div class="layout-wrapper">
+        <div class="layouts">
+            <div
+            v-for="layout in layouts"
+            :key="layout.id"
+            class="business-cards"
+            > {{ layout.name }}
+            </div>
+            <div class="add-layout">+</div>
         </div>
-        <div class="add-layout">+</div>
     </div>
   </div>
 </template>
@@ -81,7 +81,13 @@ export default {
   margin-top: -5px;
 }
 
-.dashboard-layouts-container {
+.layout-wrapper{
+    max-width: 1024px;
+    margin: 0 auto;
+    margin-top: 25px;   
+}
+
+.layouts {
   flex-grow: 1; 
   display: flex; /*Horrizontal*/
   flex-wrap: wrap; /*Wrap cards to the next line*/
