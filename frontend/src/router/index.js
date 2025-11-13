@@ -5,6 +5,7 @@ import AdminDashboard from '@/views/AdminDashboard.vue';
 import Nutzerverwaltung from '@/views/Nutzerverwaltung.vue';
 import UserLayout from '@/layouts/UserLayout.vue'; 
 import UserHome from '@/views/UserHome.vue'; 
+import AdminHome from '@/views/AdminHome.vue';
 
 
 const router = createRouter({
@@ -31,10 +32,15 @@ const router = createRouter({
     },
     {
       path: '/admin',
-      name: 'admin',
       // The AdminLayout acts as the parent container
       component: AdminLayout, 
       children: [
+        {
+          // This path will be /admin-home
+          path: '', 
+          name: 'admin-home',
+          component: AdminHome
+        },
         {
           // This path will be /admin/dashboard
           path: 'dashboard', 
