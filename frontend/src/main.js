@@ -1,11 +1,12 @@
-import './assets/main.css';
-import router from '@/router';
+
 
 import { createApp } from 'vue'
 import App from './App.vue'
 //import Keycloak from 'keycloak-js';
+import './assets/main.css';
+import router from '@/router';
 
-createApp(App).mount('#app')
+//createApp(App).mount('#app')
 const app = createApp(App);
 app.use(router);
 app.mount('#app');
@@ -16,9 +17,9 @@ const keycloakConfig = {
     clientId: 'eVisitenkarte-app',
 };
 
-const keycloak = new Keycloak(keycloakConfig);
+//const keycloak = new Keycloak(keycloakConfig);
 
-keycloak.init({
+/*keycloak.init({
     onLoad: 'login-required',
     checkLoginIframe: false,
     pkceMethod: 'S256'
@@ -41,4 +42,4 @@ keycloak.init({
 }).catch((error) => {
     console.error('Keycloak initialization failed:', error);
 
-});
+});*/

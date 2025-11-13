@@ -5,6 +5,8 @@
         <div class="slider-text">Admin Modus</div>
         <AdminToggle class="admin-toggle" toggle-id="admin-mode-toggle" v-model="isAdminMode" /> 
       </div>
+      <div class=""></div>
+      <TopBar />
       <nav>
         <button @click="logout" class="logout-button">Logout</button>
       </nav>
@@ -21,29 +23,20 @@
 import { useRouter } from 'vue-router'; 
 import { ref } from 'vue';
 import AdminToggle from '@/components/AdminSlider.vue';
-
-
+import TopBar from '@/components/TopBar.vue';
 
 export default {
 
-  name: 'UserLayout',
-  components: { AdminToggle },
+  name: 'AdminLayout',
+  components: { AdminToggle, TopBar },
   setup() {
+    const router = useRouter();
     const isAdminMode = ref(false); // Initial state is OFF
 
     // WATCHER LOGIC (Important for your requirement)
     // You would add logic here to watch isAdminMode and route to the AdminDashboard
     // or AdminLayout when it changes to true.
-    
-    return {
-      isAdminMode,
-    };
-  },
-  // Name the component
-  name: 'UserLayout',
-  setup() {
-    const router = useRouter(); 
-    
+
     // Placeholder for Keycloak Logout
     const logout = () => {
       // **TODO: Implement Keycloak logout logic here**
@@ -53,7 +46,8 @@ export default {
     };
 
     return {
-      logout,
+        isAdminMode, 
+        logout,
     };
   }
 }
