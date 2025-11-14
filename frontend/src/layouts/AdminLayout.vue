@@ -1,15 +1,20 @@
 <template>
   <div class="user-layout">
     <header class="main-header">
-      <div class="admin-slider">
-        <div class="slider-text">Admin Modus</div>
-        <AdminToggle class="admin-toggle" toggle-id="admin-mode-toggle" v-model="isAdminMode" /> 
+      <div class="header-left">
+        <div class="admin-slider">
+          <div class="slider-text">Admin Modus</div>
+          <AdminToggle class="admin-toggle" toggle-id="admin-mode-toggle" v-model="isAdminMode" /> 
+        </div>
       </div>
-      <div class=""></div>
-      <TopBar />
-      <nav>
+
+      <div class="header-center">
+        <TopBar />
+      </div>
+
+      <div class="header-right">
         <button @click="logout" class="logout-button">Logout</button>
-      </nav>
+      </div>
     </header>
 
     <main class="main-content">
@@ -69,9 +74,29 @@ export default {
   background-color: transparent; /* Primary color */
   color: white;
   padding: 15px 30px;
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr; /* left / center (TopBar) / right */
   align-items: center;
+  gap: 12px;
+}
+
+.header-left {
+  justify-self: start;
+  display: flex;
+  align-items: center;
+}
+
+.header-right {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+}
+
+.header-center {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  pointer-events: auto; /* ensure the centered TopBar is interactive */
 }
 
 nav {
