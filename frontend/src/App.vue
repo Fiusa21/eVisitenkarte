@@ -1,64 +1,7 @@
 <template>
-  <div id="app">
-    <h1>Frontend (Modularized)</h1>
-    <p v-if="!isAuthenticated">Please log in to access features.</p>
-    <button v-if="!isAuthenticated" @click="login">Login with Keycloak</button>
-    <button v-if="isAuthenticated" @click="callBackend">Call Protected Backend</button>
-    <button v-if="isAuthenticated" @click="logout">Logout</button>
-    <p v-if="backendResponse">Backend Response: {{ backendResponse }}</p>
-    <p v-if="error">{{ error }}</p>
-  </div>
+  <router-view />
 </template>
 
 <script>
-import KeycloakService from './services/keycloak-service';
-import ApiService from './services/api-service';
-
-export default {
-  name: 'App',
-  data() {
-    return {
-      isAuthenticated: false,
-      backendResponse: null,
-      error: null,
-    };
-  },
-  async created() {
-    try {
-      await KeycloakService.init();
-      this.isAuthenticated = KeycloakService.isLoggedIn();
-    } catch (err) {
-      this.error = 'Keycloak initialization failed. See console for details.';
-      this.isAuthenticated = false;
-    }
-  },
-  methods: {
-    async login() {
-      console.log("Login button clicked, Keycloak init should handle it if not logged in.");
-      try {
-        await KeycloakService.init();
-        this.isAuthenticated = KeycloakService.isLoggedIn();
-      } catch (err) {
-        this.error = 'Login failed. See console for details.';
-      }
-    },
-    async callBackend() {
-      this.error = null;
-      this.backendResponse = null;
-      try {
-        const data = await ApiService.callProtectedEndpoint();
-        this.backendResponse = data.message;
-      } catch (err) {
-        this.error = err.message || 'Failed to call backend API.';
-      }
-    },
-    logout() {
-      KeycloakService.logout();
-      this.isAuthenticated = false;
-      this.backendResponse = null;
-      this.error = null;
-    }
-  },
-};
+export default { name: 'App'}
 </script>
-
