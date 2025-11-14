@@ -5,10 +5,9 @@ import { createApp } from 'vue'
 import App from './App.vue'
 import Keycloak from 'keycloak-js';
 
-createApp(App).mount('#app')
-const app = createApp(App);
-app.use(router);
-app.mount('#app');
+//createApp(App).mount('#app')
+
+//app.mount('#app');
 
 const keycloakConfig = {
     url: 'http://localhost:5173/',
@@ -17,6 +16,8 @@ const keycloakConfig = {
 };
 
 const keycloak = new Keycloak(keycloakConfig);
+const app = createApp(App);
+app.use(router);
 
 keycloak.init({
     onLoad: 'login-required',
@@ -33,7 +34,8 @@ keycloak.init({
             console.log(keycloak.userInfo);
         });
 
-        //app.mount('#app');
+        //MOUNT APP AFTER keycloak init, otherwise you can see app for a split second
+        app.mount('#app');
     } else {
         console.warn('User not authenticated, redirecting to login...');
 
