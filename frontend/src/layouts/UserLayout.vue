@@ -22,8 +22,6 @@ import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 import AdminToggle from '@/components/AdminSlider.vue';
 
-
-
 export default {
   name: 'UserLayout',
   components: { AdminToggle },
@@ -103,10 +101,6 @@ nav {
 
 .logout-button:hover{
   background-color: rgba(255, 255, 255, 0.2);
-}
-
-.logout-button:active {
-  transform: translateY(2px);
 }
 
 .main-content {
