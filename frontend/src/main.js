@@ -1,46 +1,11 @@
-import './assets/main.css';
-import router from '@/router';
+// src/main.js
+import { createApp } from 'vue';
+import App from './App.vue';
 
-import { createApp } from 'vue'
-import App from './App.vue'
-import Keycloak from 'keycloak-js';
-
-//createApp(App).mount('#app')
-
-//app.mount('#app');
-
-const keycloakConfig = {
-    url: 'http://localhost:5173/',
-    realm: 'eVisitenkarte-development',
-    clientId: 'eVisitenkarte-app',
-};
-
-const keycloak = new Keycloak(keycloakConfig);
+// Create the Vue application instance
 const app = createApp(App);
-app.use(router);
 
-keycloak.init({
-    onLoad: 'login-required',
-    checkLoginIframe: false,
-    pkceMethod: 'S256'
-}).then((authenticated) => {
-    if (authenticated) {
-        console.log('User authenticated');
+// Mount the application to the DOM element with id="app"
+app.mount('#app');
 
-        //TODO: use in class, set authentication header
-        console.log(keycloak.token);
-        console.log(keycloak.tokenParsed);
-        keycloak.loadUserInfo().then(r => {
-            console.log(keycloak.userInfo);
-        });
-
-        //MOUNT APP AFTER keycloak init, otherwise you can see app for a split second
-        app.mount('#app');
-    } else {
-        console.warn('User not authenticated, redirecting to login...');
-
-    }
-}).catch((error) => {
-    console.error('Keycloak initialization failed:', error);
-
-});
+console.log("Vue application mounted successfully!");
