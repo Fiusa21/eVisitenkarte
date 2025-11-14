@@ -1,38 +1,28 @@
-const session = require('express-session');
+// server.js
 const express = require('express');
+const cors = require('cors');
+const { sessionMiddleware, keycloakMiddleware } = require('./middleware/keycloak-middleware');
+const apiRoutes = require('./routes/api-routes');
+
 const app = express();
-const Keycloak = require('keycloak-connect');
+const port = 3000;
 
-//IMPORTANT FROM DOCUMENTATION:
-/*MemoryStore, is purposely not designed for a production environment.
-It will leak memory under most conditions, does not scale past a single process,
-and is meant for debugging and developing.*/
+// Enable CORS for your frontend origin
+app.use(cors({ origin: 'http://localhost:5173' })); // Replace with your Vue app's origin
 
-//ALSO BE AWARE: VALID REDIRECT URL IS CURRENTLY '*' WHICH SHOULD LATER BE SPECIFIED
-//SINCE IT IS A SECURITY FLAW
-//using wildcard is easier for develop and testing purposes
+// Apply Keycloak session and middleware
+app.use(sessionMiddleware);
+app.use(keycloakMiddleware);
 
-const memoryStore = new session.MemoryStore();
-const keycloak = new Keycloak({ store: memoryStore });
+// Mount API routes
+app.use('/api', apiRoutes);
 
-app.use(session({
-    secret: 'mySecret',
-    resave: false,
-    saveUninitialized: true,
-    store: memoryStore
-}));
-
-app.use( keycloak.middleware() );
-
-//simple autehntification testing
-
-app.get('/', keycloak.protect(), (req, res, next) => {
-    res.json({status: 'ok'})
-})
-
-
-app.listen(3000, function() {
-    console.log('App listening on port 3000');
+// Simple root endpoint
+app.get('/', (req, res) => {
+    res.send('Node.js Backend is running!');
 });
 
-
+// Start the server
+app.listen(port, () => {
+    console.log(`Modularized Backend server listening at http://localhost:${port}`);
+});
