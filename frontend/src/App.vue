@@ -34,12 +34,7 @@ export default {
   },
   methods: {
     async login() {
-      // KeycloakService.init() handles the login redirect.
-      // If 'onLoad: check-sso' was used, you might have a dedicated login method here.
-      // For 'login-required', the init call already handles the redirect.
       console.log("Login button clicked, Keycloak init should handle it if not logged in.");
-      // For simplicity, we just re-run init. In a real app, you might only call init once or handle
-      // the 'onLoad' logic more explicitly.
       try {
         await KeycloakService.init();
         this.isAuthenticated = KeycloakService.isLoggedIn();
@@ -67,6 +62,3 @@ export default {
 };
 </script>
 
-<style>
-/* ... (same styles as before) ... */
-</style>

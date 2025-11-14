@@ -1,7 +1,7 @@
-// src/services/api-service.js
 import KeycloakService from './keycloak-service';
 
-const API_BASE_URL = 'http://localhost:3000/api'; // Your backend base URL
+//for testing with echo api, there is a public/unprotected endpoint /public
+const API_BASE_URL = 'http://localhost:3000/api'; //base api url, for testing see echo api
 
 const ApiService = {
     callProtectedEndpoint: async () => {
@@ -35,7 +35,7 @@ const ApiService = {
         }
     },
 
-    // Add more API methods here (e.g., callPublicEndpoint, postData, etc.)
+
 };
 
 export default ApiService;
