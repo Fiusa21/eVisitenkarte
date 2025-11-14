@@ -1,132 +1,168 @@
 <template>
-  <div class="admin-layout">
-    
-    <aside class="admin-sidebar">
-      <div class="logo-area">Admin Panel</div>
-      <nav class="sidebar-nav">
-        <router-link to="/admin/dashboard" class="nav-item">
-          Dashboard
-        </router-link>
-        <router-link to="/admin/users" class="nav-item">
-          Nutzer (Users)
-        </router-link>
-        </nav>
-      
-      <button @click="handleLogout" class="sidebar-logout">
-        Logout
-      </button>
-    </aside>
+  <div class="user-layout">
+    <header class="main-header">
+      <div class="header-left">
+        <div class="admin-slider">
+          <div class="slider-text">Admin Modus</div>
+          <AdminToggle class="admin-toggle" toggle-id="admin-mode-toggle" v-model="isAdminMode" /> 
+        </div>
+      </div>
 
-    <main class="admin-main">
-      <header class="admin-header">
-        <p>Current View: **{{ currentRouteName }}**</p>
-      </header>
-      
-      <section class="admin-content-view">
-        <router-view />
-      </section>
+      <div class="header-center">
+        <TopBar />
+      </div>
+
+      <div class="header-right">
+        <button @click="logout" class="logout-button">Logout</button>
+      </div>
+    </header>
+
+    <main class="main-content">
+      <router-view />
     </main>
   </div>
 </template>
 
 <script>
-import { computed } from 'vue';
-import { useRoute, useRouter } from 'vue-router';
+// Composition API for Vue 3
+import { useRouter } from 'vue-router'; 
+import { ref } from 'vue';
+import AdminToggle from '@/components/AdminSlider.vue';
+import TopBar from '@/components/TopBar.vue';
 
 export default {
+
   name: 'AdminLayout',
+  components: { AdminToggle, TopBar },
   setup() {
     const router = useRouter();
-    const route = useRoute();
-    
-    // Reactive property to display the current route name in the header
-    const currentRouteName = computed(() => {
-        return route.name ? route.name.toUpperCase() : 'NO NAME';
-    });
+    const isAdminMode = ref(false); // Initial state is OFF
 
-    const handleLogout = () => {
-      // Placeholder: Your colleague's Keycloak logout function will replace this.
-      console.log('Admin Logout initiated.');
-      router.push('/'); // Redirect to the main page/login
+    // WATCHER LOGIC (Important for your requirement)
+    // You would add logic here to watch isAdminMode and route to the AdminDashboard
+    // or AdminLayout when it changes to true.
+
+    // Placeholder for Keycloak Logout
+    const logout = () => {
+      // **TODO: Implement Keycloak logout logic here**
+      console.log("User initiated logout. Redirecting to Keycloak logout URL.");
+      // For now, redirect to the login path:
+      router.push('/'); 
     };
 
     return {
-      currentRouteName,
-      handleLogout,
+        isAdminMode, 
+        logout,
     };
   }
 }
 </script>
 
 <style scoped>
-/* Basic Two-Column Layout using Grid */
-.admin-layout {
-  display: grid;
-  /* Sidebar width (e.g., 250px) and the rest for main content */
-  grid-template-columns: 250px 1fr; 
-  min-height: 100vh;
-  background-color: #f4f7f9; 
+/* Basic Flexbox and Grid for Layout */
+.user-layout {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background-color: #f4f7f900;
 }
 
-/* Sidebar Styles */
-.admin-sidebar {
-  background-color: #34495e; 
+.main-header {
+  background-color: transparent; /* Primary color */
   color: white;
+  padding: 15px 30px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr; /* left / center (TopBar) / right */
+  align-items: center;
+  gap: 12px;
+}
+
+.header-left {
+  justify-self: start;
   display: flex;
-  flex-direction: column;
-  padding: 20px 0;
+  align-items: center;
 }
 
-.logo-area {
-  padding: 0 20px 30px;
-  font-size: 1.6rem;
-  font-weight: bold;
-}
-
-.sidebar-nav {
+.header-right {
+  justify-self: end;
   display: flex;
-  flex-direction: column;
-  flex-grow: 1; /* Pushes the logout button to the bottom */
+  align-items: center;
 }
 
-.nav-item {
+.header-center {
+  justify-self: center;
+  display: flex;
+  align-items: center;
+  pointer-events: auto; /* ensure the centered TopBar is interactive */
+}
+
+nav {
+  display: flex;
+  gap: 20px;
+}
+
+.nav-link {
   color: white;
   text-decoration: none;
-  padding: 12px 20px;
+  padding: 5px 10px;
+  border-radius: 8px;
   transition: background-color 0.2s;
 }
 
-.nav-item:hover, .nav-item.router-link-active {
-  background-color: #4e6a81; /* Lighter color on hover/active */
-  border-left: 4px solid #42b983; /* Accent color */
+.nav-link:hover, .nav-link.router-link-active {
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
-.sidebar-logout {
+.logout-button {
+  font-size: 1.5em;
+  font-family: 'Dosis', sans-serif;
   background: none;
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  border: none;
   color: white;
-  padding: 10px 20px;
-  margin: 20px;
-  border-radius: 4px;
+  padding: 5px 10px;
   cursor: pointer;
-  transition: background-color 0.2s;
+  outline: none;
+  border-radius: 8px;
 }
 
-/* Main Content Styles */
-.admin-main {
-  display: flex;
-  flex-direction: column;
+.logout-button:hover{
+  background-color: rgba(255, 255, 255, 0.2);
 }
 
-.admin-header {
-  background: white;
-  color: black;
-  padding: 15px 30px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+.logout-button:active {
+  transform: translateY(2px);
 }
 
-.admin-content-view {
-  padding: 30px;
-  flex-grow: 1;
+.main-content {
+    flex: 1;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    overflow: auto;
+    box-sizing: border-box;
+    background-color: transparent;
+}
+
+/* Admin slider + label aligned vertically in the center */
+.admin-slider {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.slider-text {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0;
+  line-height: 1; /* tighter baseline so it centers nicely next to the switch */
+}
+
+.admin-toggle {
+  display: inline-flex;
+  align-items: center;
 }
 </style>

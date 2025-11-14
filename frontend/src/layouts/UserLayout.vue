@@ -20,37 +20,27 @@ import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 import AdminToggle from '@/components/AdminSlider.vue';
 
-
-
 export default {
-
   name: 'UserLayout',
   components: { AdminToggle },
   setup() {
+    const router = useRouter();
     const isAdminMode = ref(false); // Initial state is OFF
 
     // WATCHER LOGIC (Important for your requirement)
     // You would add logic here to watch isAdminMode and route to the AdminDashboard
     // or AdminLayout when it changes to true.
-    
-    return {
-      isAdminMode,
-    };
-  },
-  // Name the component
-  name: 'UserLayout',
-  setup() {
-    const router = useRouter(); 
-    
+
     // Placeholder for Keycloak Logout
     const logout = () => {
       // **TODO: Implement Keycloak logout logic here**
       console.log("User initiated logout. Redirecting to Keycloak logout URL.");
       // For now, redirect to the login path:
-      router.push('/'); 
+      router.push('/');
     };
 
     return {
+      isAdminMode,
       logout,
     };
   }
@@ -109,10 +99,6 @@ nav {
 
 .logout-button:hover{
   background-color: rgba(255, 255, 255, 0.2);
-}
-
-.logout-button:active {
-  transform: translateY(2px);
 }
 
 .main-content {
