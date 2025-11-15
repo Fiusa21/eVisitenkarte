@@ -3,16 +3,15 @@
 </template>
 
 <script>
-export default {
-    name: 'logout',
-    setup() {
+import keycloakServices from '@/services/keycloak-service';
 
-        //Adjust to keycloak-services
+export default {
+    name: 'LogoutButton',
+    setup() {
+        
         const logout = () => {
+            //calls keycloak logout method
             keycloakServices.logout();
-            isAuthenticated = false;
-            backendResponse = null;
-            error = null;
         };
         return {
         logout,
