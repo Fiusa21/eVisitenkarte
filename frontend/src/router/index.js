@@ -12,7 +12,10 @@ const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     // 1. Initial/Keycloak Redirect Path (might need adjustment later)
-    { path: '/', redirect: '/home' }, 
+    { path: '/', 
+      name: 'landing',
+      component: LoginLanding
+     }, 
 
     // 2. Authenticated User Area Route
     {
@@ -26,8 +29,6 @@ const router = createRouter({
           name: 'user-home',
           component: UserHome
         },
-        // You will add more children for /profile, /settings, etc.
-        // { path: 'profile', name: 'user-profile', component: UserProfileView }
       ]
     },
     {
