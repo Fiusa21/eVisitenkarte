@@ -9,7 +9,7 @@ const KEYCLOAK_CONFIG = {
 let keycloakInstance = null;
 
 const KeycloakService = {
-    init: async () => {
+    init: async (forceLogin = false) => { //Parameter added
         if (keycloakInstance) {
             return keycloakInstance;
         }
@@ -17,8 +17,13 @@ const KeycloakService = {
         keycloakInstance = new Keycloak(KEYCLOAK_CONFIG);
 
         try {
+
+            //If forcedLogin is true, we use login-required
+            //otherwse we check if user is already logged in with check-sso
+            const onLoadStrategy = forceLogin ? 'login-required' : 'check-sso';
+
             const authenticated = await keycloakInstance.init({
-                onLoad: 'login-required',
+                onLoad: onLoadStrategy, // New Parameter
                 pkceMethod: 'S256',
             });
             console.log('Keycloak initialized. Authenticated:', authenticated);
@@ -29,6 +34,15 @@ const KeycloakService = {
         } catch (error) {
             console.error('Keycloak initialization failed', error);
             throw error;
+        }
+    },
+
+    //new Method for maual Login
+    login: async (options = {}) =>{
+        if(keycloakInstance){
+            await keycloakInstance.login(options);
+        }else {
+            await KeycloakService.init(true); //Keycloak initialization and login
         }
     },
 
