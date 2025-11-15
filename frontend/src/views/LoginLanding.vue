@@ -7,7 +7,7 @@
     </div>
     <div class="login-container">
         <h1>Anmeldung erforderlich</h1>
-        <p>Bitte klicken Sie auf "Anmelden", um sich mit Keycloak zu authentifizieren und zur Anwendung zu gelangen.</p>
+        <p>Bitte klicken Sie auf "Anmelden", um sich über Keycloak anzumelden und zur Anwendung zu gelangen.</p>
         <button @click="handleLogin">Anmelden</button>
     </div>
 </template>
