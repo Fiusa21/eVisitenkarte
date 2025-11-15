@@ -1,17 +1,19 @@
 // Example Route Setup
 import { createRouter, createWebHistory } from 'vue-router';
 import AdminLayout from '@/layouts/AdminLayout.vue';
-import AdminDashboard from '@/views/AdminDashboard.vue'; 
-import Nutzerverwaltung from '@/views/Nutzerverwaltung.vue';
 import UserLayout from '@/layouts/UserLayout.vue'; 
 import UserHome from '@/views/UserHome.vue';
 import AdminHome from '@/views/AdminHome.vue';
+import LoginLanding from '@/views/LoginLanding.vue';
+
+//impprt for Guard
+import KeycloakService from '@/services/keycloak-service';
 
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
-    // 1. Initial/Keycloak Redirect Path (might need adjustment later)
+    // 1. Initial/Keycloak Redirect Path
     { path: '/', 
       name: 'landing',
       component: LoginLanding
@@ -20,11 +22,10 @@ const router = createRouter({
     // 2. Authenticated User Area Route
     {
       path: '/home',
-      // This route uses the UserLayout as the container
+      meta: { requiresAuth: true},
       component: UserLayout, 
       children: [
         {
-          // This path will be /home
           path: '', 
           name: 'user-home',
           component: UserHome
@@ -33,8 +34,7 @@ const router = createRouter({
     },
     {
       path: '/admin',
-      name: 'admin',
-      // The AdminLayout acts as the parent container
+      meta: { requiresAuth: true, requiresRole: 'adin' },
       component: AdminLayout, 
       children: [
         {
@@ -43,30 +43,38 @@ const router = createRouter({
           name: 'admin-home',
           component: AdminHome
         },
-        {
-          // This path will be /admin/dashboard
-          path: 'dashboard', 
-          name: 'dashboard',
-          component: AdminDashboard
-        },
-        {
-          // This path will be /admin/users (for the Nutzer list)
-          path: 'users', 
-          name: 'userlist',
-          component: Nutzerverwaltung
-        },
-        // Route for viewing a single user's details (e.g., /admin/users/123)
-        {
-          path: 'users/:id', 
-          name: 'userdetails',
-          // You will create this component later
-          component: () => import('@/views/AdminUserDetails.vue') 
-        }
       ]
     },
-    
-    // ... add Admin routes later, which will use an AdminLayout ...
   ]
 });
+
+router.beforeEach(async (to, from, next) => {
+  try{
+    await KeycloakService.init(); //Initializing Keycloak
+  }catch(error){
+    console.error('Keycloak initialization failed in Guard.', error);
+    return next({ name: 'landing' });
+  }
+
+  if (to.meta.requiresAuth){
+    //Route requires authentication
+    if(KeycloakService.isLoggedIn()){
+      //User is logged in
+      next();
+    }else{
+      //User is not logged in, redirect to landing page
+      console.log('Acces denied. Redirecting to Login.');
+      next({ name: 'landing', query: { redirect: to.fullPath } });
+    }
+  }else {
+    //Route needs no authentication
+    if(to.name === 'landing' && KeycloakService.isLoggedIn()){
+      next({ name: 'user-home' });
+    }else{
+      //Otherwise proceed as normal
+      next();
+    }
+  }
+})
 
 export default router;
