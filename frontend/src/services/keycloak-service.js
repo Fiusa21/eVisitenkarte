@@ -19,8 +19,9 @@ const KeycloakService = {
         try {
 
             //If forcedLogin is true, we use login-required
-            //otherwse we check if user is already logged in with check-sso
-            const onLoadStrategy = forceLogin ? 'login-required' : 'check-sso';
+            //otherwse we check if user is already logged in with check-sso.
+            //because we dont have sso, no active session will be found => keycloakInstance.authenticated = false
+            const onLoadStrategy = forceLogin ? 'login-required' : 'check-sso'; 
 
             const authenticated = await keycloakInstance.init({
                 onLoad: onLoadStrategy, // New Parameter

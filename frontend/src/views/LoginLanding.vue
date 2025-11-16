@@ -6,7 +6,6 @@
       </div>
     </div>
     <div class="login-container">
-        <h1>Anmeldung erforderlich</h1>
         <p>Bitte klicken Sie auf "Anmelden", um sich über Keycloak anzumelden und zur Anwendung zu gelangen.</p>
         <button @click="handleLogin">Anmelden</button>
     </div>
@@ -19,8 +18,9 @@ import KeycloakService from '@/services/keycloak-service';
 
 const router = useRouter();
 
+// Starts the keycloak login process
 const handleLogin = async () => {
-    // Starts the keycloak login process
+    
     // 'redirectUri' makes sure we return to user-home after login
     const redirectUri = window.location.origin + router.resolve({ name: 'user-home' }).href;
     
@@ -44,15 +44,15 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-.login-container h1{
-    font-size: 3em;
-    font-family: 'Dosis', sans-serif;
-    font-weight: 500;
-    margin: 0;
-    padding: 0;
-    line-height: 1;
+.site-header{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 40vh;
+    padding-top: 10px;
+    padding-bottom: 10px;
 }
-
 .header-content {
     display: flex;
     flex-direction: column;
@@ -77,6 +77,23 @@ onMounted(async () => {
     margin-top: -5px;
 }
 
+.login-container{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 40vh;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    gap: 50px;
+}
+
+.login-container p{
+    font-size: 1.2em;
+    font-family: 'Dosis', sans-serif;
+    color: white;
+}
+
 .login-container button{
     min-width: 120px;
     height: 36px;
@@ -89,7 +106,7 @@ onMounted(async () => {
     font-size: 1.2em;
     font-family: 'Dosis', sans-serif;
     background: none;
-    border: none;
+    border: 1px solid black;
     color: white;
     padding: 5px 10px;
     cursor: pointer;
