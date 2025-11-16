@@ -5,9 +5,7 @@
         <div class="text">Admin Modus</div>
         <AdminToggle class="admin-toggle" toggle-id="admin-mode-toggle" v-model="isAdminMode" /> 
       </div>
-      <nav>
         <button @click="logout" class="logout-button">Logout</button>
-      </nav>
     </header>
 
     <main class="main-content">
