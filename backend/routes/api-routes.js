@@ -120,6 +120,7 @@ router.post('/protected', protect, (req, res) => {
  */
 router.get('/user', (req, res)=>{
     const username = req.kauth.grant.access_token.content.preferred_username;
+    //add required attributes here!!!!
     res.json(username);
 })
 
