@@ -4,6 +4,54 @@ const { protect } = require('../middleware/keycloak-middleware'); // Import prot
 
 const router = express.Router();
 
+// --- SWAGGER DEFINITIONS (can be placed anywhere in the file) ---
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *       description: "Enter the Bearer token issued by Keycloak. Example: 'Bearer a1b2c3d4...'"
+ */
+
+/**
+ * @swagger
+ * tags:
+ *   name: Authentication
+ *   description: Routes for testing public vs protected access
+ */
+
+// --- ROUTES ---
+
+/**
+ * @swagger
+ * /protected:
+ *   get:
+ *     summary: Access a protected route
+ *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated and accessed the resource.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Hello, testuser! You accessed a protected API. Your company is ExampleCorp"
+ *       401:
+ *         description: Unauthorized. The token is missing or invalid.
+ *       403:
+ *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ */
+
 //basic route testing
 router.get('/protected', protect, (req, res) => {
     // If we reach here, the request is authenticated
@@ -11,6 +59,26 @@ router.get('/protected', protect, (req, res) => {
     const company = req.kauth.grant.access_token.content.company;
     res.json({ message: `Hello, ${username}! You accessed a protected API. Your company is ${company}` });
 });
+
+/**
+ * @swagger
+ * /public:
+ *   get:
+ *     summary: Access a public route
+ *     description: This endpoint is public and requires no authentication.
+ *     tags: [Authentication]
+ *     responses:
+ *       200:
+ *         description: Successfully accessed the public resource.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "This is a public API endpoint."
+ */
 
 // You can add other public or protected routes here
 router.get('/public', (req, res) => {
