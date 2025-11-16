@@ -26,7 +26,7 @@ const options = {
     definition: {
         openapi: '3.0.0',
         info: {
-            title: 'E-Paper Visitenkarten API (from code)',
+            title: 'eVisitenkarten API (from code)',
             version: '1.0.0',
             description: 'API for managing business cards, generated from JSDoc comments.',
         },
@@ -49,7 +49,7 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 app.use('/', apiRoutes);
 
 //check later
-// Simple root endpoint
+// Simple root endpoint; Visible when accessing localhost:3000
 app.get('/', (req, res) => {
     res.send('Node.js Backend is running!');
 });

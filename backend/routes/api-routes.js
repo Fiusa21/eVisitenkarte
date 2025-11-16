@@ -62,6 +62,69 @@ router.get('/protected', protect, (req, res) => {
 
 /**
  * @swagger
+ * /protected:
+ *   post:
+ *     summary: Access a protected route
+ *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated and accessed the resource.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Hello, testuser! You accessed a protected API. Your company is ExampleCorp"
+ *       401:
+ *         description: Unauthorized. The token is missing or invalid.
+ *       403:
+ *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ */
+
+router.post('/protected', protect, (req, res) => {
+    // If we reach here, the request is authenticated
+    const username = req.kauth.grant.access_token.content.preferred_username;
+    const company = req.kauth.grant.access_token.content.company;
+    res.json({ message: `Hello, ${username}! You accessed a protected API. Your company is ${company}` });
+});
+
+/**
+ * @swagger
+ * /user:
+ *   get:
+ *     summary: Access user data
+ *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated and accessed the resource.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: YourUsername
+ *       401:
+ *         description: Unauthorized. The token is missing or invalid.
+ *       403:
+ *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ */
+router.get('/user', (req, res)=>{
+    const username = req.kauth.grant.access_token.content.preferred_username;
+    res.json(username);
+})
+
+/**
+ * @swagger
  * /public:
  *   get:
  *     summary: Access a public route
