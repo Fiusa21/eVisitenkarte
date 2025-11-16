@@ -4,7 +4,7 @@ const { protect } = require('../middleware/keycloak-middleware'); // Import prot
 
 const router = express.Router();
 
-// --- SWAGGER DEFINITIONS (can be placed anywhere in the file) ---
+// --- SWAGGER DEFINITIONS ---
 
 /**
  * @swagger
