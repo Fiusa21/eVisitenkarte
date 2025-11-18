@@ -1,3 +1,6 @@
+#dependencies
+/node_modules/
+
 # Common operating system files
 .DS_Store
 .env
@@ -6,3 +9,5 @@
 .idea/
 
 # Your other root-level ignored files (if any)
+package-lock.json
+package.json
