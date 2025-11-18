@@ -120,11 +120,79 @@ router.post('/protected', protect, (req, res) => {
  */
 router.get('/user', (req, res)=>{
     const username = req.kauth.grant.access_token.content.preferred_username;
-    //add required attributes here!!!!
-    res.json(username);
+    const usermail = req.kauth.grant.access_token.content.email;
+    const familyName = req.kauth.grant.access_token.content.family_name;
+    //maybe send full content, and specifiy which part?!?!
+    const userData= req.kauth.grant.access_token.content;
+    res.json(userData);
+
 })
+/**
+ * @swagger
+ * /layout:
+ *   get:
+ *     summary: Access layout data
+ *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated, executed the query and accessed the Layout.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: some sql query
+ *       401:
+ *         description: Unauthorized. The token is missing or invalid.
+ *       403:
+ *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ */
+router.get('/layout', protect, async (req, res) => {
+    const { sqlCommand, sqlParams = [] } = req.body;
+    const flatRows = await executeQuery(sqlCommand, sqlParams);
+    const nestedLayouts = processLayoutAndElements(flatRows);
+    res.json(nestedLayouts);
+});
 
 /**
+ * @swagger
+ * /layout:
+ *   post:
+ *     summary: Access layout data
+ *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated and accessed the resource.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: 'Layout data inserted/updated successfully.'
+ *       401:
+ *         description: Unauthorized. The token is missing or invalid.
+ *       403:
+ *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ */
+router.post('/layout', protect, async (req, res) => {
+    // 1. Extract the SQL command and parameters from the body
+    const { sqlCommand, sqlParams = [] } = req.body;
+    // 2. Execute the command
+    await executeQuery(sqlCommand, sqlParams);
+    res.json({ message: 'Layout data inserted/updated successfully.' });
+});
+
+    /**
  * @swagger
  * /public:
  *   get:
