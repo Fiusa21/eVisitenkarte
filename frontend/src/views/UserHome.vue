@@ -11,45 +11,25 @@
       
       <div class="user-info-card">
         <div class="user-info">
-          <div class="info-group">
-            <label class="field-label">Vorname</label>
-            <div class="display-field"></div> 
+
+          <div
+            v-for="field in userInfoFields"
+            :key="field.key"
+            class="info-group"
+          >
+            <label class="field-label">{{ field.label }}</label>
+            <div class="display-field">
+              {{ userProfile[field.key] || 'Nicht hinterlegt' }}
+            </div> 
           </div>
 
           <div class="info-group">
-            <label class="field-label">Nachname</label>
-            <div class="display-field"></div> 
-          </div>
-          
-          <div class="info-group">
-            <label class="field-label">Firma</label>
-            <div class="display-field"></div> 
-          </div>
-          
-          <div class="info-group">
-            <label class="field-label">Titel</label>
-            <div class="display-field"></div>
-          </div>
-          
-          <div class="info-group">
-            <label class="field-label">E-Mail</label>
-            <div class="display-field"></div>
-          </div>
-          
-          <div class="info-group">
-            <label class="field-label">Telefon</label>
-            <div class="display-field"></div>
-          </div>
-          
-          <div class="info-group">
-            <label class="field-label">Mobil</label>
-            <div class="display-field"></div>
-          </div>
-          
-          <div class="info-group">
             <label class="field-label">Adresse</label>
-            <div class="display-field"></div>
+            <div class="display-field">
+              {{ formattedAddress || 'Nicht hinterlegt' }}
+            </div>
           </div>
+
         </div>
       </div>
 
@@ -65,12 +45,49 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, computed } from 'vue';
+import KeycloakService from '@/services/keycloak-service';
 
-// Add logic here later, e.g., fetching user-specific data
 export default {
   name: 'UserHome',
   setup() {
+
+    //Take from user profile fields in keycloak
+    const userProfileRef = KeycloakService.getIdTokenParsed();
+
+    //Computed Property to access user profile data
+    const userProfile = computed(() =>  userProfileRef.value || {});
+
+    //Compute the address
+    const formattedAddress = computed(() => {
+      const addressClaim = userProfile.value.address;
+      if(!addressClaim || typeof addressClaim !== 'object') {
+        return '';
+      }
+      //fetch components of address
+      const street = addressClaim.street_address || '';
+      const postalCode = addressClaim.postal_code || '';
+      const locality = addressClaim.locality || '';
+
+      //Combine components into single string
+      const parts = [
+        street,
+        `${postalCode} ${locality}`.trim()
+      ].filter(p => p); //Remove empty parts
+      return parts.join('\n'); //Adds new line
+    });
+
+    //fields to display
+    const userInfoFields = ([
+      { key: 'first_name', label: 'Vorname'},
+      { key: 'last_name', label: 'Nachname'},
+      { key: 'company', label: 'Firma'},
+      { key: 'title', label: 'Titel'},
+      { key: 'email', label: 'E-Mail'},
+      { key: 'phone_number', label: 'Telefon'},
+      { key: 'mobile_number', label: 'Mobil'},
+    ])
+
      const layouts = ref([
       { id: 1, name: 'Layout 1', imagePlaceholder: 'Image of Layout 1' },
       { id: 2, name: 'Layout 2', imagePlaceholder: 'Image of Layout 2' },
@@ -83,9 +100,12 @@ export default {
       { id: 9, name: 'Layout 9', imagePlaceholder: 'Image of Layout 9' },
       { id: 10, name: 'Layout 10', imagePlaceholder: 'Image of Layout 10' },
     ]);
-    
+
     return { 
-      layouts, 
+      layouts,
+      userProfile,
+      userInfoFields,
+      formattedAddress
     };
   }
 }
@@ -97,7 +117,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center; 
-  padding-top: 30px;
+  padding-top: 20px;
   padding-bottom: 50px;
 }
 
@@ -131,7 +151,7 @@ export default {
   justify-content: flex-start; 
   align-items: flex-start; 
   gap: 200px; /* Space between the two columns */
-  margin-top: 25px;
+  margin-top: 15px;
   padding: 0 30px;
   width: 90%; 
 
@@ -172,12 +192,14 @@ export default {
 /*Input Fields*/
 .display-field {
   background-color: #ffffff;
-  padding: 10px 12px;
+  color: black;
+  padding: 1px 5px;
   border-radius: 8px;
   font-size: 1.0rem;
   line-height: 1.5;
   min-height: 1.5em; 
   border: none;
+  white-space: pre-line;
 }
 
 .dashboard-layouts-container {

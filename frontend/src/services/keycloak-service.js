@@ -1,4 +1,5 @@
 import Keycloak from 'keycloak-js';
+import { ref } from 'vue';
 
 const KEYCLOAK_CONFIG = {
     url: 'http://localhost:5173/',
@@ -7,6 +8,7 @@ const KEYCLOAK_CONFIG = {
 };
 
 let keycloakInstance = null;
+const userToken = ref(null);
 
 const KeycloakService = {
     init: async (forceLogin = false) => { //Parameter added
@@ -27,10 +29,16 @@ const KeycloakService = {
                 onLoad: onLoadStrategy, // New Parameter
                 pkceMethod: 'S256',
             });
-            console.log('Keycloak initialized. Authenticated:', authenticated);
-            console.log(keycloakInstance.token);
-            console.log(keycloakInstance.tokenParsed);
 
+            if(authenticated) {
+               console.log('Keycloak initialized. Authenticated:', authenticated);
+                console.log(keycloakInstance.token);
+                console.log(keycloakInstance.tokenParsed);
+                userToken.value = keycloakInstance.tokenParsed;
+            } else{
+                userToken.value = null;
+            }
+            
             return keycloakInstance;
         } catch (error) {
             console.error('Keycloak initialization failed', error);
@@ -60,6 +68,10 @@ const KeycloakService = {
             keycloakInstance.logout();
         }
     },
+
+    getIdTokenParsed: () => {
+        return userToken;
+    }
 
     //maybe more functions required
 };
