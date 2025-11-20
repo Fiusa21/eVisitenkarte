@@ -45,7 +45,7 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue';
+import { ref, computed } from 'vue'; //ref (for reactive objects which contain token data), computed (everytime token data changes, computed properties update)
 import KeycloakService from '@/services/keycloak-service';
 
 export default {
@@ -60,6 +60,7 @@ export default {
 
     //Compute the address
     const formattedAddress = computed(() => {
+      //addressClaim saves address object from token
       const addressClaim = userProfile.value.address;
       if(!addressClaim || typeof addressClaim !== 'object') {
         return '';
@@ -73,11 +74,11 @@ export default {
       const parts = [
         street,
         `${postalCode} ${locality}`.trim()
-      ].filter(p => p); //Remove empty parts
+      ].filter(p => p); //filters out falsy (empty) values
       return parts.join('\n'); //Adds new line
     });
 
-    //fields to display
+    //fields to display {key: Claim-Namen from Token, label: Label in UI}
     const userInfoFields = ([
       { key: 'first_name', label: 'Vorname'},
       { key: 'last_name', label: 'Nachname'},
@@ -86,7 +87,7 @@ export default {
       { key: 'email', label: 'E-Mail'},
       { key: 'phone_number', label: 'Telefon'},
       { key: 'mobile_number', label: 'Mobil'},
-    ])
+    ]);
 
      const layouts = ref([
       { id: 1, name: 'Layout 1', imagePlaceholder: 'Image of Layout 1' },
