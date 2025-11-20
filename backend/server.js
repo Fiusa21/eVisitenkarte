@@ -10,6 +10,7 @@ app.use(express.json());
 const port = 3000;
 
 // Enable CORS for your frontend origin
+//conditional: product or dev?
 app.use(cors({ origin: 'http://localhost:5173' }));
 
 
