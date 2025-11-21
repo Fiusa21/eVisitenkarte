@@ -8,6 +8,8 @@ import LoginLanding from '@/views/LoginLanding.vue';
 
 //impprt for Guard
 import KeycloakService from '@/services/keycloak-service';
+import LayoutEditor from '@/views/LayoutEditor.vue';
+import EditorLayout from '@/layouts/EditorLayout.vue';
 
 
 const router = createRouter({
@@ -34,7 +36,7 @@ const router = createRouter({
     },
     {
       path: '/admin',
-      meta: { requiresAuth: true, requiresRole: 'adin' },
+      meta: { requiresAuth: true, requiresRole: 'admin' },
       component: AdminLayout, 
       children: [
         {
@@ -42,6 +44,19 @@ const router = createRouter({
           path: '',
           name: 'admin-home',
           component: AdminHome
+        },
+      ]
+    },
+    {
+      path: '/editor',
+      meta: { requiresAuth: true, requiresRole: 'admin' }, 
+      component: EditorLayout,
+      children: [
+        {
+          // This path will be /admin-home
+          path: '',
+          name: 'layout-editor',
+          component: LayoutEditor
         },
       ]
     },
