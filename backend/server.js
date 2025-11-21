@@ -39,7 +39,7 @@ const options = {
         ],
     },
     // Path to the API docs files that contain annotations
-    apis: ['./routes/*.js'],
+    apis: ['./docs/*.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
