@@ -13,7 +13,7 @@
       </div>
 
       <div class="header-right">
-        <button @click="logout" class="logout-button">Logout</button>
+        <LogoutButton />
       </div>
     </header>
 
@@ -29,11 +29,12 @@ import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 import AdminToggle from '@/components/AdminSlider.vue';
 import TopBar from '@/components/TopBar.vue';
+import LogoutButton from '@/components/LogoutButton.vue';
 
 export default {
 
   name: 'AdminLayout',
-  components: { AdminToggle, TopBar },
+  components: { AdminToggle, TopBar, LogoutButton },
   setup() {
     const router = useRouter();
     const isAdminMode = ref(false); // Initial state is OFF

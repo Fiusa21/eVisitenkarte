@@ -1,5 +1,5 @@
 <template>
-  <div class="user-layout">
+  <div class="editor-layout">
     <header class="main-header">
       <div class="header-left">
         <div class="admin-slider">
@@ -13,7 +13,7 @@
       </div>
 
       <div class="header-right">
-        <button @click="logout" class="logout-button">Logout</button>
+        <LogoutButton />
       </div>
     </header>
 
@@ -29,11 +29,12 @@ import { useRouter } from 'vue-router';
 import { ref } from 'vue';
 import AdminToggle from '@/components/AdminSlider.vue';
 import TopBar from '@/components/TopBar.vue';
+import LogoutButton from '@/components/LogoutButton.vue';
 
 export default {
 
   name: 'AdminLayout',
-  components: { AdminToggle, TopBar },
+  components: { AdminToggle, TopBar, LogoutButton },
   setup() {
     const router = useRouter();
     const isAdminMode = ref(false); // Initial state is OFF
@@ -60,7 +61,7 @@ export default {
 
 <style scoped>
 /* Basic Flexbox and Grid for Layout */
-.user-layout {
+.editor-layout {
     display: flex;
     flex-direction: column;
     height: 100vh;

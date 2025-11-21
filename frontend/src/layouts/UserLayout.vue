@@ -5,7 +5,7 @@
         <div class="text">Admin Modus</div>
         <AdminToggle class="admin-toggle" toggle-id="admin-mode-toggle" v-model="isAdminMode" /> 
       </div>
-        <button @click="logout" class="logout-button">Logout</button>
+        <LogoutButton />
     </header>
 
     <main class="main-content">
@@ -19,10 +19,11 @@
 import { useRouter } from 'vue-router'; 
 import { ref } from 'vue';
 import AdminToggle from '@/components/AdminSlider.vue';
+import LogoutButton from '@/components/LogoutButton.vue';
 
 export default {
   name: 'UserLayout',
-  components: { AdminToggle },
+  components: { AdminToggle, LogoutButton },
   setup() {
     const router = useRouter();
     const isAdminMode = ref(false); // Initial state is OFF
@@ -82,22 +83,6 @@ nav {
 }
 
 .nav-link:hover, .nav-link.router-link-active {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
-.logout-button {
-  font-size: 1.5em;
-  font-family: 'Dosis', sans-serif;
-  background: none;
-  border: none;
-  color: white;
-  padding: 5px 10px;
-  cursor: pointer;
-  outline: none;
-  border-radius: 8px;
-}
-
-.logout-button:hover{
   background-color: rgba(255, 255, 255, 0.2);
 }
 

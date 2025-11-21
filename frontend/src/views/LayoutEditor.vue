@@ -1,12 +1,18 @@
 <template>
-  <div class="user-home">
+  <div class="layout-editor">
     <div class="site-header">
       <div class="header-content">
         <h1>uxitra GmbH</h1>
         <p>eVisitenkarten Editor</p>
       </div>
     </div>
-    
+
+    <div class="canvas-container">
+      <div class="canvas">
+        <p class="placeholder-text">Komponenten hier ablegen</p>
+      </div>
+    </div>
+
   </div>
 </template>
 
@@ -15,7 +21,14 @@
 </script>
 
 <style scoped>
+.layout-editor {
+  display: flex;
+  flex-direction: column; 
+  align-items: center;
+}
+
 .site-header{
+  width: 100%;
   color: white;
   display: flex;
   flex-direction: column;
@@ -46,5 +59,24 @@
   margin: 0;
   padding: 0;
   margin-top: -5px;
+}
+
+.canvas-container{
+  width: 100%;
+  padding: 20px 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex: 1;
+}
+
+.canvas{
+  margin-top: 3%;
+  margin-left: 20%;
+  position: relative;
+  color:black;
+  background-color: white;
+  height: 384px;
+  width: 888px;
 }
 </style>
