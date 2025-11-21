@@ -24,8 +24,6 @@
 </template>
 
 <script>
-// Composition API for Vue 3
-import { useRouter } from 'vue-router'; 
 import { ref } from 'vue';
 import AdminToggle from '@/components/AdminSlider.vue';
 import TopBar from '@/components/TopBar.vue';
@@ -36,24 +34,10 @@ export default {
   name: 'AdminLayout',
   components: { AdminToggle, TopBar, LogoutButton },
   setup() {
-    const router = useRouter();
     const isAdminMode = ref(false); // Initial state is OFF
 
-    // WATCHER LOGIC (Important for your requirement)
-    // You would add logic here to watch isAdminMode and route to the AdminDashboard
-    // or AdminLayout when it changes to true.
-
-    // Placeholder for Keycloak Logout
-    const logout = () => {
-      // **TODO: Implement Keycloak logout logic here**
-      console.log("User initiated logout. Redirecting to Keycloak logout URL.");
-      // For now, redirect to the login path:
-      router.push('/'); 
-    };
-
     return {
-        isAdminMode, 
-        logout,
+        isAdminMode
     };
   }
 }
