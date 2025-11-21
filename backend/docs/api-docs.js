@@ -19,6 +19,33 @@
  */
 
 // --- ROUTES ---
+/**
+ * @swagger
+ * /:
+ *   get:
+ *     summary: CHECK BACKEND RUNNING
+ *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated and accessed the resource.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "Hello, testuser! You accessed a protected API. Your company is ExampleCorp"
+ *       401:
+ *         description: Unauthorized. The token is missing or invalid.
+ *       403:
+ *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ */
+
+
 
 /**
  * @swagger
@@ -227,3 +254,135 @@
  *       403:
  *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
  */
+
+/**
+ * @swagger
+ * /layout-management/layouts/{id}/elements:
+ *   get:
+ *     summary: retrieve all elements
+ *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated and accessed the resource.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: YourUsername
+ *       401:
+ *         description: Unauthorized. The token is missing or invalid.
+ *       403:
+ *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ */
+
+/**
+ * @swagger
+ * /layout-management/layouts/{id}/elements/{id}:
+ *   get:
+ *     summary: retrieve a specific element
+ *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated and accessed the resource.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: YourUsername
+ *       401:
+ *         description: Unauthorized. The token is missing or invalid.
+ *       403:
+ *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ */
+
+/**
+ * @swagger
+ * /layout-management/layouts/{id}/elements/{id}:
+ *   post:
+ *     summary: insert a new element
+ *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated and accessed the resource.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: YourUsername
+ *       401:
+ *         description: Unauthorized. The token is missing or invalid.
+ *       403:
+ *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ */
+
+/**
+ * @swagger
+ * /layout-management/layouts/{id}/elements/{id}:
+ *   put:
+ *     summary: update a specific element
+ *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated and accessed the resource.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: YourUsername
+ *       401:
+ *         description: Unauthorized. The token is missing or invalid.
+ *       403:
+ *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ */
+
+/**
+ * @swagger
+ * /layout-management/layouts/{id}/elements/{id}:
+ *   delete:
+ *     summary: delete a specfifc element
+ *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated and accessed the resource.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: YourUsername
+ *       401:
+ *         description: Unauthorized. The token is missing or invalid.
+ *       403:
+ *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ *
+ */
+

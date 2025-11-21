@@ -55,10 +55,6 @@ app.get('/', (req, res) => {
     res.send('Node.js Backend is running!');
 });
 
-app.get('/public', (req, res)=>{
-    res.send('public endpoint available!');
-});
-
 // Start the server
 app.listen(port, () => {
     console.log(`Modularized Backend server listening at http://localhost:${port}`);
