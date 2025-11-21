@@ -1,5 +1,5 @@
 <template>
-  <div class="user-layout">
+  <div class="admin-layout">
     <header class="main-header">
       <div class="header-left">
         <div class="admin-slider">
@@ -60,7 +60,7 @@ export default {
 
 <style scoped>
 /* Basic Flexbox and Grid for Layout */
-.user-layout {
+.admin-layout {
     display: flex;
     flex-direction: column;
     height: 100vh;

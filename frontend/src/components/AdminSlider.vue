@@ -4,7 +4,7 @@
       type="checkbox" 
       :id="toggleId" 
       :checked="modelValue"
-      @change="$emit('update:modelValue', $event.target.checked)"
+      @change="handleToggleAndNavigation($event.target.checked)"
     >
     
     <label :for="toggleId" class="slider-track">
@@ -14,6 +14,9 @@
 </template>
 
 <script>
+//TODO: Admin Slider funktioniert noch nicht richtig. Übergung buggy!!!!!
+import { useRouter } from 'vue-router';
+
 // This component uses v-model for simplicity, passing the boolean state (true/false)
 export default {
   name: 'AdminToggle',
@@ -24,7 +27,32 @@ export default {
       required: true
     }
   },
-  emits: ['update:modelValue']
+  emits: ['update:modelValue'],
+
+  setup(props, { emit }) {
+
+    //Router instance fpr navigation
+    const router = useRouter();
+
+    //New function for triggering emit and navigation
+    const handleToggleAndNavigation = (newValue) => {
+      
+      // update state in parent component
+      emit('update:modelValue', newValue);
+
+      // Navigate based on new value
+      if(newValue){
+        //True = AdminHome
+        router.push({ name: 'admin-home' });
+      }else{
+        //False = UserHome
+        router.push({ name: 'user-home' });
+      }
+    };
+    return {
+      handleToggleAndNavigation
+    };
+  }
 }
 </script>
 

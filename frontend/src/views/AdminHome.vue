@@ -53,7 +53,7 @@ export default {
   display: flex;
   flex-direction: column;
   align-items: center; 
-  padding-top: 30px;
+  padding-top: 20px;
   padding-bottom: 50px;
 }
 
