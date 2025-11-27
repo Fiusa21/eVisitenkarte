@@ -182,25 +182,33 @@
  * /layout-management/layouts/{id}:
  *   post:
  *     summary: Insert a new layout
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
  *     tags: [Authentication]
  *     security:
- *       - bearerAuth: []
+ *       - bearerAuth: []           # This tells Swagger to require the 'Authorize' button
+ *     parameters:
+ *       - in: path                 # This creates the 'id' input field
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: The unique ID of the layout
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:              # This creates the JSON body for 'name'
+ *                 type: string
+ *                 example: "Dashboard Layout V1"
  *     responses:
  *       200:
- *         description: Successfully authenticated and accessed the resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: YourUsername
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ *         description: Successfully inserted
+ *       500:
+ *         description: Server error
  */
 
 /**

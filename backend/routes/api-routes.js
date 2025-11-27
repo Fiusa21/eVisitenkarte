@@ -3,7 +3,7 @@ const express = require('express');
 const { protect } = require('../middleware/keycloak-middleware');// Import protect middleware
 
 const router = express.Router();
-//const layoutModel = require....
+const layoutModel = require ('../models/query-model');
 
 //FOR DOCUMENTATION see /docs/api-docs
 //ALWAYS UPDATE IF YOU ADD OR MODIFY OR DELETE AN ENDPOINT
@@ -32,12 +32,12 @@ router.get('/user', protect,(req, res)=>{
     res.json(userData);
 })
 
-router.get('/layout-management/layouts', protect, (req, res) => {
+router.get('/layout-management/layouts', protect, async (req, res) => {
     try {
-        //const layouts = await layoutModel.getAllLayouts();
+        const layouts = await layoutModel.getAllLayouts();
         res.json(layouts);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({error: err.message});
     }
 });
 
@@ -45,9 +45,23 @@ router.get('/layout-management/layouts/{id}', protect, (req, res) => {
     res.json('placeholder: thist would retrieve a specific layout');
 })
 
-router.post('/layout-management/layouts/{id}', protect, (req, res)=> {
-    res.json('placeholder: this would insert a new layout');
-})
+router.post('/layout-management/layouts/:id', protect, async (req, res) => {
+    try {
+        const userId = req.kauth.grant.access_token.content.sub;
+        const layout = {
+            layout_id: req.params.id,
+            name: req.body.name,
+            user_id_ersteller: userId,
+            erstelldatum: new Date()
+        };
+
+        await layoutModel.insertLayout(layout);
+
+        res.json('successfully inserted a new layout');
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
 
 router.put('/layout-management/layouts/{id}', protect, (req, res)=> {
     res.json('placeholder: this would update a layout');
