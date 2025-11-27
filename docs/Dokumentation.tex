@@ -107,9 +107,124 @@ Dieses Kapitel beschreibt den gefordeten Funktionsumfangs, abgeleitet aus den An
     \item Eine Vorschau des Layouts für den Admin soll mit Musterdaten angezeigt werden (z.B. Dr.Ing. Max Mustermann, Senior Software Developer).
     \item Ein Benutzer soll ein Layout auswählen können, eine Vorschau mit seinen befüllten Daten sehen können und diese auf die Visitenkarte schreiben können.
     \item Text Elemente sollen dabei verschiedenen Datenfeldern aus dem IAM System zugeordnet werden können, z.B. Job-Titel, Vorname, Nachname, Titel.
-
-
 \end{itemize}
+
+\subsection{User-Stories}
+Aus den o.g. Anforderungen ergeben sich folgende User-Stories:\\
+\textbf{User}
+\begin{itemize}
+\item Als User möchte ich mich ins System einloggen können um es zu nutzen
+\begin{itemize}
+\item Login Funktion ist implementiert
+\item Login mit falschen Benutzernamen/Passwort liefert Fehlermeldung
+\item Login mit richtigen Daten gewährt Zugriff auf System
+\end{itemize}
+Schätzung 30h
+\item Als User möchte ich meine Daten einsehen können um zu erschließen welche Daten dem Kunden übermittelt werden
+\begin{itemize}
+\item Nutzerdaten sind in Datenbank gespeichert
+\item Nutzerdaten können im UI eingesehen werden
+\end{itemize}
+Schätzung 10h
+\item Als User möchte ich mehrere gespeicherte Layouts sehen können um meine eVisitenkarte individueller zu gestalten
+\begin{itemize}
+\item Layouts sind in der Datenbank gespeichert
+\item Verfügbare Layouts sind in der UI einsehbar und auswählbar
+\end{itemize}
+Schätzung 10h
+\item Als User möchte ich ein gewähltes Layout an das Display senden können um dem Kunden die Möglichkeit zu geben seine eVisitenkarte zu aktualisieren
+\begin{itemize}
+\item Nutzer können durch Knopfdruck ein gewähltes Layout an den Raspberry Pi senden
+\item Ein angeschlossener Raspberry Pi empfängt die Nutzerdaten im gewählten Layout
+\item Das Layout soll als PNG im Format 296x128px gesendet werden
+\end{itemize}
+Schätzung 10h
+\item Als User möchte ich dass andere Nutzer meine Daten nicht einsehen können um Datenschutz zu gewährleisten
+\begin{itemize}
+\item User haben keinen Zugriff auf Daten anderer Nutzer
+\end{itemize}
+Schätzung 5h
+\item Als User möchte ich Zugriff auf einen Support haben um mich bei Problemen an einen Admin zu wenden
+\begin{itemize}
+\item User kann in der Applikation eine Nachricht an einen Admin verfassen
+\item Nachricht wird im System verwaltet und dem Admin zukommen lassen
+\end{itemize}
+Schätzung 20h
+\end{itemize}
+
+\textbf{Admin}
+\begin{itemize}
+\item Als Admin möchte ich mich ins System einloggen können um es zu nutzen
+\begin{itemize}
+\item Login Funktion ist implementiert
+\item Login mit falschen Benutzernamen/Passwort liefert Fehlermeldung
+\item Login mit richtigen Daten gewährt Zugriff auf System
+\end{itemize}
+Schätzung 5h
+\item Als Admin möchte ich zwischen Admin und Usermodus wechseln können um das System mit einem Konto als User als auch als Admin nutzen zu können
+\begin{itemize}
+\item Das System unterscheidet zwischen normalen Usern und Admins, die Rolle ist in einer Datenbank hinterlegt
+\item Im Frontend ist ein für normale User versteckter Slider hinterlegt der das System in den Admin Modus bzw. zurück in den User Modus versetzt
+\item Der Admin erhält im User Modus alle Funktionen die ein normaler User hat
+\end{itemize}
+Schätzung 10h
+\item Als Admin möchte ich verschiedene Layouts erstellen können die dem Nutzer zur Auswahl gegeben werden um Kontrolle über die Art und Weise zu haben wie Firmendaten dem Kunden angezeigt werden
+\begin{itemize}
+\item Ein Layouteditor ist implementiert
+\item Neue Layouts können erstellt werden
+\item Erstellte Layouts werden in einer Datenbank gespeichert
+\item Erstellte Layouts werden den Usern angezeigt
+\end{itemize}
+Schätzung 30h
+\item Als Admin möchte ich verschiedene Elemente wie Text (Name, Titel, Firmenadresse), sowie Bilder und QR Codes in ein Layout einfügen können um dem User die Möglichkeit zu bieten seine Daten vollständig präsentieren zu können
+\begin{itemize}
+\item Der Layouteditor stellt verschiedene Tools bereit mit denen sich Elemente auf ein Layout einfügen lassen
+\item Die Visitenkarte ist stets im Format 296x128
+\end{itemize}
+Schätzung 30h
+\item Als Admin möchte ich eine Vorschau meiner Layouts mit Musterdaten angezeigt bekommen um mir die kreierten Daten besser vorstellen zu können
+\begin{itemize}
+\item Gespeicherte Layouts werden mit Musterdaten angezeigt
+\item Musterdaten werden schon im Editor angezeigt
+\end{itemize}
+Schätzung 5h
+\item Als Admin möchte ich gespeicherte Layouts löschen und bearbeiten können um nach dem ersten Abspeichern nicht den Zugriff auf sie zu verlieren
+\begin{itemize}
+\item Wird im Adminmodus ein gespeichertes Layout gewählt so erscheinen Buttons die das Bearbeiten bzw. Löschen des Layouts ermöglichen
+\end{itemize}
+Schätzung 5h
+\item Als Admin möchte ich Userkonten einsehen können um diese auf Richtigkeit zu überprüfen
+\begin{itemize}
+\item Admins erhalten Zugriff auf eine Nutzerverwaltung
+\item Admins bekommen die Daten aller Nutzer angezeigt
+\end{itemize}
+Schätzung 5h
+\item Als Admin möchte ich nach bestimmten Usern suchen können um bei großer Nutzeranzahl schnell auf bestimmte Daten zugreifen zu können
+\begin{itemize}
+\item In der Nutzerverwaltung ist eine Suchleiste hinterlegt
+\item Die Suche erfolgt über den Namen des Nutzers
+\item Die Suche liefert alle Nutzer deren Namen den gesuchten Namen enthält
+\end{itemize}
+Schätzung 20h
+\end{itemize}
+
+\textbf{Anforderungen}
+\begin{itemize}
+\item Es gibt einen Systemadmin der Nutzer über eine Config Datei zum Admin machen kann
+Schätzung 10h
+\item Benutzerdaten sollen aus IAM System geladen werden
+Schätzung 20h
+\item Benutzerdaten beinhalten Vor- und Nachname sowie Jobtitel des Benutzers, aber auch Benutzername und Passwort sollen im IAM System hinterlegt werden
+Schätzung 10h
+\item Manche Benutzerdaten sollen Pflichtfelder sein (Vor/Nachname, ...), manche optional (QR Code). Das gilt sowohl für die Kontenanlegung im Backend als auch beim Elemente einfügen auf das Layout
+Schätzung 10h
+\end{itemize}
+
+
+
+
+
+
 
 \textbf{Aktuell befinden sich noch weitere Features und Funktionen in der Ausarbeitungsphase, welche zu einem späteren Zeitpunkt final festgelegt werden.}\\
 Einige Ideen sind:
@@ -340,19 +455,20 @@ Die Komponenten interagieren wie folgt:
 
 \subsection{Technologien}
 \label{ssec:technologische_arch}
-Die Technologien die zur Umsetzung der konzeptionellen Architektur verwendet werden. Hier ist anzumerken, dass zum aktuellen Zeitpunkt einige Details noch nicht bzw. nicht ausreichend überblickt werden können und es vor Beginn der Implementierung der ersten Features noch zu Änderungen kommen kann. Aktuell führen wir kleinere Tests auf lokaler Ebene durch, um uns mit den angeführten Technologien vertraut zu machen.
+Die Technologien die zur Umsetzung der konzeptionellen Architektur verwendet werden. Hierbei wurden zu Beginn kleinere Tests auf lokaler Ebene durchgeführt um uns mit den geplanten Technologien vertraut zu machen. Auf Basis dieser Tests haben wir uns letztendlich aufgrund folgender Faktoren für diesen Technologie-Stack entschieden.
 \\
 
-Es sind folgende Technologien zur Umsetzung der oben beschriebenen Komponenten angedacht:
-
 \begin{itemize}
-    \item \textbf{Frontend:} Implementiert mit \textit{vue.js}.
-    \item \textbf{Backend-Services:} Entwickelt mit \textit{Node.js}.
-    \item \textbf{Datenbank:} \textit{PostgreSQL} als primäre relationale Datenbank.
-    \item \textbf{Authentifizierung:} \textit{Keycloak} mit eigener PostgresSQL Datenbank für die Nutzerverwaltung
+    \item \textbf{Frontend: Vue.js} wurde gewählt, da es ein leichtgewichtiges, komponentenbasiertes Framework ist, das eine klare Trennung zwischen Logik, Struktur und Stil erlaubt. Gegenüber schwergewichtigen Alternativen (z.B. Angular) bietet es eine flachere Lernkurve und ermöglicht dennoch eine saubere Architektur.  
+    \item \textbf{Backend-Services: Node.js} wurde gewählt wegen seiner besonders guten Eignung für APIs. Zudem ermöglicht JavaScript im Backend eine durchgängige Sprache im Projekt, was die Entwicklung erheblich beschleunigt.
+    \item \textbf{Datenbank: PostgreSQL} ist ein stabiles, SQL-basiertes Datenbanksystem mit ACID-Compliance, umfangreicher JSON-Unterstützung und solider Performance. Es bietet mehr Flexibilität und Zuverlässigkeit als reine NoSQL-Lösungen und eignet sich gut für strukturierte Datenmodelle.
+    \item \textbf{Authentifizierung: Keycloak} dient als Identity- und Access-Management-Lösung. Die Wahl fiel darauf, da es standardisierte Authentifizierungsverfahren  abbildet, rollenbasierte Zugriffe verwalten kann und ohne Eigenimplementierung eine robuste, sicherheitsfokussierte Benutzerverwaltung ermöglicht. Zusätzlich ist Keycloak opensource und bietet die Möglichkeit sämtliche Nutzerdaten zu verwaltung und auch dementsprechend im System zu nutzen. Was eine komplexe Implementierung dieser Funktionen umgeht und e
+    \item \textbf{\textit{Docker}} wurde gewählt, um ein einheitliches und reproduzierbares Deployment sicherzustellen. Durch Containerisierung lassen sich Backend, Datenbanken und weitere Service unabhängig vom lokalen System konfigurieren und konsistent in Test-, Entwicklungs-, und Produktionsumgebung bereitstellen. 
 \end{itemize}
 
-\textbf{Zusätzlich ist Containerisierung mit \textit{Docker} geplant.}
+
+\textbf{Begründete Gesamtentscheidung} \\
+Die Auswahl der Technologien folgt dem Ziel, eine modular aufgebaute, skalierbare und wartbare Anwendung zu entwickeln. Node.js und Vue.js ermöglichen schnelle Entwicklung mit einer gemeinsamen Programmiersprache. PostgreSQL und Keycloak decken zentrale Anforderungen wie Datenpersistenz und Authentifizierung verlässlich ab. Docker sorgt dafür, dass das gesamte System sauber paketiert und portable ist, ohne Umgebungsabhängigkeiten oder Installationskonflikte. 
 
 \newpage
 
@@ -611,6 +727,124 @@ Das Gespräch bot einen guten ersten Einblick in die geplanten Inhalte des Proje
 
 \subsection*{Protokolliert von:}
 Yannick Schilling
+
+\section{Model-Views}
+\subsection{Struktursicht}
+Eine große Hilfe beim Entwickeln einer Softwareanwendung ist eine Strukturelle Übersicht über das Programm. Eine Umsetzungsmöglichkeit bietet hierfür ein UML Klassendiagramm. \\
+
+Das in Abb. \ref{fig:classdiagramm} gezeigte Klassendiagram bietet einen Überblick über den strukturellen Aufbau der Applikation. Zu sehen sind die Klassen User und die davon abgeleitete Klasse Admin, deren Instanzen von der Klasse Authentication initialisiert und mit Nutzerdaten gefüttert werden. \\
+
+Der User hat hierbei Zugriff auf die Klasse Layout, welche sich aus den Datentypen  TextData, ImageData und QRData zusammensetzt. Die Attribute für Größe und Position der Daten sind im Interface Idata vorhanden. \\
+
+Der Admin erhält zusätzlichen Zugriff auf einen LayoutEditor. Dieser hat über die Klasse Tools die Möglichkeit Daten auf einem Layout zu platzieren und bearbeiten. Jedes platzierbare Element ist als Tool gespeichert. Gespeicherte Layouts werden dem User angezeigt und können mit der Funktion sendLayout an das ePaper geschickt werden.\\
+
+\textbf{An dieser Stelle ist anzumerken, dass sämtliche Nutzerdaten mit Ihren Attributen in Keycloak und dessen Admin-UI verwaltet werden und mittels JWT-Token an die Anwendung übergeben werden können.}
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Struktursicht.png} 
+    \caption{Klassendiagramm}
+    \label{fig:classdiagramm}
+\end{figure}
+
+\newpage
+
+\subsection{Verhaltenssicht}
+
+Um sich das Verhalten der Anwendung genauer vorstellen zu können bieten sich Verhaltensdiagramme an, welche besondere Abläufe beschreiben. Hierzu wurde ein Sequenzdiagramm erstellt, welches exemplarisch den Ablauf des sendens eines Layouts darstellt. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Verhaltenssicht.png} 
+    \caption{Sequenzdiagramm}
+    \label{fig:sequencediagram}
+\end{figure}
+
+Die Sequenz beginnt mit einem Nutzer, der in der Anwendung auf die Layoutübersicht navigiert. Das Frontend holt sich dann über das Backend die Layoutdaten aus der Datenbank, welche es dem User dann präsentiert. Dieser entscheidet sich dann für ein Layout welches er senden möchte. Das Layout wird schließlich an das ePaper weitergeleitet. \\
+
+Da dieses Diagramm bereits alle Akteure und Komponenten des Systems (bis auf Keycloak) darstellt und alle weiteren möglichen Verhaltensmuster diesem weitgehend gleichen genügt diese Anscht um ein Bild vom Verhalten der Anwendung zu erlangen. 
+
+\newpage
+\section{Datenmodelle}
+Da die Applikation Daten aus mehreren Datenbanken bezieht ist es wichtig ein Verständnis darüber zu erlangen, wie diese gespeichert sind. Hierzu wurden ein logisches und ein physisches Datenmodell angelegt. 
+\subsection{logisches Datenmodell}
+
+Aus diesem Modell gehen die für die Speicherung der Daten notwendigen Tables und deren Atrribute hervor. Alle Nutzerdaten werden im Table User gespeichert (Admins gelten als Nutzer mit Is Admin = True), Layouts mit Metadaten im Table Layout, und deren Elemente mit Position und Größe im Table Elemente. Wichtig ist hierbei das Feld URI im Table Elemente, welches gesetzt wird wenn das Element vom Typ Bild oder QR Code ist. Im Falle eines Bildes verweist es auf ein im Anwendungsordner gespeichertes Bild, im Falle eines QR Codes ist die URI die des Codes selbst. In allen weiteren Fällen gibt das Attribut Typ den genauen Typ an den das Element hat, z.B. Nachname oder Firma.
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Logisches.png} 
+    \caption{logisches Datenmodell}
+    \label{fig:logical}
+\end{figure}
+
+\newpage
+
+
+\subsection{physisches Datenmodell}
+
+Es gehen genaue Verbindungen zwischen den Tables hervor, wie Foreign oder Private Keys. Auch zu bemerken ist die Begrenzung der meisten Textfelder auf 30 Zeichen durch VarChar(30), da Userdaten aus Platzgründen auf dem ePaper nicht unendlich lang sein dürfen und die meisten anderen Felder auch nicht mehr Speicherplatz einnehmen werden. So kann auch eine gültige Eingabe kontrolliert werden. Als Ausnahme gelten URIs, die nicht beschränkt werden. 
+
+\begin{figure}[H]
+    \centering
+    \includegraphics[width=0.9\textwidth]{Physisches.png} 
+    \caption{physisches Datenmodell}
+    \label{fig:physical}
+\end{figure}
+
+\newpage
+
+\section{Interaktive API-Dokumentation (Swagger UI)}
+\subsection{Begründung der Wahl}
+Anstatt eine statische, manuelle API-Dokumentation zu pflegen, die schnell veraltet und fehleranfällig ist, haben wir uns für einen \textit{Code-First} Ansatz mit Swagger UI entschieden. Die Dokumentation wird dabei automatisch direkt aus den Kommentaren im Quellcode \textit{api-routes.js} generiert.
+
+Dieser Ansatz bietet entscheidende Vorteile:\\
+
+\begin{itemize}
+    \item \textbf{Aktualität und Konsistenz:} Die Dokumentation ist immer synchron mit dem tatsächlichen Code. Jede Änderung an einem API-Endpunkt wird direkt in den Kommentaren daneben nachgeführt, wodurch die Dokumentation nie veraltet. 
+    \item \textbf{Interaktivität:} Entwickler können die API-Endpunkte direkt im Browser testen, ohne zusätzliche Werkzeuge verwenden zu müssen. Dies beschleunigt die Entwicklung und das Debugging erheblich.
+    \item \textbf{Effizienz: }Der Einarbeitungsaufwand für Entwickler wird drastisch reduziert, da die API selbsterklärend und direkt testbar ist.
+    \item \textbf{Standardisierung: }Die generierte Dokumentation folgt dem etablierten OpenAPI-Standard.
+
+
+\end{itemize}
+
+Die technische Umsetzung erfolgt durch die Kombination der Node.js-Bibliotheken \textit{swagger-jsdoc}, welche die Kommentare im Code liest, und \textit{swagger-ui-express}, welche die interaktive Weboberfläche bereitstellt.
+
+\subsection{Anleitung zu Benutzung}
+Die interaktive API-Dokumentation ist ein zentrales Werkzeug, um die Funktionalität des Backends zu verstehen und zu testen.\\
+
+\textbf{1. Aufrufen der Dokumentation}\\
+Bei laufender Backend Anwendung im Browser zu folgender URL navigieren:\\
+\textit{http://localhost:3000/api-docs}\\
+
+\textbf{2. Authentifizierung (für geschützte Endpunkte)}\\
+Unsere API verwendet Keycloak zur Absicherung bestimmter Endpunkte. Um diese testen zu können, muss man sich autehntifizieren:
+
+\begin{itemize}
+\item Klick auf den Authorize-Button, der sich oben rechts auf der Seite befindet.
+\item Ein Dialogfenster öffnet sich. Von Keycloak erhaltenen Bearer Token im Format Bearer <Ihr-Token> einfügen.
+\item Nach der Bestätigung wird dieser Token automatisch bei allen Anfragen an geschützte Endpunkte (gekennzeichnet durch ein Schloss-Symbol) im Authorization-Header mitgesendet.
+
+\end{itemize}
+
+\textbf{3. Testen eines Endpunkts}
+\begin{itemize}
+\item \textbf{Auswählen: }Aufklappen des zu testenden Endpunktes (z. B. GET /protected). Eine Beschreibung ist sichtbar, die erwarteten Parameter und die möglichen Antworten.
+\item \textbf{Aktivieren: }Klick auf den Button Try it out. Die Parameterfelder werden nun editierbar.
+\item \textbf{Ausführen: }Ggf. erforderliche Parameter ausfüllen und auf Execute klicken
+\item \textbf{Ergebnis analysieren: }Direkt darunter zeigt Swagger UI die Live-Antwort des Servers an, inklusive:
+\begin{itemize}
+\item Dem curl-Befehl, um die Anfrage zu reproduzieren.
+\item Der genauen Anfrage-URL.
+\item Dem HTTP-Statuscode (z.B. 200 OK oder 401 Unauthorized).
+\item Dem Antwort-Body (z.B. die zurückgegebenen JSON-Daten).
+\item Den Antwort-Headern.
+\end{itemize}
+
+\end{itemize}
+
+Diese interaktive Umgebung ist das primäre Werkzeug zur Validierung und zum Testen der API-Funktionalität während der Entwicklung. Zusätzlich dient Sie als Beschreibung der Schnittstellen, welche parallel mit der Anwendung wächst und somit auch nach Projektabgabe weitergenutzt werden kann, ohne dass detaillierte Beschreibungen erforderlich sind.
 
 % --- Ende des Dokuments ---
 \end{document}

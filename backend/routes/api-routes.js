@@ -1,90 +1,24 @@
 
 const express = require('express');
-const { protect } = require('../middleware/keycloak-middleware'); // Import protect middleware
+const { protect } = require('../middleware/keycloak-middleware');// Import protect middleware
 
 const router = express.Router();
+//const layoutModel = require....
 
-// --- SWAGGER DEFINITIONS ---
-
-/**
- * @swagger
- * components:
- *   securitySchemes:
- *     bearerAuth:
- *       type: http
- *       scheme: bearer
- *       bearerFormat: JWT
- *       description: "Enter the Bearer token issued by Keycloak. Example: 'Bearer a1b2c3d4...'"
- */
-
-/**
- * @swagger
- * tags:
- *   name: Authentication
- *   description: Routes for testing public vs protected access
- */
-
-// --- ROUTES ---
-
-/**
- * @swagger
- * /protected:
- *   get:
- *     summary: Access a protected route
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully authenticated and accessed the resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Hello, testuser! You accessed a protected API. Your company is ExampleCorp"
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
- */
+//FOR DOCUMENTATION see /docs/api-docs
+//ALWAYS UPDATE IF YOU ADD OR MODIFY OR DELETE AN ENDPOINT
 
 //basic route testing
+router.get('/', protect, (req, res) => {
+    res.json('Node.js Backend is running!');
+});
+
 router.get('/protected', protect, (req, res) => {
     // If we reach here, the request is authenticated
     const username = req.kauth.grant.access_token.content.preferred_username;
     const company = req.kauth.grant.access_token.content.company;
     res.json({ message: `Hello, ${username}! You accessed a protected API. Your company is ${company}` });
 });
-
-/**
- * @swagger
- * /protected:
- *   post:
- *     summary: Access a protected route
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully authenticated and accessed the resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Hello, testuser! You accessed a protected API. Your company is ExampleCorp"
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
- */
 
 router.post('/protected', protect, (req, res) => {
     // If we reach here, the request is authenticated
@@ -93,129 +27,58 @@ router.post('/protected', protect, (req, res) => {
     res.json({ message: `Hello, ${username}! You accessed a protected API. Your company is ${company}` });
 });
 
-/**
- * @swagger
- * /user:
- *   get:
- *     summary: Access user data
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully authenticated and accessed the resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: YourUsername
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
- */
-router.get('/user', (req, res)=>{
-    const username = req.kauth.grant.access_token.content.preferred_username;
-    const usermail = req.kauth.grant.access_token.content.email;
-    const familyName = req.kauth.grant.access_token.content.family_name;
-    //maybe send full content, and specifiy which part?!?!
+router.get('/user', protect,(req, res)=>{
     const userData= req.kauth.grant.access_token.content;
     res.json(userData);
-
 })
-/**
- * @swagger
- * /layout:
- *   get:
- *     summary: Access layout data
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully authenticated, executed the query and accessed the Layout.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: some sql query
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
- */
-router.get('/layout', protect, async (req, res) => {
-    const { sqlCommand, sqlParams = [] } = req.body;
-    const flatRows = await executeQuery(sqlCommand, sqlParams);
-    const nestedLayouts = processLayoutAndElements(flatRows);
-    res.json(nestedLayouts);
+
+router.get('/layout-management/layouts', protect, (req, res) => {
+    try {
+        //const layouts = await layoutModel.getAllLayouts();
+        res.json(layouts);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
 });
 
-/**
- * @swagger
- * /layout:
- *   post:
- *     summary: Access layout data
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully authenticated and accessed the resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: 'Layout data inserted/updated successfully.'
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
- */
-router.post('/layout', protect, async (req, res) => {
-    // 1. Extract the SQL command and parameters from the body
-    const { sqlCommand, sqlParams = [] } = req.body;
-    // 2. Execute the command
-    await executeQuery(sqlCommand, sqlParams);
-    res.json({ message: 'Layout data inserted/updated successfully.' });
-});
+router.get('/layout-management/layouts/{id}', protect, (req, res) => {
+    res.json('placeholder: thist would retrieve a specific layout');
+})
 
-    /**
- * @swagger
- * /public:
- *   get:
- *     summary: Access a public route
- *     description: This endpoint is public and requires no authentication.
- *     tags: [Authentication]
- *     responses:
- *       200:
- *         description: Successfully accessed the public resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "This is a public API endpoint."
- */
+router.post('/layout-management/layouts/{id}', protect, (req, res)=> {
+    res.json('placeholder: this would insert a new layout');
+})
 
-// You can add other public or protected routes here
-router.get('/public', (req, res) => {
-    res.json({ message: 'This is a public API endpoint.' });
-});
+router.put('/layout-management/layouts/{id}', protect, (req, res)=> {
+    res.json('placeholder: this would update a layout');
+})
+
+router.delete('/layout-management/layouts/{id}', protect, (req, res)=> {
+    res.json('placeholder: this would delete a layout');
+})
+
+
+router.get('/layout-management/layouts/{id}/elements', protect, (req, res) => {
+    res.json('placeholder: this would retreive all elements');
+})
+
+router.get('/layout-management/layouts/{id}/elements/{id}', protect, (req, res) => {
+    res.json('placeholder: this would retreive a specific element');
+})
+
+router.post('/layout-management/layouts/{id}/elements/{id}', protect, (req, res) => {
+    res.json('placeholder: this would insert a new element');
+})
+
+router.put('/layout-management/layouts/{id}/elements/{id}', protect, (req, res) => {
+    res.json('placeholder: this would update an element');
+})
+
+router.delete('/layout-management/layouts/{id}/elements/{id}', protect, (req, res) => {
+    res.json('placeholder: this would delete a elements');
+})
+
+
 
 
 
