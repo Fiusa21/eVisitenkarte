@@ -15,6 +15,7 @@ function processLayoutAndElements(rows) {
                 // Layout Metadata
                 erstelldatum: row.erstelldatum,           // maps to DB column
                 user_id_ersteller: row.user_id_ersteller,// maps to DB column
+                name: row.name,                           // maps to DB column
                 elements: [] // Array to hold all associated elements
             });
         }
