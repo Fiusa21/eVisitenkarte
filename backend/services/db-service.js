@@ -1,3 +1,4 @@
+const Pool = require('pg-pool')
 // --- PostgreSQL Setup ---
 // The Pool will handle connection pooling for efficiency.
 // It reads connection parameters from environment variables (e.g., PGHOST, PGUSER, PGDATABASE, PGPASSWORD, PGPORT).
