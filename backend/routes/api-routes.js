@@ -4,6 +4,7 @@ const { protect } = require('../middleware/keycloak-middleware');// Import prote
 
 const router = express.Router();
 const layoutModel = require ('../models/query-model');
+const RaspberryService = require('../services/raspberry-service');
 
 //FOR DOCUMENTATION see /docs/api-docs
 //ALWAYS UPDATE IF YOU ADD OR MODIFY OR DELETE AN ENDPOINT
@@ -92,7 +93,16 @@ router.delete('/layout-management/layouts/{id}/elements/{id}', protect, (req, re
     res.json('placeholder: this would delete a elements');
 })
 
+//DEVICE HANDLING
+router.get('/device/status', async (req, res) => {
+    const isOnline = await RaspberryService.checkConnection();
 
+    if (isOnline) {
+        res.json({ status: 'online', message: 'Device is ready' });
+    } else {
+        res.status(503).json({ status: 'offline', message: 'Check Wifi connection' });
+    }
+});
 
 
 

@@ -394,3 +394,29 @@
  *
  */
 
+/**
+ * @swagger
+ * /device/status:
+ *   get:
+ *     summary: check wifi connection
+ *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
+ *     tags: [Authentication]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully authenticated and accessed the resource.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Device is ready
+ *       401:
+ *         description: Unauthorized. The token is missing or invalid.
+ *       403:
+ *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ *
+ */
