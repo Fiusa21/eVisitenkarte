@@ -10,14 +10,13 @@
     <div class="editor-main-content">
       <div class="toolbox">
         <div class="tabs">
-          <button @click="activeTab = 'text'" :class="{ 'active-tab': activeTab === 'text' }">Texte & Daten</button>
+          <button @click="activeTab = 'text'" :class="{ 'active-tab': activeTab === 'text' }">Nutzer Daten</button>
           <button @click="activeTab = 'shapes'" :class="{ 'active-tab': activeTab === 'shapes' }">Formen</button>
         </div>
 
         <div v-if="activeTab === 'text'" class="tab-content data-options">
-          <h2>Nutzer Daten</h2>
           <button
-            v-for="option in UserData"
+            v-for="option in dynamicTextOptions"
             :key="option.key"
             @click="addElementToCanvas('text', option.key)"
             class="toolbox-btn dynamic-btn"
@@ -25,17 +24,17 @@
             {{ option.label }} ({{ userProfile[option.key] }})
           </button>
 
-          <h2>Statischer Text</h2>
           <button @click="addElementToCanvas('text', 'Ihr Text')" class="toolbox-btn static-btn">
-            Individueller Text
+            + Individueller Text
           </button>
         </div>
 
-        <div>
-          <h2>Geometrische Formen</h2>
+        
+
+        <div v-if="activeTab === 'shapes'" class="tab-content data-optons">
           <button @click="addElementToCanvas('rectangle')" class="toolbox-btn shape-btn">Rechteck</button>
-          <button @click="addElementToCanvas('circle')" class="toolbox-btn shape-btn">Kreis (Form)</button>
-          <button @click="addElementToCanvas('triangle')" class="toolbox-btn shape-btn">Dreieck (Form)</button>
+          <button @click="addElementToCanvas('circle')" class="toolbox-btn shape-btn">Kreis</button>
+          <button @click="addElementToCanvas('triangle')" class="toolbox-btn shape-btn">Dreieck</button>
         </div>
       </div>
       <div class="canvas-container">
@@ -85,6 +84,31 @@ export default {
   },
   setup(){
     const scale = 3;
+    const activeTab = ref('text'); //Important for reactivity of Button in Toolbox
+
+    //simulierte Nutzerdaten
+    const userProfile = {
+      first_name: 'Max',
+      last_name: 'Mustermann',
+      company: 'uxitra GmbH',
+      title: 'Software Entwickler',
+      email: 'mamu01@example.de',
+      phone_number: '07161 14009',
+      mobile_number: '+49 1525 2864577',
+      adress: 'Beispielstraße 12, 12345 Musterstadt'
+    };
+
+    //fields to display {key: Claim-Namen from Token, label: Label in UI}
+    const dynamicTextOptions = ([
+      { key: 'first_name', label: 'Vorname'},
+      { key: 'last_name', label: 'Nachname'},
+      { key: 'company', label: 'Firma'},
+      { key: 'title', label: 'Titel'},
+      { key: 'email', label: 'E-Mail'},
+      { key: 'phone_number', label: 'Telefon'},
+      { key: 'mobile_number', label: 'Mobil'},
+      { key: 'adress', label: 'Adresse' }
+    ]);
 
     const cardElements = ref([
       {
@@ -109,6 +133,66 @@ export default {
       }
     ]);
 
+    //Beispiel für Speichern (Später API Call)
+    const saveTemplate = () => {
+      console.log('--- Template-Daten zur Speicherung ---');
+      console.log(JSON.stringify(cardElements.value, null, 2));
+      console.log('--- Ende Template-Daten ---');
+    };
+
+    //Logik zum Hinzufügen von Elementen
+    const addElementToCanvas = (type, content = '') => {
+      let newItem = {
+        id: Date.now(),
+        type: type,
+        //Position bestimmen
+        x: 50 * scale + (cardElements.value.length * 10),
+        y: 50 * scale + (cardElements.value.length * 10),
+        w: 50 * scale,
+        h: 50 * scale,
+        content: content,
+        source: content in userProfile ? 'dynamic' : 'static',
+        style: {}
+      };
+
+      //Switch-Anweisung für Unterscheidung nach 'type'
+      switch (type){
+        case 'text':
+          newItem.w = 100 * scale;
+          newItem.h = 10 * scale;
+          newItem.style = { fontSize: '14px', color: 'black'};
+          break;
+        case 'rectangle':
+          newItem.w = 80 * scale;
+          newItem.h = 40 * scale;
+          newItem.style = { backgroundColor: 'black' };
+          break;
+        case 'circle':
+          newItem.w = 40 * scale;
+          newItem.h = 40 * scale;
+          newItem.style = { backgroundColor: 'black', borderRadius: '50%' }; //Kreis-Style
+          break;
+        case 'triangle':
+          newItem.w = 50 * scale;
+          newItem.h = 50 * scale;
+          //Für Dreieck Css Dreieck Style
+          newItem.style = { 
+            backgroundColor: 'transparent', 
+            borderBottom: `${40 * scale}px solid black`,
+            borderLeft: `${20 * scale}px solid transparent`,
+            borderRight: `${40 * scale}px solid transparent`,
+            width: '0',
+            height: '0'
+          };
+          newItem.content = ''; //Kein Inhalt für Dreieck
+          break;
+        default:
+          console.warn(`Unbekanter Elementtyp: ${type}`);
+      }
+      cardElements.value.push(newItem);
+    };
+
+    //Logik für drag/resize
     const handleDragResize = (item, {x, y, w, h}) => {
       //Suche index des Elements im Array
       const idx = cardElements.value.findIndex(i => i.id === item.id);
@@ -140,8 +224,14 @@ export default {
     //TODO: Hinzufügen/Entfernen von elementen
 
     return {
+      activeTab,
+      userProfile,
+      dynamicTextOptions,
       cardElements,
-      handleDragResize
+      handleDragResize,
+      addElementToCanvas,
+      saveTemplate
+      
     }
   }
 }
@@ -273,17 +363,15 @@ TODO: Medie queries für alle Bildschirmgrößen
   background-color: #1e88e5; /* Blau */
   color: white;
 }
+
+.static-btn {
+  background-color: #5cb85c;
+  color: white;
+}
+
 .dynamic-btn:hover {
   background-color: #1565c0;
   transform: translateY(-1px);
-}
-
-.static-btn {
-  background-color: #5cb85c; /* Grün */
-  color: white;
-}
-.static-btn:hover {
-  background-color: #4cae4c;
 }
 
 .shape-btn {
