@@ -37,6 +37,9 @@
           <button @click="addElementToCanvas('triangle')" class="toolbox-btn shape-btn">Dreieck</button>
         </div>
       </div>
+      <div>
+        <button @click="saveTemplate">Speichern</button>
+      </div>
       <div class="canvas-container">
         <div class="canvas">
 
@@ -110,28 +113,7 @@ export default {
       { key: 'adress', label: 'Adresse' }
     ]);
 
-    const cardElements = ref([
-      {
-        id: 1,
-        type: 'text',
-        content: 'Beispieltext',
-        x: 50 * scale,
-        y: 50 * scale,
-        w: 80 * scale,
-        h: 10 * scale,
-        style: { fontSize: '14px', color: 'black' }
-      },
-      {
-        id: 2,
-        type: 'rectangle',
-        content: 'black box',
-        x: 100 * scale,
-        y: 80 * scale,
-        w: 90 * scale,
-        h: 30 * scale,
-        style: { color: 'black' }
-      }
-    ]);
+    const cardElements = ref([]);
 
     //Beispiel für Speichern (Später API Call)
     const saveTemplate = () => {
