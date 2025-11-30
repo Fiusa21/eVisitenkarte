@@ -76,6 +76,7 @@
 </template>
 
 <script>
+//TODO: Raspberry PI Connection
 import { ref } from 'vue';
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
 import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css';
