@@ -1,0 +1,53 @@
+const { get } = require('../routes/api-routes');
+const db = require('../services/db-service');
+
+
+const getKeys = {
+   
+    select: 'SELECT * FROM layouts LEFT JOIN elements ON layouts.layout_id = elements.layout_id',
+    selectByID:'SELECT * FROM layouts LEFT JOIN elements ON layouts.layout_id = elements.layout_id WHERE layouts.layout_id = $1',
+    insertLayout:'INSERT INTO layouts (layout_id, erstelldatum, user_id_ersteller, name) VALUES ($1, $2, $3, $4)',
+    insertElement:'INSERT INTO elements (element_id, layout_id, typ, uri, pos_x, pos_y, size_x, size_y) VALUES ($1, $2, $3, $4, $5, $6, $7, $8)',
+    updateLayout: 'UPDATE layouts SET erstelldatum = $2, user_id_ersteller = $3, name = $4 WHERE layout_id = $1',
+    updateElement: 'UPDATE elements SET element_id = $1, typ = $3, uri = $4, pos_x = $5, pos_y = $6, size_x = $7, size_y = $8 WHERE layout_id = $2',
+    deleteLayout: 'DELETE FROM layouts WHERE layout_id = $1',
+    deleteElement: 'DELETE FROM elements WHERE layout_id = $1',
+};
+
+module.exports = {
+  getAllLayouts: async () => {
+    const result = await db.executeQuery(getKeys.select);
+    return result;
+  },
+
+  getLayoutById: async (id) => {
+    const result = await db.executeQuery(getKeys.selectByID, [id]);
+    return result;
+  },
+
+  insertLayout: async (layout) => {
+    const { layout_id, erstelldatum, user_id_ersteller, name } = layout;
+    await db.executeQuery(getKeys.insertLayout, [layout_id, erstelldatum, user_id_ersteller, name]);
+  },
+
+  insertElement: async (element) => {
+    const { element_id, layout_id, typ, uri, pos_x, pos_y, size_x, size_y } = element;
+    await db.executeQuery(getKeys.insertElement, [element_id, layout_id, typ, uri, pos_x, pos_y, size_x, size_y]);
+  },   
+  updateLayout: async (layout) => {
+    const { layout_id, erstelldatum, user_id_ersteller, name } = layout;
+    await db.executeQuery(getKeys.updateLayout, [layout_id, erstelldatum, user_id_ersteller, name]);
+  },
+
+  updateElement: async (element) => {
+    const { element_id, layout_id, typ, uri, pos_x, pos_y, size_x, size_y } = element;
+    await db.executeQuery(getKeys.updateElement, [element_id, layout_id, typ, uri, pos_x, pos_y, size_x, size_y]);
+  },    
+  deleteLayout: async (id) => {
+    await db.executeQuery(getKeys.deleteLayout, [id]);
+  },
+
+  deleteElement: async (id) => {
+    await db.executeQuery(getKeys.deleteElement, [id]);
+  }
+};

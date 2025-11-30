@@ -10,6 +10,7 @@ app.use(express.json());
 const port = 3000;
 
 // Enable CORS for your frontend origin
+//conditional: product or dev?
 app.use(cors({ origin: 'http://localhost:5173' }));
 
 
@@ -38,7 +39,7 @@ const options = {
         ],
     },
     // Path to the API docs files that contain annotations
-    apis: ['./routes/*.js'],
+    apis: ['./docs/*.js'],
 };
 
 const swaggerSpec = swaggerJsdoc(options);
@@ -52,10 +53,6 @@ app.use('/', apiRoutes);
 // Simple root endpoint; Visible when accessing localhost:3000
 app.get('/', (req, res) => {
     res.send('Node.js Backend is running!');
-});
-
-app.get('/public', (req, res)=>{
-    res.send('public endpoint available!');
 });
 
 // Start the server
