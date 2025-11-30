@@ -37,9 +37,11 @@
           <button @click="addElementToCanvas('triangle')" class="toolbox-btn shape-btn">Dreieck</button>
         </div>
       </div>
+
       <div>
         <button @click="saveTemplate">Speichern</button>
       </div>
+
       <div class="canvas-container">
         <div class="canvas">
 
@@ -52,15 +54,10 @@
             :h="item.h"
             :minW="10"
             :minH="10"
-            :draggable="true"
-            :resizable="true"
             :parent="true"
-            @dragging="(l, t) => handleDragResize(item, { x: l, y: t, w: item.w, h: item.h })"
-            @drag-stop="(l, t) => handleDragResize(item, { x: l, y: t, w: item.w, h: item.h })"
-            @resizing="(l, t, w, h) => handleDragResize(item, { x: l, y: t, w: w, h: h })"
-            @resize-stop="(l, t, w, h) => handleDragResize(item, { x: l, y: t, w: w, h: h })"
-            @drag-end="(l, t) => handleDragResize(item, { x: l, y: t, w: item.w, h: item.h })"
-            @resize-end="(l, t, w, h) => handleDragResize(item, { x: l, y: t, w: w, h: h })"
+            @dragging="(x, y) => handleDragResize(item, { x, y })"
+            @drag-end="(pos) => handleDragResize(item, pos)"
+            @resize-end="(pos) => handleDragResize(item, pos)"
           >
             <div :class="`card-element card-element-${item.type}`" :style="item.style">
               {{ item.content }}
@@ -125,7 +122,7 @@ export default {
 
     //Logik zum Hinzufügen von Elementen
     const addElementToCanvas = (type, content = '') => {
-      let newItem = {
+      let newElement = {
         id: Date.now(),
         type: type,
         //Position bestimmen
@@ -141,25 +138,25 @@ export default {
       //Switch-Anweisung für Unterscheidung nach 'type'
       switch (type){
         case 'text':
-          newItem.w = 100 * scale;
-          newItem.h = 10 * scale;
-          newItem.style = { fontSize: '14px', color: 'black'};
+          newElement.w = 100 * scale;
+          newElement.h = 10 * scale;
+          newElement.style = { fontSize: '14px', color: 'black'};
           break;
         case 'rectangle':
-          newItem.w = 80 * scale;
-          newItem.h = 40 * scale;
-          newItem.style = { backgroundColor: 'black' };
+          newElement.w = 80 * scale;
+          newElement.h = 40 * scale;
+          newElement.style = { backgroundColor: 'black' };
           break;
         case 'circle':
-          newItem.w = 40 * scale;
-          newItem.h = 40 * scale;
-          newItem.style = { backgroundColor: 'black', borderRadius: '50%' }; //Kreis-Style
+          newElement.w = 40 * scale;
+          newElement.h = 40 * scale;
+          newElement.style = { backgroundColor: 'black', borderRadius: '50%' }; //Kreis-Style
           break;
         case 'triangle':
-          newItem.w = 50 * scale;
-          newItem.h = 50 * scale;
+          newElement.w = 50 * scale;
+          newElement.h = 50 * scale;
           //Für Dreieck Css Dreieck Style
-          newItem.style = { 
+          newElement.style = { 
             backgroundColor: 'transparent', 
             borderBottom: `${40 * scale}px solid black`,
             borderLeft: `${20 * scale}px solid transparent`,
@@ -167,41 +164,32 @@ export default {
             width: '0',
             height: '0'
           };
-          newItem.content = ''; //Kein Inhalt für Dreieck
+          newElement.content = ''; //Kein Inhalt für Dreieck
           break;
         default:
           console.warn(`Unbekanter Elementtyp: ${type}`);
       }
-      cardElements.value.push(newItem);
+      cardElements.value.push(newElement);
     };
 
-    //Logik für drag/resize
-    const handleDragResize = (item, {x, y, w, h}) => {
-      //Suche index des Elements im Array
+    //Logik für drag/resize (Verbessert)
+    const handleDragResize = (item, pos) => {
       const idx = cardElements.value.findIndex(i => i.id === item.id);
-      
-      //Wenn nicht gefunden, abbrechen
       if (idx === -1) return;
 
-      //Zur sicherheit überprüfen
-      // 1. falls null/undefined übergene wird, 
-      // 2. x,y niemals negativ, für w,h mindestens 1 für resize
-      // 3. x,y falls keine Zahl übergeben wird, alten Wert behalten
-      const nx = typeof x === 'number' ? Math.max(0, x) : cardElements.value[idx].x;
-      const ny = typeof y === 'number' ? Math.max(0, y) : cardElements.value[idx].y;
-      const nw = typeof w === 'number' ? Math.max(1, w) : cardElements.value[idx].w;
-      const nh = typeof h === 'number' ? Math.max(1, h) : cardElements.value[idx].h;
+      const el = cardElements.value[idx];
 
-      //Reaktivitätsproblem umgehen
-      //1. altes Objekt kopieren und neue Werte zuweisen
-      //2. .splice() verwendet um altes objekt zu ersetzen
-      //3. Nicht nur Eigenschaften sondern ganzes Objekt wird ersetzt
-      cardElements.value.splice(idx, 1, Object.assign({}, cardElements.value[idx], {
-        x: nx,
-        y: ny,
-        w: nw,
-        h: nh
-      }));
+      const nx = typeof pos.x === 'number' ? pos.x : el.x;
+      const ny = typeof pos.y === 'number' ? pos.y : el.y;
+      const nw = typeof pos.w === 'number' ? pos.w : el.w;
+      const nh = typeof pos.h === 'number' ? pos.h : el.h;
+
+      el.x = nx;
+      el.y = ny;
+      el.w = nw;
+      el.h = nh;
+
+      console.log("Update:", nx, ny, nw, nh);
     };
 
     //TODO: Hinzufügen/Entfernen von elementen
