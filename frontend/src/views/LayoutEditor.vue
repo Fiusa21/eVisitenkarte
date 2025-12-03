@@ -39,7 +39,7 @@
       </div>
 
       <div>
-        <button @click="saveTemplate" class="save-btn">Speichern</button>
+        <button @click="saveTemplate" class="save-btn">Layout Speichern</button>
       </div>
 
       <div class="canvas-container">
@@ -47,6 +47,7 @@
 
           <Vue3DraggableResizable
             v-for="item in cardElements"
+            @click="selectElement(item)"
             :key="item.id"
             :x="item.x"
             :y="item.y"
@@ -59,20 +60,78 @@
             @drag-end="(pos) => handleDragResize(item, pos)"
             @resize-end="(pos) => handleDragResize(item, pos)"
           >
-            <div class="element-wrapper">
-
-              <button class="delete-btn" @click.stop="removeElement(item.id)">✕</button>
-
-              <div :class="`card-element card-element-${item.type}`" :style="item.style">
-              {{ item.content }}
+            <div :class="`card-element card-element-${item.type}`" :style="item.style">
+                <!-- Anzeige des Inhalts -->
+                <template v-if="item.type === 'text'">
+                  {{ item.source === 'dynamic' ? userProfile[item.content] : item.content }}
+                </template>
+                <template v-else>
+                  <!-- Formen haben keinen sichtbaren Textinhalt -->
+                </template>
               </div>
-            </div> 
           </Vue3DraggableResizable>
           
         </div>
       </div>
     </div>
 
+    <div class="property-editor">
+      <h2 class="editor-title">Design & Eigenschaften</h2>
+
+      <!-- Canvas Hintergrund -->
+       <h3 class="mt-0">Canvas Hintergrund</h3>
+       <div class="color-control-group">
+        <button 
+          @click="setCanvasColor('white')"
+          :class="[color-toggle-btn, { 'active-color': canvasColor === 'white' }]"
+          style="background-color: white; color: black;"
+        >
+        Weiß
+        </button>
+        <button
+          @click="setCanvasColor('black')"
+          :class="[color-toggle-btn, { 'active-color': canvasColor === 'black' }]"
+          style="background-color: black; color: white;"
+        >
+        Schwarz
+        </button>
+       </div>
+
+       <!-- Linie -->
+       <hr class="divider">
+
+       <!-- Element Eigenschaften -->
+       <div v-if="selectedElement">
+        <p class="element-type">Elementtyp: <strong>{{ selectedElement.type }}</strong></p>
+
+        <!-- Löschen -->
+         <button @click="deleteSelectedElement" class="delete-btn">Element Löschen</button>
+
+         <hr class="divider">
+
+         <!-- Element Farbe -->
+         <h3>Element Farbe</h3>
+        <div class="color-control-group">
+          <button
+            @click="setElementColor('black')"
+            :class="['color-toggle-btn', { 'active-color': isElementColor('black') }]"
+            style="background-color: black; color: white;"
+          >
+          Schwarz
+          </button>
+          <button
+            @click="setElementColor('white')"
+            :class="['color-trigger-btn', { 'active-color': isElementColor('white') }]"
+            style="background-color: white; color: black;"
+          >
+          Weiß
+          </button>
+        </div>
+       </div>
+       <div v-else class="no-selection-message">
+        <p>Wähle ein Element aus, um dessen Farbe zu ändern oder es zu Löschen</p>
+       </div>
+    </div>
   </div>
 </template>
 
@@ -90,6 +149,8 @@ export default {
   setup(){
     const scale = 3;
     const activeTab = ref('text'); //Important for reactivity of Button in Toolbox
+    const selectedElement = ref(null); // Für Auswahl
+    const canvasColor = ref('white'); // Canvas Hintergrundfarbe
 
     //simulierte Nutzerdaten
     const userProfile = {
@@ -177,10 +238,7 @@ export default {
     };
 
     //Logik zum Entfernen von Elementen
-      const removeElement = (id) => {
-      const index = cardElements.value.findIndex(el => el.id === id);
-      if (index !== -1) cardElements.value.splice(index, 1);
-      };
+      
 
     //Logik für drag/resize (Verbessert)
     const handleDragResize = (item, pos) => {
@@ -207,7 +265,7 @@ export default {
       userProfile,
       dynamicTextOptions,
       cardElements,
-      removeElement,
+
       handleDragResize,
       addElementToCanvas,
       saveTemplate
@@ -220,6 +278,7 @@ export default {
 <style scoped>
 /*
 TODO: Medie queries für alle Bildschirmgrößen 
+TODO: Style Save Button
 */
 
 .layout-editor {
@@ -359,32 +418,6 @@ TODO: Medie queries für alle Bildschirmgrößen
 }
 .shape-btn:hover {
   background-color: #fb8c00;
-}
-
-.delete-btn {
-  position: absolute;
-  top: -10px;
-  right: -10px;
-  width: 24px;
-  height: 24px;
-  border: none;
-  background: #ff3b3b;
-  color: white;
-  font-weight: bold;
-  border-radius: 50%;
-  cursor: pointer;
-  z-index: 10;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
-}
-
-.delete-btn:hover {
-  background: #d62828;
-}
-
-.element-wrapper {
-  position: relative;
-  width: 100%;
-  height: 100%;
 }
 
 .canvas-container{
