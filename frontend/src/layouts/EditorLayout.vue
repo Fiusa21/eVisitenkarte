@@ -126,7 +126,7 @@ nav {
     padding: 30px;
     display: flex;
     flex-direction: column;
-    overflow: auto;
+    overflow: hidden;
     box-sizing: border-box;
     background-color: transparent;
 }
