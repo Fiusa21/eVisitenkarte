@@ -21,7 +21,7 @@
             @click="addElementToCanvas('text', option.key)"
             class="toolbox-btn dynamic-btn"
           >
-            {{ option.label }} ({{ userProfile[option.key] }})
+            {{ option.label }} 
           </button>
 
           <button @click="addElementToCanvas('text', 'Ihr Text')" class="toolbox-btn static-btn">
@@ -39,7 +39,7 @@
       </div>
 
       <div>
-        <button @click="saveTemplate">Speichern</button>
+        <button @click="saveTemplate" class="save-btn">Speichern</button>
       </div>
 
       <div class="canvas-container">
@@ -59,10 +59,14 @@
             @drag-end="(pos) => handleDragResize(item, pos)"
             @resize-end="(pos) => handleDragResize(item, pos)"
           >
-            <div :class="`card-element card-element-${item.type}`" :style="item.style">
+            <div class="element-wrapper">
+
+              <button class="delete-btn" @click.stop="removeElement(item.id)">✕</button>
+
+              <div :class="`card-element card-element-${item.type}`" :style="item.style">
               {{ item.content }}
-            </div>
-            
+              </div>
+            </div> 
           </Vue3DraggableResizable>
           
         </div>
@@ -172,6 +176,12 @@ export default {
       cardElements.value.push(newElement);
     };
 
+    //Logik zum Entfernen von Elementen
+      const removeElement = (id) => {
+      const index = cardElements.value.findIndex(el => el.id === id);
+      if (index !== -1) cardElements.value.splice(index, 1);
+      };
+
     //Logik für drag/resize (Verbessert)
     const handleDragResize = (item, pos) => {
       const idx = cardElements.value.findIndex(i => i.id === item.id);
@@ -192,17 +202,15 @@ export default {
       console.log("Update:", nx, ny, nw, nh);
     };
 
-    //TODO: Hinzufügen/Entfernen von elementen
-
     return {
       activeTab,
       userProfile,
       dynamicTextOptions,
       cardElements,
+      removeElement,
       handleDragResize,
       addElementToCanvas,
       saveTemplate
-      
     }
   }
 }
@@ -353,6 +361,31 @@ TODO: Medie queries für alle Bildschirmgrößen
   background-color: #fb8c00;
 }
 
+.delete-btn {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  width: 24px;
+  height: 24px;
+  border: none;
+  background: #ff3b3b;
+  color: white;
+  font-weight: bold;
+  border-radius: 50%;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+}
+
+.delete-btn:hover {
+  background: #d62828;
+}
+
+.element-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
 
 .canvas-container{
   flex-grow: 1;
