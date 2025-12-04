@@ -116,8 +116,28 @@ export default {
 
     const cardElements = ref([]);
 
+    const measureTextSize = (text, fontSize = 16, fontFamily = 'Dosis') => {
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      context.font = `${fontSize}px ${fontFamily}`;
+      const metrics = context.measureText(text);
+      const width = metrics.width;
+      const height = fontSize; // grobe Annahme für Höhe
+      return { width, height };
+    };
+
     //Logik zum Hinzufügen von Elementen
     const addElementToCanvas = (type, content = '') => {
+      let w = 50 * scale;
+      let h = 50 * scale;
+
+      // nur für Text: w und h auf Textgröße setzen
+      if(type === 'text'){
+        const size = measureTextSize(userProfile[content] || content, 16, 'Dosis');
+        w = size.width + 10; // bisschen Padding
+        h = size.height + 4;
+      }
+      
       let newElement = {
         id: Date.now(),
         type: type,
