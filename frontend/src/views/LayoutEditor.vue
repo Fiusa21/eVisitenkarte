@@ -21,7 +21,7 @@
             @click="addElementToCanvas('text', option.key)"
             class="toolbox-btn dynamic-btn"
           >
-            {{ option.label }} 
+            {{ option.label }} ({{ userProfile[option.key] }})
           </button>
 
           <button @click="addElementToCanvas('text', 'Ihr Text')" class="toolbox-btn static-btn">
@@ -39,7 +39,7 @@
       </div>
 
       <div>
-        <button @click="saveTemplate" class="save-btn">Layout Speichern</button>
+        <button @click="saveTemplate">Speichern</button>
       </div>
 
       <div class="canvas-container">
@@ -47,7 +47,6 @@
 
           <Vue3DraggableResizable
             v-for="item in cardElements"
-            @click="selectElement(item)"
             :key="item.id"
             :x="item.x"
             :y="item.y"
@@ -60,78 +59,14 @@
             @drag-end="(pos) => handleDragResize(item, pos)"
             @resize-end="(pos) => handleDragResize(item, pos)"
           >
-            <div :class="`card-element card-element-${item.type}`" :style="item.style">
-                <!-- Anzeige des Inhalts -->
-                <template v-if="item.type === 'text'">
-                  {{ item.source === 'dynamic' ? userProfile[item.content] : item.content }}
-                </template>
-                <template v-else>
-                  <!-- Formen haben keinen sichtbaren Textinhalt -->
-                </template>
-              </div>
+            <component :is="elementComponent(item)" :item="item" :user-profile="userProfile"/>
+            
           </Vue3DraggableResizable>
           
         </div>
       </div>
     </div>
 
-    <div class="property-editor">
-      <h2 class="editor-title">Design & Eigenschaften</h2>
-
-      <!-- Canvas Hintergrund -->
-       <h3 class="mt-0">Canvas Hintergrund</h3>
-       <div class="color-control-group">
-        <button 
-          @click="setCanvasColor('white')"
-          :class="[color-toggle-btn, { 'active-color': canvasColor === 'white' }]"
-          style="background-color: white; color: black;"
-        >
-        Weiß
-        </button>
-        <button
-          @click="setCanvasColor('black')"
-          :class="[color-toggle-btn, { 'active-color': canvasColor === 'black' }]"
-          style="background-color: black; color: white;"
-        >
-        Schwarz
-        </button>
-       </div>
-
-       <!-- Linie -->
-       <hr class="divider">
-
-       <!-- Element Eigenschaften -->
-       <div v-if="selectedElement">
-        <p class="element-type">Elementtyp: <strong>{{ selectedElement.type }}</strong></p>
-
-        <!-- Löschen -->
-         <button @click="deleteSelectedElement" class="delete-btn">Element Löschen</button>
-
-         <hr class="divider">
-
-         <!-- Element Farbe -->
-         <h3>Element Farbe</h3>
-        <div class="color-control-group">
-          <button
-            @click="setElementColor('black')"
-            :class="['color-toggle-btn', { 'active-color': isElementColor('black') }]"
-            style="background-color: black; color: white;"
-          >
-          Schwarz
-          </button>
-          <button
-            @click="setElementColor('white')"
-            :class="['color-trigger-btn', { 'active-color': isElementColor('white') }]"
-            style="background-color: white; color: black;"
-          >
-          Weiß
-          </button>
-        </div>
-       </div>
-       <div v-else class="no-selection-message">
-        <p>Wähle ein Element aus, um dessen Farbe zu ändern oder es zu Löschen</p>
-       </div>
-    </div>
   </div>
 </template>
 
@@ -141,6 +76,11 @@ import { ref } from 'vue';
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
 import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css';
 
+import RectangleElement from '../elements/RectangleElement.vue'; 
+import CircleElement from '../elements/CircleElement.vue'; 
+import TriangleElement from '../elements/TriangleElement.vue'; 
+import TextElement from '../elements/TextElement.vue';
+
 export default {
   name: 'layout-editor',
   components: {
@@ -149,8 +89,6 @@ export default {
   setup(){
     const scale = 3;
     const activeTab = ref('text'); //Important for reactivity of Button in Toolbox
-    const selectedElement = ref(null); // Für Auswahl
-    const canvasColor = ref('white'); // Canvas Hintergrundfarbe
 
     //simulierte Nutzerdaten
     const userProfile = {
@@ -178,13 +116,6 @@ export default {
 
     const cardElements = ref([]);
 
-    //Beispiel für Speichern (Später API Call)
-    const saveTemplate = () => {
-      console.log('--- Template-Daten zur Speicherung ---');
-      console.log(JSON.stringify(cardElements.value, null, 2));
-      console.log('--- Ende Template-Daten ---');
-    };
-
     //Logik zum Hinzufügen von Elementen
     const addElementToCanvas = (type, content = '') => {
       let newElement = {
@@ -199,46 +130,19 @@ export default {
         source: content in userProfile ? 'dynamic' : 'static',
         style: {}
       };
-
-      //Switch-Anweisung für Unterscheidung nach 'type'
-      switch (type){
-        case 'text':
-          newElement.w = 100 * scale;
-          newElement.h = 10 * scale;
-          newElement.style = { fontSize: '14px', color: 'black'};
-          break;
-        case 'rectangle':
-          newElement.w = 80 * scale;
-          newElement.h = 40 * scale;
-          newElement.style = { backgroundColor: 'black' };
-          break;
-        case 'circle':
-          newElement.w = 40 * scale;
-          newElement.h = 40 * scale;
-          newElement.style = { backgroundColor: 'black', borderRadius: '50%' }; //Kreis-Style
-          break;
-        case 'triangle':
-          newElement.w = 50 * scale;
-          newElement.h = 50 * scale;
-          //Für Dreieck Css Dreieck Style
-          newElement.style = { 
-            backgroundColor: 'transparent', 
-            borderBottom: `${40 * scale}px solid black`,
-            borderLeft: `${20 * scale}px solid transparent`,
-            borderRight: `${40 * scale}px solid transparent`,
-            width: '0',
-            height: '0'
-          };
-          newElement.content = ''; //Kein Inhalt für Dreieck
-          break;
-        default:
-          console.warn(`Unbekanter Elementtyp: ${type}`);
-      }
       cardElements.value.push(newElement);
     };
 
-    //Logik zum Entfernen von Elementen
-      
+    //Switch-Anweisung für Unterscheidung nach 'type' 
+    const elementComponent = (item) =>{ 
+      switch (item.type){ 
+        case 'rectangle': return RectangleElement; 
+        case 'circle': return CircleElement; 
+        case 'triangle': return TriangleElement; 
+        case 'text': return TextElement; 
+        default: console.warn(`Unbekanter Elementtyp: ${type}`);
+      }
+    };
 
     //Logik für drag/resize (Verbessert)
     const handleDragResize = (item, pos) => {
@@ -260,15 +164,26 @@ export default {
       console.log("Update:", nx, ny, nw, nh);
     };
 
-    return {
-      activeTab,
-      userProfile,
-      dynamicTextOptions,
-      cardElements,
+    //Beispiel für Speichern (Später API Call)
+    const saveTemplate = () => {
+      console.log('--- Template-Daten zur Speicherung ---');
+      console.log(JSON.stringify(cardElements.value, null, 2));
+      console.log('--- Ende Template-Daten ---');
+    };
 
-      handleDragResize,
-      addElementToCanvas,
-      saveTemplate
+    //TODO: Hinzufügen/Entfernen von elementen
+
+    return {
+      scale, 
+      activeTab,  
+      userProfile, 
+      dynamicTextOptions, 
+      cardElements, 
+      addElementToCanvas, 
+      elementComponent, 
+      handleDragResize, 
+      saveTemplate,
+      
     }
   }
 }
@@ -278,7 +193,6 @@ export default {
 <style scoped>
 /*
 TODO: Medie queries für alle Bildschirmgrößen 
-TODO: Style Save Button
 */
 
 .layout-editor {
@@ -420,6 +334,7 @@ TODO: Style Save Button
   background-color: #fb8c00;
 }
 
+
 .canvas-container{
   flex-grow: 1;
   display: flex;
@@ -446,7 +361,6 @@ TODO: Style Save Button
   padding: 5px;
   box-sizing: border-box;
   text-align: left;
-  border: 1px dashed #ccc;
   background-color: white;
 }
 
@@ -461,5 +375,4 @@ TODO: Style Save Button
   object-fit: contain;
   background-color: black;
 }
-
 </style>
