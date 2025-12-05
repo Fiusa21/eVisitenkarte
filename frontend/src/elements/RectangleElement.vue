@@ -1,5 +1,5 @@
 <template>
-  <div class="rectangle-element"></div>
+  <div class="rectangle-element" :style="{ backgroundColor: item.style?.color || 'black' }"></div>
 </template>
 
 <script>
@@ -15,6 +15,5 @@ export default {
 .rectangle-element {
   width: 100%;
   height: 100%;
-  background: black;
 }
 </style>

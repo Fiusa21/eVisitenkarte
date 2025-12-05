@@ -1,6 +1,6 @@
 <template>
   <svg :width="item.w" :height="item.h" class="triangle-svg">
-    <polygon :points="trianglePoints" fill="black" />
+    <polygon :points="trianglePoints" :fill="item.style?.color || 'black'" />
   </svg>
 </template>
 

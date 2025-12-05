@@ -14,13 +14,12 @@
         @add-element="handleAddElement"
       />
 
-      <div>
-        <button @click="saveTemplate">Speichern</button>
-      </div>
-
       <div class="canvas-container">
-        <div class="canvas">
-
+        <div class="canvas" :style="{ backgroundColor: canvasBgColor }">
+          <!-- 
+          Logik für drag/resize: direkt im Template mit Inline-Funktionen
+          Werte werden direkt updated: @drag-end und @resize-end aktualisieren item.x, item.y, item.w, item.h
+          -->
           <Vue3DraggableResizable
             v-for="item in cardElements"
             :key="item.id"
@@ -31,9 +30,10 @@
             :minW="10"
             :minH="10"
             :parent="true"
-            @dragging="(x, y) => handleDragResize(item, { x, y })"
-            @drag-end="(pos) => handleDragResize(item, pos)"
-            @resize-end="(pos) => handleDragResize(item, pos)"
+            :class="{ 'selected': selectedElement && selectedElement.id === item.id }"
+            @click="selectElement(item)"
+            @drag-end="(pos) => {item.x = pos.x; item.y = pos.y;}" 
+            @resize-end="(pos) => {item.x = pos.x; item.y = pos.y; item.w = pos.w; item.h = pos.h;}"
           >
             <component :is="elementComponent(item)" :item="item" :user-profile="userProfile"/>
             
@@ -41,7 +41,18 @@
           
         </div>
       </div>
+
+      <PropertyEditor
+        :selected-element="selectedElement"
+        :canvas-bg-color="canvasBgColor"
+        @update-element="updateElement"
+        @delete-element="deleteElement"
+        @update-canvas-bg="updateCanvasBg"
+      />
     </div>
+
+    <!--Save Button-->
+    <button @click="saveTemplate" class="save-btn-fixed">Template Speichern</button>
 
   </div>
 </template>
@@ -57,18 +68,20 @@ import CircleElement from '../elements/CircleElement.vue';
 import TriangleElement from '../elements/TriangleElement.vue'; 
 import TextElement from '../elements/TextElement.vue';
 import ToolBox from '../components/ToolBox.vue';
+import PropertyEditor from '../components/PropertyEditor.vue';
 
 export default {
   name: 'layout-editor',
   components: {
     Vue3DraggableResizable,
-    ToolBox
+    ToolBox,
+    PropertyEditor
   },
   setup(){
     const scale = 3;
     //simulierte Nutzerdaten
     const userProfile = {
-      first_name: 'Max',
+      first_name: 'Maximilian',
       last_name: 'Mustermann',
       company: 'uxitra GmbH',
       title: 'Software Entwickler',
@@ -91,6 +104,8 @@ export default {
     ]);
 
     const cardElements = ref([]);
+    const selectedElement = ref(null);
+    const canvasBgColor = ref('white');
 
     const measureTextSize = (text, fontSize = 16, fontFamily = 'Dosis') => {
       const canvas = document.createElement('canvas');
@@ -124,7 +139,7 @@ export default {
         h: h,
         content: content,
         source: content in userProfile ? 'dynamic' : 'static',
-        style: {}
+        style: { color: 'black' } // Initialisiere mit schwarzer Farbe
       };
       cardElements.value.push(newElement);
     };
@@ -140,26 +155,6 @@ export default {
       }
     };
 
-    //Logik für drag/resize (Verbessert)
-    const handleDragResize = (item, pos) => {
-      const idx = cardElements.value.findIndex(i => i.id === item.id);
-      if (idx === -1) return;
-
-      const el = cardElements.value[idx];
-
-      const nx = typeof pos.x === 'number' ? pos.x : el.x;
-      const ny = typeof pos.y === 'number' ? pos.y : el.y;
-      const nw = typeof pos.w === 'number' ? pos.w : el.w;
-      const nh = typeof pos.h === 'number' ? pos.h : el.h;
-
-      el.x = nx;
-      el.y = ny;
-      el.w = nw;
-      el.h = nh;
-
-      console.log("Update:", nx, ny, nw, nh);
-    };
-
     //Beispiel für Speichern (Später API Call)
     const saveTemplate = () => {
       console.log('--- Template-Daten zur Speicherung ---');
@@ -172,18 +167,49 @@ export default {
       addElementToCanvas(payload.type, payload.content);
     };
 
-    //TODO: Hinzufügen/Entfernen von elementen
+    //Handler für Element-Auswahl
+    const selectElement = (item) => {
+      selectedElement.value = item;
+    };
+
+    //Handler für Element-Update vom PropertyEditor
+    const updateElement = (updatedItem) => {
+      const idx = cardElements.value.findIndex(el => el.id === updatedItem.id);
+      if (idx !== -1) {
+        cardElements.value[idx] = updatedItem;
+        selectedElement.value = updatedItem; // Aktualisiere auch die Auswahl
+      }
+    };
+
+    //Handler für Element-Löschen
+    const deleteElement = (id) => {
+      const idx = cardElements.value.findIndex(el => el.id === id);
+      if (idx !== -1) {
+        cardElements.value.splice(idx, 1);
+        selectedElement.value = null; // Deselektiere nach Löschen
+      }
+    };
+
+    //Handler für Canvas Hintergrundfarbe
+    const updateCanvasBg = (color) => {
+      canvasBgColor.value = color;
+    };
 
     return {
       scale, 
       userProfile, 
       dynamicTextOptions, 
       cardElements, 
+      selectedElement,
+      canvasBgColor,
       addElementToCanvas, 
       elementComponent, 
-      handleDragResize, 
       saveTemplate,
-      handleAddElement
+      handleAddElement,
+      selectElement,
+      updateElement,
+      deleteElement,
+      updateCanvasBg
     }
   }
 }
@@ -265,6 +291,38 @@ TODO: Medie queries für alle Bildschirmgrößen
   border: 1px solid #ddd;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;  
+  transition: background-color 0.3s;
+}
+
+/* Ausgewähltes Element hervorheben */
+.selected {
+  outline: 2px solid #007bff !important;
+  outline-offset: 2px;
+  z-index: 100;
+}
+
+.save-btn-fixed {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  padding: 14px 40px;
+  background-color: #06c933;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+  font-family: 'Dosis', sans-serif;
+  z-index: 1000;
+}
+
+.save-btn-fixed:hover {
+  background-color: #218838;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
 

@@ -34,7 +34,7 @@ export default {
         context.font = `${size}px ${fontFamily}`;
         const metrics = context.measureText(this.displayText);
         const textWidth = metrics.width;
-        const textHeight = size; // grobe Annahme: Höhe ≈ Schriftgröße
+        const textHeight = size; // Höhe = Schriftgröße
         
         // Wenn Text zu groß wird, die vorherige Größe nehmen
         if (textWidth > maxWidth || textHeight > maxHeight) {
@@ -51,7 +51,7 @@ export default {
         width: '100%',
         height: '100%',
         fontSize: fontSize + 'px',
-        color: 'black',
+        color: this.item.style?.color || 'black',
         lineHeight: '1',
         whiteSpace: 'nowrap',
         padding: '4px 4px',

@@ -1,5 +1,5 @@
 <template>
-  <div class="circle-element"></div>
+  <div class="circle-element" :style="{ backgroundColor: item.style?.color || 'black' }"></div>
 </template>
 
 <script>
@@ -15,7 +15,6 @@ export default {
 .circle-element {
   width: 100%;
   height: 100%;
-  background: black;
   border-radius: 50%;
 }
 </style>
