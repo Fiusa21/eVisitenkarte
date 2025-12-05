@@ -8,35 +8,11 @@
     </div>
 
     <div class="editor-main-content">
-      <div class="toolbox">
-        <div class="tabs">
-          <button @click="activeTab = 'text'" :class="{ 'active-tab': activeTab === 'text' }">Nutzer Daten</button>
-          <button @click="activeTab = 'shapes'" :class="{ 'active-tab': activeTab === 'shapes' }">Formen</button>
-        </div>
-
-        <div v-if="activeTab === 'text'" class="tab-content data-options">
-          <button
-            v-for="option in dynamicTextOptions"
-            :key="option.key"
-            @click="addElementToCanvas('text', option.key)"
-            class="toolbox-btn dynamic-btn"
-          >
-            {{ option.label }} ({{ userProfile[option.key] }})
-          </button>
-
-          <button @click="addElementToCanvas('text', 'Ihr Text')" class="toolbox-btn static-btn">
-            + Individueller Text
-          </button>
-        </div>
-
-        
-
-        <div v-if="activeTab === 'shapes'" class="tab-content data-optons">
-          <button @click="addElementToCanvas('rectangle')" class="toolbox-btn shape-btn">Rechteck</button>
-          <button @click="addElementToCanvas('circle')" class="toolbox-btn shape-btn">Kreis</button>
-          <button @click="addElementToCanvas('triangle')" class="toolbox-btn shape-btn">Dreieck</button>
-        </div>
-      </div>
+      <ToolBox 
+        :user-profile="userProfile"
+        :dynamic-text-options="dynamicTextOptions"
+        @add-element="handleAddElement"
+      />
 
       <div>
         <button @click="saveTemplate">Speichern</button>
@@ -80,16 +56,16 @@ import RectangleElement from '../elements/RectangleElement.vue';
 import CircleElement from '../elements/CircleElement.vue'; 
 import TriangleElement from '../elements/TriangleElement.vue'; 
 import TextElement from '../elements/TextElement.vue';
+import ToolBox from '../components/ToolBox.vue';
 
 export default {
   name: 'layout-editor',
   components: {
-    Vue3DraggableResizable
+    Vue3DraggableResizable,
+    ToolBox
   },
   setup(){
     const scale = 3;
-    const activeTab = ref('text'); //Important for reactivity of Button in Toolbox
-
     //simulierte Nutzerdaten
     const userProfile = {
       first_name: 'Max',
@@ -131,11 +107,11 @@ export default {
       let w = 50 * scale;
       let h = 50 * scale;
 
-      // nur für Text: w und h auf Textgröße setzen
+      // nur für Text: w und h auf Textgröße setzen und 1.5x größer spawnen
       if(type === 'text'){
         const size = measureTextSize(userProfile[content] || content, 16, 'Dosis');
-        w = size.width + 10; // bisschen Padding
-        h = size.height + 4;
+        w = (size.width + 20) * 1.5;   // Text-Breite + Padding, 50% größer
+        h = (size.height + 10) * 1.5;  // Text-Höhe + Padding, 50% größer
       }
       
       let newElement = {
@@ -144,8 +120,8 @@ export default {
         //Position bestimmen
         x: 50 * scale + (cardElements.value.length * 10),
         y: 50 * scale + (cardElements.value.length * 10),
-        w: 50 * scale,
-        h: 50 * scale,
+        w: w,
+        h: h,
         content: content,
         source: content in userProfile ? 'dynamic' : 'static',
         style: {}
@@ -191,11 +167,15 @@ export default {
       console.log('--- Ende Template-Daten ---');
     };
 
+    //Handler für Toolbox add-element Event
+    const handleAddElement = (payload) => {
+      addElementToCanvas(payload.type, payload.content);
+    };
+
     //TODO: Hinzufügen/Entfernen von elementen
 
     return {
       scale, 
-      activeTab,  
       userProfile, 
       dynamicTextOptions, 
       cardElements, 
@@ -203,7 +183,7 @@ export default {
       elementComponent, 
       handleDragResize, 
       saveTemplate,
-      
+      handleAddElement
     }
   }
 }
@@ -266,94 +246,6 @@ TODO: Medie queries für alle Bildschirmgrößen
   padding: 0;
   margin-top: -5px;
 }
-
-.toolbox {
-  width: 300px;
-  background-color: #2e2e2e;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center; /* vertikal zentrieren */
-  align-items: stretch;
-  margin-left: 0;
-  max-height: calc(100vh - 160px);
-  overflow: auto;
-}
-
-.tabs {
-  display: flex;
-  margin-bottom: 15px;
-  border-bottom: 2px solid #444;
-}
-
-.tabs button {
-  flex: 1;
-  padding: 15px 10px;
-  background-color: #3a3a3a;
-  color: #bbb;
-  border: none;
-  border-radius: 8px 8px 0 0;
-  cursor: pointer;
-  transition: background-color 0.2s, color 0.2s;
-  font-weight: 500;
-}
-
-.tabs button:hover {
-  background-color: #444;
-}
-
-.tabs .active-tab {
-  background-color: #007bff; /* Primärfarbe */
-  color: white;
-  border-bottom: 2px solid #007bff;
-}
-
-.tab-content {
-  padding: 0 20px;
-}
-.tab-content h2 {
-  font-size: 1.1em;
-  font-weight: 600;
-  margin-top: 20px;
-  margin-bottom: 10px;
-  color: #ccc;
-}
-.toolbox-btn {
-  width: 100%;
-  padding: 10px;
-  margin-bottom: 8px;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-  text-align: left;
-  transition: background-color 0.2s, transform 0.1s;
-}
-
-.dynamic-btn {
-  background-color: #1e88e5; /* Blau */
-  color: white;
-}
-
-.static-btn {
-  background-color: #5cb85c;
-  color: white;
-}
-
-.dynamic-btn:hover {
-  background-color: #1565c0;
-  transform: translateY(-1px);
-}
-
-.shape-btn {
-  background-color: #ff9800; /* Orange */
-  color: #333;
-}
-.shape-btn:hover {
-  background-color: #fb8c00;
-}
-
 
 .canvas-container{
   flex-grow: 1;

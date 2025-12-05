@@ -20,21 +20,32 @@ export default {
       return this.item.content;
     },
     textStyle() {
-      if(!this.item.fontSize) {
-        this.item.fontSize = 16; // Standardgröße
+      // Nutze Canvas um Textbreite präzise zu messen
+      const canvas = document.createElement('canvas');
+      const context = canvas.getContext('2d');
+      const fontFamily = 'Dosis, sans-serif';
+      
+      let fontSize = 16; // Startwert
+      const maxWidth = this.item.w - 8; // 4px Padding auf jeder Seite
+      const maxHeight = this.item.h - 4; // 2px Padding oben/unten
+      
+      // Iterativ die beste Schriftgröße finden
+      for (let size = 1; size <= 100; size++) {
+        context.font = `${size}px ${fontFamily}`;
+        const metrics = context.measureText(this.displayText);
+        const textWidth = metrics.width;
+        const textHeight = size; // grobe Annahme: Höhe ≈ Schriftgröße
+        
+        // Wenn Text zu groß wird, die vorherige Größe nehmen
+        if (textWidth > maxWidth || textHeight > maxHeight) {
+          fontSize = size - 1;
+          break;
+        }
+        fontSize = size;
       }
-
-      // Berechne das Skalierungsverhältnis
-      const textLength = this.displayText.length;
-      let fontSize = this.item.fontSize;
-
-      // Verhältnis: w/h
-      const scaleX = this.item.w / (textLength * fontSize * 0.6); // ca. Buchstabenbreite
-      const scaleY = this.item.h / fontSize;
-
-      const scale = Math.min(scaleX, scaleY);
-
-      fontSize = Math.max(1, fontSize * scale); // nie 0
+      
+      //Min 1px, nie 0!!!!
+      fontSize = Math.max(1, fontSize);
 
       return {
         width: '100%',
@@ -43,9 +54,14 @@ export default {
         color: 'black',
         lineHeight: '1',
         whiteSpace: 'nowrap',
-        padding: '0',
+        padding: '4px 4px',
         margin: '0',
-        boxSizing: 'border-box'
+        boxSizing: 'border-box',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'flex-start',
+        overflow: 'hidden',
+        textOverflow: 'ellipsis'
       };
     }
   }
@@ -55,7 +71,6 @@ export default {
 <style scoped>
 .text-element {
   font-family: 'Dosis', sans-serif;
-  display: inline-block;
-  background: transparent; /* kein weißer Hintergrund */
+  background: transparent;
 }
 </style>
