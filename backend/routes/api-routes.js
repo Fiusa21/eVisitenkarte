@@ -49,17 +49,22 @@ router.get('/layout-management/layouts/{id}', protect, (req, res) => {
 router.post('/layout-management/layouts/:id', protect, async (req, res) => {
     try {
         const userId = req.kauth.grant.access_token.content.sub;
-        const layout = {
+
+        //destructure
+        const { name, elements } = req.body;
+
+        const layoutData = {
             layout_id: req.params.id,
-            name: req.body.name,
+            name: name,
             user_id_ersteller: userId,
             erstelldatum: new Date()
         };
 
-        await layoutModel.insertLayout(layout);
+        await layoutModel.saveLayoutWithElements(layoutData, elements);
 
-        res.json('successfully inserted a new layout');
+        res.json('successfully inserted a new layout and its elements');
     } catch (err) {
+        console.error("Error saving layout:", err);
         res.status(500).json({ error: err.message });
     }
 });
