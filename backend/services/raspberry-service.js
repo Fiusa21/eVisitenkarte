@@ -1,7 +1,7 @@
 const axios = require('axios');
 
 //CHECK CONNECTION
-const deviceUrl = 'http://192.168.4.1:3000';
+const deviceUrl = 'http://192.168.4.1:3000';//TODO: .env
 async function checkConnection() {
     try {
         const controller = new AbortController();
