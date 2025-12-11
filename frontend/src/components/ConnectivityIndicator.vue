@@ -3,7 +3,7 @@
     <p>Device Status:</p>
     
     <div 
-      :class="['status-circle', { 'is-connected': isConnected }]" 
+      :class="['status-circle', { 'is-connected': isConnected }]"
       :title="statusMessage"
     ></div>
     
@@ -13,56 +13,40 @@
 
 <script>
 import { ref, onMounted, onBeforeUnmount } from 'vue';
+import apiService from "@/services/api-service.js";
 
-// Configuration
-const API_ENDPOINT = '/api/device/status'; 
-const POLL_INTERVAL = 5000; // 5 seconds
+
+
 
 export default {
   name: 'ConnectivityIndicator',
   
   setup() {
-    // 1. Reactive State
+    // Configuration
+    const POLL_INTERVAL = 5000; // 5 seconds
     const isConnected = ref(false);
-    const statusMessage = ref('Checking...');
-    let pollingInterval = null; // Use a standard let variable for the interval ID
+    const statusMessage = ref('Initializing...')
 
-    // 2. Methods
-    const checkConnectivity = async () => {
+    let pollingInterval = null;
+
+    const checkStatus = async () => {
       try {
-        statusMessage.value = 'Checking...';
-        
-        const response = await fetch(API_ENDPOINT);
-        const data = await response.json(); 
+        const result = await apiService.checkConnectivity();
 
-        if (response.ok) {
-          // *** Success: API returned 200 OK ***
-          isConnected.value = true; 
-          statusMessage.value = data.message || 'Connected (Online)';
-          
-        } else if (response.status === 503) {
-          // *** Expected Error: API returned 503 ***
-          isConnected.value = false; 
-          statusMessage.value = data.message || 'Disconnected (503)';
-          
-        } else {
-          // Handle other HTTP errors
-          isConnected.value = false;
-          statusMessage.value = `Server Error (${response.status})`;
-        }
-      } catch (error) {
-        // Handle network errors
-        console.error('Connectivity check failed:', error);
+        isConnected.value = result.isConnected;
+        statusMessage.value = result.message;
+
+      } catch (e) {
         isConnected.value = false;
-        statusMessage.value = 'Network Error (Unreachable)';
+        statusMessage.value = 'Error checking status';
       }
     };
-    
-    const startPolling = () => {
-      checkConnectivity(); 
-      // Store the interval ID in the outside variable
-      pollingInterval = setInterval(checkConnectivity, POLL_INTERVAL);
-    };
+
+    const startPolling = ()  => {
+      checkStatus();
+      pollingInterval = setInterval(checkStatus, POLL_INTERVAL);
+
+    }
     
     const stopPolling = () => {
       if (pollingInterval) {
@@ -71,7 +55,6 @@ export default {
       }
     };
 
-    // 3. Lifecycle Hooks (Composition API equivalent of mounted/beforeUnmount)
     onMounted(() => {
       startPolling();
     });
@@ -79,12 +62,11 @@ export default {
     onBeforeUnmount(() => {
       stopPolling();
     });
-
-    // 4. Return reactive state and methods for use in the template
     return {
       isConnected,
-      statusMessage,
-    };
+      statusMessage
+    }
+
   }
 }
 </script>
@@ -105,7 +87,7 @@ export default {
   height: 15px;
   border-radius: 50%;
   /* Default state (Disconnected / Checking) */
-  background-color: #ffc107; /* Amber */
+  background-color: red; /* Amber */
   border: 1px solid #ccc;
   transition: background-color 0.3s ease;
 }

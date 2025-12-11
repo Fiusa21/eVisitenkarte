@@ -1,4 +1,5 @@
 import KeycloakService from './keycloak-service';
+import {ref} from "vue";
 
 //for testing with echo api, there is a public/unprotected endpoint /public
 const API_BASE_URL = 'http://localhost:3000/api'; //base api url, for testing see echo api
@@ -27,6 +28,42 @@ const ApiService = {
             throw new Error(`API call failed: ${response.status} - ${errorData.message || response.statusText}`);
         }
     }},
+
+    checkConnectivity : async () => {
+        try {
+            const response = await fetch(`${API_BASE_URL}/device/status`,);
+            let data = {};
+
+            if (response.ok) {
+                return {
+                    isConnected: true,
+                    statusMessage: data.message || 'Connected (Online)'
+                }
+
+            } else if (response.status === 503) {
+                // *** Expected Error: API returned 503 ***
+                console.log('NO DEVICE CONNECTED! Api working')
+                return {
+                    isConnected: false,
+                    statusMessage: data.message || 'Disconnected (503)',
+                }
+            } else {
+                // Handle other HTTP errors
+                return {
+                    isConnected: false,
+                    statusMessage: `Server Error (${response.status})`
+                }
+            }
+
+        } catch (error) {
+            // Handle network errors
+            console.error('Connectivity check failed:', error);
+            return {
+                isConnected: false,
+                statusMessage: 'Network Error (Unreachable)'
+            }
+        }
+    },
 
     //test function for protected endpoint, sending jwt vie Bearer
     callProtectedEndpoint: async () => {
