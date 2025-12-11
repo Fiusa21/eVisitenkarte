@@ -58,7 +58,6 @@
 </template>
 
 <script>
-//TODO: Raspberry PI Connection
 import { ref } from 'vue';
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
 import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css';
@@ -69,7 +68,6 @@ import TriangleElement from '../elements/TriangleElement.vue';
 import TextElement from '../elements/TextElement.vue';
 import ToolBox from '../components/ToolBox.vue';
 import PropertyEditor from '../components/PropertyEditor.vue';
-import ApiService from '../services/api-service.js';
 
 export default {
   name: 'layout-editor',
@@ -168,14 +166,6 @@ export default {
       console.log('--- Speichere Layout ---');
       console.log(JSON.stringify(layoutData, null, 2));
 
-      try {
-        const response = await ApiService.saveLayout(layoutData);
-        console.log('Layout erfolgreich gespeichert:', response);
-        alert(`Layout erfolgreich gespeichert!`);
-      } catch (error) {
-        console.error('Fehler beim Speichern:', error);
-        alert(`Fehler beim Speichern: ${error.message}`);
-      }
     };
 
     //Handler für Toolbox add-element Event
