@@ -2,6 +2,9 @@
   <div class="layout-editor">
     <div class="site-header">
       <div class="header-content">
+        <button class="btn-save" @click="downloadImage">
+          Send Layout
+        </button>
         <h1>uxitra GmbH</h1>
         <p>eVisitenkarten Editor</p>
       </div>
@@ -15,7 +18,7 @@
       />
 
       <div class="canvas-container">
-        <div class="canvas" :style="{ backgroundColor: canvasBgColor }">
+        <div class="canvas" ref="canvasRef" id="capture-target" :style="{ backgroundColor: canvasBgColor }">
           <!-- 
           Logik für drag/resize: direkt im Template mit Inline-Funktionen
           Werte werden direkt updated: @drag-end und @resize-end aktualisieren item.x, item.y, item.w, item.h
@@ -59,6 +62,7 @@
 
 <script>
 import { ref } from 'vue';
+import {toPng} from 'html-to-image';
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
 import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css';
 
@@ -107,6 +111,7 @@ export default {
     const cardElements = ref([]);
     const selectedElement = ref(null);
     const canvasBgColor = ref('white');
+    const canvasRef = ref(null);
 
     const measureTextSize = (text, fontSize = 16, fontFamily = 'Dosis') => {
       const canvas = document.createElement('canvas');
@@ -117,6 +122,40 @@ export default {
       const height = fontSize; // grobe Annahme für Höhe
       return { width, height };
     };
+
+    //TODO: MOVE THIS TO USER-HOME!
+    async function downloadImage() {
+      // ERROR WAS HERE: Do not use 'this.$refs'. Use the variable directly.
+      const element = canvasRef.value;
+
+      if (!element) {
+        console.error("Canvas element not found. Make sure ref='canvasRef' is on the div.");
+        return;
+      }
+
+      // Optional: Deselect elements temporarily so blue borders don't show in photo
+      const previousSelection = selectedElement.value;
+      selectedElement.value = null;
+
+      try {
+        const dataUrl = await toPng(element, {
+          quality: 0.95,
+          backgroundColor: canvasBgColor.value || 'white',
+          skipFonts: true,
+        });
+
+        const link = document.createElement('a');
+        link.download = 'my-layout.png';
+        link.href = dataUrl;
+        link.click();
+
+      } catch (error) {
+        console.error('Error generating image:', error);
+      } finally {
+        // Restore selection
+        selectedElement.value = previousSelection;
+      }
+    }
 
     //Logik zum Hinzufügen von Elementen
     const addElementToCanvas = (type, content = '') => {
@@ -221,7 +260,8 @@ export default {
       scale, 
       userProfile, 
       dynamicTextOptions, 
-      cardElements, 
+      cardElements,
+      canvasRef,
       selectedElement,
       canvasBgColor,
       addElementToCanvas, 
@@ -231,7 +271,8 @@ export default {
       selectElement,
       updateElement,
       deleteElement,
-      updateCanvasBg
+      updateCanvasBg,
+      downloadImage
     }
   }
 }
