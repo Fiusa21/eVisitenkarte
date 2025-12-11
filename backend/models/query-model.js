@@ -6,8 +6,8 @@ const getKeys = {
    
     select: 'SELECT * FROM layouts LEFT JOIN elements ON layouts.layout_id = elements.layout_id',
     selectByID:'SELECT * FROM layouts LEFT JOIN elements ON layouts.layout_id = elements.layout_id WHERE layouts.layout_id = $1',
-    insertLayout:'INSERT INTO layouts (layout_id, erstelldatum, user_id_ersteller, name) VALUES ($1, $2, $3, $4)',
-    insertElement: 'INSERT INTO elements (element_id, layout_id, typ, uri, pos_x, pos_y, size_x, size_y, source, style) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
+    insertLayout:'INSERT INTO layouts (erstelldatum, user_id_ersteller, name) VALUES ($1, $2, $3) RETURNING layout_id;',
+    insertElement: 'INSERT INTO elements (element_id, typ, uri, layout_id, pos_x, pos_y, size_x, size_y, source, style) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
     updateLayout: 'UPDATE layouts SET erstelldatum = $2, user_id_ersteller = $3, name = $4 WHERE layout_id = $1',
     updateElement: 'UPDATE elements SET element_id = $1, typ = $3, uri = $4, pos_x = $5, pos_y = $6, size_x = $7, size_y = $8 WHERE layout_id = $2',
     deleteLayout: 'DELETE FROM layouts WHERE layout_id = $1',
@@ -25,52 +25,59 @@ module.exports = {
     return result;
   },
 
-  insertLayout: async (layout) => {
-    const { layout_id, erstelldatum, user_id_ersteller, name } = layout;
-    await db.executeQuery(getKeys.insertLayout, [layout_id, erstelldatum, user_id_ersteller, name]);
-  },
+    insertLayout: async (layout) => {
+        const { erstelldatum, user_id_ersteller, name } = layout;
+
+        const res = await db.executeQuery(getKeys.insertLayout, [erstelldatum, user_id_ersteller, name]);
+        // DEBUG: Uncomment this to see exactly what the DB returns
+        console.log("Database Result:", res);
+        //NOTE: access Layout_id from the autoincrement out of the query return!!!
+        return res[0].layout_id;
+    },
 
     insertElement: async (element) => {
         const {
-            element_id, layout_id, typ, uri,
+            element_id, typ, uri, layout_id,
             pos_x, pos_y, size_x, size_y,
             source, style
         } = element;
 
         await db.executeQuery(getKeys.insertElement, [
-            element_id, layout_id, typ, uri,
+            element_id, typ, uri, layout_id,
             pos_x, pos_y, size_x, size_y,
             source, style
         ]);
     },
 //TODO: TRANSACTION
 //HELPER FUNCTION TO MAP THE ELEMENTS IN THE ARRAY
-saveLayoutWithElements: async (layoutData, elementsArray) => {
-    //wait for layout header being inserted!!!
-    await module.exports.insertLayout(layoutData);
+    saveLayoutWithElements: async (layoutData, elementsArray) => {
 
-    //loop elements and save them
-    if (elementsArray && elementsArray.length > 0) {
-        for (const el of elementsArray) {
+        // 1. Capture the returned ID into a variable
+        const newLayoutId = await module.exports.insertLayout(layoutData);
 
-            //frontend to db
-            const elementToSave = {
-                element_id: el.id,                  // Frontend: id
-                layout_id: layoutData.layout_id,    // From Layout
-                typ: el.type,                       // Frontend: type
-                uri: el.content,                    // Frontend: content -> DB: uri
-                pos_x: el.x,                        // Frontend: x
-                pos_y: el.y,                        // Frontend: y
-                size_x: el.w,                       // Frontend: w
-                size_y: el.h,                       // Frontend: h
-                source: el.source,                  // Frontend: source
-                style: JSON.stringify(el.style)     // Frontend: style (convert Obj to String)
-            };
+        //DEBUG
+        console.log("Created Layout ID:", newLayoutId); // Debug check
 
-            await module.exports.insertElement(elementToSave);
+        if (elementsArray && elementsArray.length > 0) {
+            for (const el of elementsArray) {
+
+                const elementToSave = {
+                    layout_id: newLayoutId,             // <--- HERE IS THE FIX
+                    element_id: el.id,
+                    typ: el.type,
+                    uri: el.content,
+                    pos_x: el.x,
+                    pos_y: el.y,
+                    size_x: el.w,
+                    size_y: el.h,
+                    source: el.source,
+                    style: JSON.stringify(el.style)
+                };
+
+                await module.exports.insertElement(elementToSave);
+            }
         }
-    }
-},
+    },
 
 
 

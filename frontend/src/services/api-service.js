@@ -124,7 +124,7 @@ const ApiService = {
     insertLayout: async (layout) => {
         const token = await ApiService.checkAuthorization();
         try {
-            const response = await fetch(`${API_BASE_URL}/layout-management/layouts/${layout.layout_id}`, {
+            const response = await fetch(`${API_BASE_URL}/layout-management/layouts`, {
                 method: 'POST',
                 headers: {
                     'Authorization': `Bearer ${token}`,

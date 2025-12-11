@@ -179,19 +179,12 @@
 
 /**
  * @swagger
- * /layout-management/layouts/{id}:
+ * /layout-management/layouts:
  *   post:
  *     summary: Insert a new layout
  *     tags: [Authentication]
  *     security:
  *       - bearerAuth: []           # This tells Swagger to require the 'Authorize' button
- *     parameters:
- *       - in: path                 # This creates the 'id' input field
- *         name: id
- *         required: true
- *         schema:
- *           type: string
- *         description: The unique ID of the layout
  *     requestBody:
  *       required: true
  *       content:
@@ -202,6 +195,7 @@
  *               - name
  *               - elements
  *             properties:
+ *
  *               name:
  *                 type: string
  *                 example: "My Business Card"

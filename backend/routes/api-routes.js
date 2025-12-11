@@ -46,7 +46,7 @@ router.get('/layout-management/layouts/{id}', protect, (req, res) => {
     res.json('placeholder: thist would retrieve a specific layout');
 })
 
-router.post('/layout-management/layouts/:id', protect, async (req, res) => {
+router.post('/layout-management/layouts', protect, async (req, res) => {
     try {
         const userId = req.kauth.grant.access_token.content.sub;
 
@@ -54,7 +54,6 @@ router.post('/layout-management/layouts/:id', protect, async (req, res) => {
         const { name, elements } = req.body;
 
         const layoutData = {
-            layout_id: req.params.id,
             name: name,
             user_id_ersteller: userId,
             erstelldatum: new Date()
