@@ -68,6 +68,7 @@ import TriangleElement from '../elements/TriangleElement.vue';
 import TextElement from '../elements/TextElement.vue';
 import ToolBox from '../components/ToolBox.vue';
 import PropertyEditor from '../components/PropertyEditor.vue';
+import ApiService from '../services/api-service.js';
 
 export default {
   name: 'layout-editor',
@@ -166,6 +167,13 @@ export default {
       console.log('--- Speichere Layout ---');
       console.log(JSON.stringify(layoutData, null, 2));
 
+      try {
+        await ApiService.insertLayout(layoutData);
+        alert('Layout erfolgreich gespeichert!');
+      } catch (error) {
+        console.error('Fehler beim Speichern:', error);
+        alert(`Fehler beim Speichern: ${error.message}`);
+      }
     };
 
     //Handler für Toolbox add-element Event
