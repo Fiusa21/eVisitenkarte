@@ -28,14 +28,14 @@
       <p class="hint">Klicke auf ein Element im Canvas, um es zu bearbeiten</p>
     </div>
 
-    <!-- Element-spezifische Properties -->
+    <!-- Element Spezifische Properties -->
     <div v-else class="element-properties">
       <div class="property-section">
         <label>Element-Typ</label>
         <p class="element-type">{{ elementTypeLabel }}</p>
       </div>
 
-      <!-- Text-Input für statische Text-Elemente -->
+      <!-- Text Input für statische Text-Elemente -->
       <div v-if="selectedElement.type === 'text' && selectedElement.source === 'static'" class="property-section">
         <label>Text bearbeiten</label>
         <input 
@@ -47,13 +47,13 @@
         />
       </div>
 
-      <!-- Info für dynamische Text-Elemente -->
+      <!-- Info für dynamische Text Elemente -->
       <div v-if="selectedElement.type === 'text' && selectedElement.source === 'dynamic'" class="property-section">
         <label>Datenfeld</label>
         <p class="dynamic-info">{{ selectedElement.content }} (dynamisch)</p>
       </div>
 
-      <!-- Farbe ändern (für Shapes und Text) -->
+      <!-- Farbe ändern (Shapes und Text) -->
       <div class="property-section">
         <label>Farbe</label>
         <div class="color-picker">
@@ -74,7 +74,7 @@
         </div>
       </div>
 
-      <!-- Position & Größe (readonly info) -->
+      <!-- Position und Größe -->
       <div class="property-section">
         <label>Position & Größe</label>
         <div class="info-grid">

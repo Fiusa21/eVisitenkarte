@@ -69,6 +69,7 @@ import TriangleElement from '../elements/TriangleElement.vue';
 import TextElement from '../elements/TextElement.vue';
 import ToolBox from '../components/ToolBox.vue';
 import PropertyEditor from '../components/PropertyEditor.vue';
+import ApiService from '../services/api-service.js';
 
 export default {
   name: 'layout-editor',
@@ -79,6 +80,7 @@ export default {
   },
   setup(){
     const scale = 3;
+    
     //simulierte Nutzerdaten
     const userProfile = {
       first_name: 'Maximilian',
@@ -139,7 +141,7 @@ export default {
         h: h,
         content: content,
         source: content in userProfile ? 'dynamic' : 'static',
-        style: { color: 'black' } // Initialisiere mit schwarzer Farbe
+        style: { color: canvasBgColor.value === 'black' ? 'white' : 'black' } // Kontrast zur Canvas-Farbe
       };
       cardElements.value.push(newElement);
     };
@@ -155,11 +157,25 @@ export default {
       }
     };
 
-    //Beispiel für Speichern (Später API Call)
-    const saveTemplate = () => {
-      console.log('--- Template-Daten zur Speicherung ---');
-      console.log(JSON.stringify(cardElements.value, null, 2));
-      console.log('--- Ende Template-Daten ---');
+    //Test
+    //Beispiel für Speichern
+    const saveTemplate = async () => {
+      const layoutData = {
+        elements: cardElements.value,
+        backgroundColor: canvasBgColor.value,
+      };
+
+      console.log('--- Speichere Layout ---');
+      console.log(JSON.stringify(layoutData, null, 2));
+
+      try {
+        const response = await ApiService.saveLayout(layoutData);
+        console.log('Layout erfolgreich gespeichert:', response);
+        alert(`Layout erfolgreich gespeichert!`);
+      } catch (error) {
+        console.error('Fehler beim Speichern:', error);
+        alert(`Fehler beim Speichern: ${error.message}`);
+      }
     };
 
     //Handler für Toolbox add-element Event
@@ -193,6 +209,14 @@ export default {
     //Handler für Canvas Hintergrundfarbe
     const updateCanvasBg = (color) => {
       canvasBgColor.value = color;
+
+      // Alle existierenden Elemente auf Kontrastfarbe setzen
+      const contrastColor = color === 'black' ? 'white' : 'black';
+      cardElements.value.forEach(element => {
+        if (element.style) {
+      element.style.color = contrastColor;
+        }
+      });
     };
 
     return {
@@ -285,10 +309,8 @@ TODO: Medie queries für alle Bildschirmgrößen
 .canvas{
   height: 384px;
   width: 888px;
-  /* For draggable items */
   position: relative;
   background-color: white;
-  border: 1px solid #ddd;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   overflow: hidden;  
   transition: background-color 0.3s;
