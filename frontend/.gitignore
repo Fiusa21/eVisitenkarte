@@ -4,6 +4,8 @@
 # build outputs
 /dist
 /build
+package-lock.json
+package.json
 
 # editor configs
 .vscode/*

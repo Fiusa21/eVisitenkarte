@@ -20,6 +20,8 @@
     <main class="main-content">
       <router-view />
     </main>
+    <ConnectivityIndicator class="fixed-indicator" />
+
   </div>
 </template>
 
@@ -28,11 +30,12 @@ import { ref } from 'vue';
 import AdminToggle from '@/components/AdminSlider.vue';
 import TopBar from '@/components/TopBar.vue';
 import LogoutButton from '@/components/LogoutButton.vue';
+import ConnectivityIndicator from '@/components/ConnectivityIndicator.vue';
 
 export default {
 
   name: 'AdminLayout',
-  components: { AdminToggle, TopBar, LogoutButton },
+  components: { AdminToggle, TopBar, LogoutButton, ConnectivityIndicator },
   setup() {
     const isAdminMode = ref(false); // Initial state is OFF
 
@@ -149,5 +152,23 @@ nav {
 .admin-toggle {
   display: inline-flex;
   align-items: center;
+}
+.fixed-indicator {
+    /* 1. Use fixed positioning relative to the viewport */
+    position: fixed; 
+    
+    /* 2. Anchor it to the bottom and right edges */
+    bottom: 20px; /* Adjust spacing from the bottom */
+    right: 20px;  /* Adjust spacing from the right */
+    
+    /* 3. Ensure it sits above all other content */
+    z-index: 1000; 
+    
+    /* Optional: Style adjustments for better visibility */
+    background-color: rgba(0, 0, 0, 0.7); /* Dark background */
+    color: white; 
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.9em;
 }
 </style>
