@@ -29,18 +29,65 @@
               {{ formattedAddress || 'Nicht hinterlegt' }}
             </div>
           </div>
-
         </div>
       </div>
 
       <div class="dashboard-layouts-container">
+
         <div
           v-for="layout in layouts"
           :key="layout.id"
           class="business-cards"
-          > {{ layout.name }}</div>
+          @click="openLayoutModal(layout)"
+          style="cursor: pointer;"
+          >
+          <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor}">
+            {{ layout.name }}
+          </div>
+        </div>
       </div>
     </div>
+
+    <!-- Modal -->
+     <div v-if="selectedLayout" class="modal-overlay" @click="closeLayoutModal">
+        <div class="modal-content" @click.stop>
+          <!-- Close Button -->
+          <button class="close-button" @click="closeLayoutModal">X</button>
+
+          <div class="modal-canvas" :style="{ backgroundColor: selectedLayout.backgroundColor }">
+            <!-- Rendern aller Elemente des Layouts -->
+            <div
+              v-for="element in selectedLayout.elements"
+              :key="elements.id"
+              class="modal-element"
+              :style="{
+                left: element.x + 'px',
+                top: element.y + 'px',
+                width: element.w + 'px',
+                height: element.h + 'px',
+                color: element.style.color,
+                position: 'absolute',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }"
+              >
+              <!-- Echte User Daten -->
+              <component
+                :is="getElementComponent(element)"
+                :item="element"
+                :user-profile="userProfile"
+              />
+            </div>
+          </div>
+
+          <!-- Info unter der Karte TEST -->
+          <div class="modal-info">
+            <h2>{{ selectedLayout.name }}</h2>
+            <p>{{ selectedLayout.backgroundColor === 'black' ? 'Dunkle' : 'Helle' }}</p>
+          </div>
+        </div>
+     </div>
   </div>
 </template>
 
