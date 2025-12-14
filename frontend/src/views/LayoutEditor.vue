@@ -17,7 +17,7 @@
       <div class="canvas-container">
         <div class="canvas" :style="{ backgroundColor: canvasBgColor }">
           <!-- 
-          Logik für drag/resize: direkt im Template mit Inline-Funktionen
+          Logik für drag/resize: im Template mit Inline-Funktionen
           Werte werden direkt updated: @drag-end und @resize-end aktualisieren item.x, item.y, item.w, item.h
           -->
           <Vue3DraggableResizable
@@ -78,8 +78,11 @@ export default {
     PropertyEditor
   },
   setup(){
-    const scale = 3;
-    
+    const scale = 3; //Skalierung
+    const cardElements = ref([]); //Array aller Elemente 
+    const selectedElement = ref(null); //Ausgewähltes Element
+    const canvasBgColor = ref('white'); //Canvas Background
+
     //simulierte Nutzerdaten
     const userProfile = {
       first_name: 'Maximilian',
@@ -104,11 +107,7 @@ export default {
       { key: 'adress', label: 'Adresse' }
     ]);
 
-    const cardElements = ref([]);
-    const selectedElement = ref(null);
-    const canvasBgColor = ref('white');
-
-    const measureTextSize = (text, fontSize = 16, fontFamily = 'Dosis') => {
+    const measureTextSize = (text, fontSize, fontFamily = 'Dosis') => {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
       context.font = `${fontSize}px ${fontFamily}`;
@@ -140,7 +139,7 @@ export default {
         h: h,
         content: content,
         source: content in userProfile ? 'dynamic' : 'static',
-        style: { color: canvasBgColor.value === 'black' ? 'white' : 'black' } // Kontrast zur Canvas-Farbe
+        style: { color: canvasBgColor.value === 'black' ? 'white' : 'black' } // Kontrast zur Canvas Farbe
       };
       cardElements.value.push(newElement);
     };
@@ -208,7 +207,6 @@ export default {
     const updateCanvasBg = (color) => {
       canvasBgColor.value = color;
 
-      // Alle existierenden Elemente auf Kontrastfarbe setzen
       const contrastColor = color === 'black' ? 'white' : 'black';
       cardElements.value.forEach(element => {
         if (element.style) {
