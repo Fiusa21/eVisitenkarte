@@ -13,15 +13,12 @@ import { useRouter } from 'vue-router';
 export default{
     name: 'TopBar',
     setup(){
-        //Access the router instance
         const router = useRouter();
-        
-        //Function to navigate to AdminHome
+
         const goToAdminHome = () => {
             router.push('/admin');
         };
         
-        //Function to navigate to Nutzerverwaltung
         const goToNutzerverwaltung = () => {
             window.open('http://localhost:8080/admin/master/console/#/eVisitenkarte-development/users', '_blank');
         };
@@ -35,7 +32,6 @@ export default{
 
 <style scoped>
 .wrapper {
-    /* fixed pill width so it appears as centered bar in the header */
     width: 480px;
     height: 40px;
     background-color: rgba(255,255,255,0.08);
@@ -45,7 +41,6 @@ export default{
 }
 
 .wrapper-inner {
-    /* let the inner content determine spacing */
     margin: 0 auto;
     display: flex;
     justify-content: center;
@@ -63,7 +58,7 @@ button {
     cursor: pointer;
     outline: none;
 }
-/* Ensure the wrapper centers the inner container horizontally */
+
 .wrapper {
     display: flex;
     justify-content: center;
@@ -71,8 +66,6 @@ button {
     border-radius: 32px;
 }
 
-
-/* Make buttons have consistent size and center their content */
 .wrapper-inner button {
     min-width: 120px;
     height: 36px;
