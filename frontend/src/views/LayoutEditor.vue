@@ -16,10 +16,7 @@
 
       <div class="canvas-container">
         <div class="canvas" :style="{ backgroundColor: canvasBgColor }">
-          <!-- 
-          Logik für drag/resize: im Template mit Inline-Funktionen
-          Werte werden direkt updated: @drag-end und @resize-end aktualisieren item.x, item.y, item.w, item.h
-          -->
+          <!-- Logik für drag/resize -->
           <Vue3DraggableResizable
             v-for="item in cardElements"
             :key="item.id"
@@ -35,6 +32,7 @@
             @drag-end="(pos) => {item.x = pos.x; item.y = pos.y;}" 
             @resize-end="(pos) => {item.x = pos.x; item.y = pos.y; item.w = pos.w; item.h = pos.h;}"
           >
+            <!-- Rendert die Elementkomponente-->
             <component :is="elementComponent(item)" :item="item" :user-profile="userProfile"/>
             
           </Vue3DraggableResizable>
@@ -51,7 +49,6 @@
       />
     </div>
 
-    <!--Save Button-->
     <button @click="saveTemplate" class="save-btn-fixed">Template Speichern</button>
 
   </div>
@@ -78,10 +75,10 @@ export default {
     PropertyEditor
   },
   setup(){
-    const scale = 3; //Skalierung
-    const cardElements = ref([]); //Array aller Elemente 
-    const selectedElement = ref(null); //Ausgewähltes Element
-    const canvasBgColor = ref('white'); //Canvas Background
+    const scale = 3;
+    const cardElements = ref([]);
+    const selectedElement = ref(null);
+    const canvasBgColor = ref('white');
 
     //simulierte Nutzerdaten
     const userProfile = {
@@ -95,7 +92,7 @@ export default {
       adress: 'Beispielstraße 12, 12345 Musterstadt'
     };
 
-    //fields to display {key: Claim-Namen from Token, label: Label in UI}
+    //Textfelder inhalte
     const dynamicTextOptions = ([
       { key: 'first_name', label: 'Vorname'},
       { key: 'last_name', label: 'Nachname'},
@@ -107,13 +104,14 @@ export default {
       { key: 'adress', label: 'Adresse' }
     ]);
 
+    //Messung Textgröße
     const measureTextSize = (text, fontSize, fontFamily = 'Dosis') => {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
       context.font = `${fontSize}px ${fontFamily}`;
       const metrics = context.measureText(text);
       const width = metrics.width;
-      const height = fontSize; // grobe Annahme für Höhe
+      const height = fontSize;
       return { width, height };
     };
 
@@ -122,16 +120,16 @@ export default {
       let w = 50 * scale;
       let h = 50 * scale;
 
-      // nur für Text: w und h auf Textgröße setzen und 1.5x größer spawnen
       if(type === 'text'){
         const size = measureTextSize(userProfile[content] || content, 16, 'Dosis');
-        w = (size.width + 20) * 1.5;   // Text-Breite + Padding, 50% größer
-        h = (size.height + 10) * 1.5;  // Text-Höhe + Padding, 50% größer
+        w = (size.width + 20) * 1.5;
+        h = (size.height + 10) * 1.5;
       }
       
       let newElement = {
         id: Date.now(),
         type: type,
+
         //Position bestimmen
         x: 50 * scale + (cardElements.value.length * 10),
         y: 50 * scale + (cardElements.value.length * 10),
@@ -139,12 +137,12 @@ export default {
         h: h,
         content: content,
         source: content in userProfile ? 'dynamic' : 'static',
-        style: { color: canvasBgColor.value === 'black' ? 'white' : 'black' } // Kontrast zur Canvas Farbe
+        style: { color: canvasBgColor.value === 'black' ? 'white' : 'black' }
       };
       cardElements.value.push(newElement);
     };
 
-    //Switch-Anweisung für Unterscheidung nach 'type' 
+    //Switch Anweisung für Type
     const elementComponent = (item) =>{ 
       switch (item.type){ 
         case 'rectangle': return RectangleElement; 
@@ -175,17 +173,17 @@ export default {
       }
     };
 
-    //Handler für Toolbox add-element Event
+    //Handler für Toolbox addElement Event
     const handleAddElement = (payload) => {
       addElementToCanvas(payload.type, payload.content);
     };
 
-    //Handler für Element-Auswahl
+    //Handler für selectedElement
     const selectElement = (item) => {
       selectedElement.value = item;
     };
 
-    //Handler für Element-Update vom PropertyEditor
+    //Handler für updateElement
     const updateElement = (updatedItem) => {
       const idx = cardElements.value.findIndex(el => el.id === updatedItem.id);
       if (idx !== -1) {
@@ -194,7 +192,7 @@ export default {
       }
     };
 
-    //Handler für Element-Löschen
+    //Handler für deleteElement
     const deleteElement = (id) => {
       const idx = cardElements.value.findIndex(el => el.id === id);
       if (idx !== -1) {
@@ -253,10 +251,10 @@ TODO: Medie queries für alle Bildschirmgrößen
   width: 100%;
   max-width: 1400px;
   gap: 30px;
-  align-items: center; /* Toolbox und Canvas vertikal zentrieren */
-  margin-top: 20px; /* Fügt eine visuelle Trennung zum Header hinzu */
-  padding: 0 20px; /* Abstand zum Seitenrand */
-  min-height: calc(100vh - 220px); /* genug Höhe für vertikale Zentrierung */
+  align-items: center;
+  margin-top: 20px;
+  padding: 0 20px;
+  min-height: calc(100vh - 220px);
 }
 
 .site-header{
@@ -296,10 +294,10 @@ TODO: Medie queries für alle Bildschirmgrößen
 .canvas-container{
   flex-grow: 1;
   display: flex;
-  justify-content: center; /* horizontal zentrieren */
-  align-items: center; /* vertical zentrieren */
+  justify-content: center; 
+  align-items: center;
   padding: 30px 0;
-  min-width: 0; /* verhindert Überlauf in flexbox */
+  min-width: 0;
 }
 
 .canvas{
@@ -312,9 +310,8 @@ TODO: Medie queries für alle Bildschirmgrößen
   transition: background-color 0.3s;
 }
 
-/* Ausgewähltes Element hervorheben */
 .selected {
-  outline: 2px solid #007bff !important;
+  outline: 2px solid #007bff;
   outline-offset: 2px;
   z-index: 100;
 }
