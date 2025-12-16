@@ -23,7 +23,7 @@ export default{
         
         //Function to navigate to Nutzerverwaltung
         const goToNutzerverwaltung = () => {
-            router.push('/nutzerverwaltung');
+            window.open('http://localhost:8080/admin/master/console/#/eVisitenkarte-development/users', '_blank');
         };
 
         return {
