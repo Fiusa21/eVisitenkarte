@@ -29,7 +29,7 @@ module.exports = {
         const { erstelldatum, user_id_ersteller, name } = layout;
 
         const res = await db.executeQuery(getKeys.insertLayout, [erstelldatum, user_id_ersteller, name]);
-        // DEBUG: Uncomment this to see exactly what the DB returns
+
         console.log("Database Result:", res);
         //NOTE: access Layout_id from the autoincrement out of the query return!!!
         return res[0].layout_id;
@@ -52,7 +52,7 @@ module.exports = {
 //HELPER FUNCTION TO MAP THE ELEMENTS IN THE ARRAY
     saveLayoutWithElements: async (layoutData, elementsArray) => {
 
-        // 1. Capture the returned ID into a variable
+        //returned id from query to var
         const newLayoutId = await module.exports.insertLayout(layoutData);
 
         //DEBUG
@@ -62,7 +62,7 @@ module.exports = {
             for (const el of elementsArray) {
 
                 const elementToSave = {
-                    layout_id: newLayoutId,             // <--- HERE IS THE FIX
+                    layout_id: newLayoutId,
                     element_id: el.id,
                     typ: el.type,
                     uri: el.content,
