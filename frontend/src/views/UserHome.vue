@@ -150,43 +150,38 @@ TODO: Medie queries für alle Bildschirmgrößen
   margin-top: -5px;
 }
 
-/*user-info and dashboard-layouts-container*/
 .main-content-wrapper{
   display: flex;
   justify-content: flex-start; 
   align-items: flex-start; 
-  gap: 200px; /* Space between the two columns */
+  gap: 200px; 
   margin-top: 15px;
   padding: 0 30px;
   width: 90%; 
 
 }
 
-/*All Label and Fields*/
 .user-info-card {
-  background-color: rgba(0, 0, 0, 0.2); /* Semi-transparent dark background */
+  background-color: rgba(0, 0, 0, 0.2); 
   padding: 15px;
   border-radius: 8px;
-  flex-basis: 350px; /* Fixed width for the user info box */
-  flex-shrink: 0; /* Prevents shrinking */
+  flex-basis: 350px; 
+  flex-shrink: 0; 
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
-/*Space between different fields*/
 .user-info {
   display: flex;
   flex-direction: column;
   gap: 15px; 
 }
 
-/*Label and Input*/
 .info-group {
   display: flex;
   flex-direction: column; 
   gap: 5px; 
 }
 
-/*Label*/
 .field-label {
   color: #ffffff;
   font-size: 0.95rem;
@@ -194,7 +189,6 @@ TODO: Medie queries für alle Bildschirmgrößen
   padding-left: 2px;
 }
 
-/*Input Fields*/
 .display-field {
   background-color: #ffffff;
   color: black;
@@ -209,21 +203,18 @@ TODO: Medie queries für alle Bildschirmgrößen
 
 .dashboard-layouts-container {
   flex-grow: 1; 
-  display: flex; /*Horrizontal*/
-  flex-wrap: wrap; /*Wrap cards to the next line*/
-  gap:30px; /*Place between cards*/
-  justify-content: flex-start; /*Cards start right*/
+  display: flex; 
+  flex-wrap: wrap; 
+  gap:30px; 
+  justify-content: flex-start; 
   max-height: 565px; 
   overflow-y: auto;
   padding-bottom: 20px;
 }
 
 .business-cards {
-  /*Cards*/
   width: 296px; 
   height: 128px;
-  
-  /*Placeholder*/
   background-color: white;
   color: black;
   padding: 15px;
@@ -235,6 +226,6 @@ TODO: Medie queries für alle Bildschirmgrößen
   text-align: center;
   font-weight: 700;
   font-size: 1.2rem;
-  background-image: linear-gradient(to right, #ffffff, #000000); /*Mimic style in cards*/
+  background-image: linear-gradient(to right, #ffffff, #000000); 
 }
 </style>
