@@ -120,12 +120,14 @@ export default {
   computed: {
     elementTypeLabel() {
       if (!this.selectedElement) return '';
+      //Mapped Types
       const types = {
         text: 'Text',
         rectangle: 'Rechteck',
         circle: 'Kreis',
         triangle: 'Dreieck'
       };
+      //Unbekannter Typ = Original String
       return types[this.selectedElement.type] || this.selectedElement.type;
     },
     currentColor() {
