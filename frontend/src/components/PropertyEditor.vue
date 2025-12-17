@@ -53,7 +53,7 @@
         <p class="dynamic-info">{{ selectedElement.content }} (dynamisch)</p>
       </div>
 
-      <!-- Farbe ändern (Shapes und Text) -->
+      <!-- Farbe ändern -->
       <div class="property-section">
         <label>Farbe</label>
         <div class="color-picker">

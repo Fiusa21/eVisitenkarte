@@ -188,7 +188,7 @@ export default {
       const idx = cardElements.value.findIndex(el => el.id === updatedItem.id);
       if (idx !== -1) {
         cardElements.value[idx] = updatedItem;
-        selectedElement.value = updatedItem; // Aktualisiere auch die Auswahl
+        selectedElement.value = updatedItem;
       }
     };
 
@@ -197,7 +197,7 @@ export default {
       const idx = cardElements.value.findIndex(el => el.id === id);
       if (idx !== -1) {
         cardElements.value.splice(idx, 1);
-        selectedElement.value = null; // Deselektiere nach Löschen
+        selectedElement.value = null;
       }
     };
 
