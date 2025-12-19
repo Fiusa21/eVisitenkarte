@@ -20,7 +20,7 @@
     <main class="main-content">
       <router-view />
     </main>
-    <ConnectivityIndicator class="fixed-indicator" />
+    <!--<ConnectivityIndicator class="fixed-indicator" />-->
 
   </div>
 </template>
