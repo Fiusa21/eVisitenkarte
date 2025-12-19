@@ -59,17 +59,41 @@ router.post('/layout-management/layouts', protect, async (req, res) => {
             erstelldatum: new Date()
         };
 
-        await layoutModel.saveLayoutWithElements(layoutData, elements);
+        const newLayoutId = await layoutModel.createLayoutWithElements(layoutData, elements);
 
-        res.json('successfully inserted a new layout and its elements');
+        res.status(201).json({
+            message: 'Layout created',
+            layout_id: newLayoutId
+        });
     } catch (err) {
         console.error("Error saving layout:", err);
         res.status(500).json({ error: err.message });
     }
 });
 
-router.put('/layout-management/layouts/{id}', protect, (req, res)=> {
-    res.json('placeholder: this would update a layout');
+router.put('/layout-management/layouts/:id', protect, async (req, res) => {
+    try {
+        const userId = req.kauth.grant.access_token.content.sub;
+        const { id } = req.params;
+        const { name, elements } = req.body;
+
+        const layoutData = {
+            id: id,
+            name: name,
+            user_id_ersteller: userId,
+            erstelldatum: new Date() // Usually you update the "last modified" or keep original
+        };
+
+        await layoutModel.updateLayoutWithElements(layoutData, elements);
+
+        res.json({ message: 'Layout updated successfully', layout_id: id });
+    } catch (err) {
+        console.error("Error updating layout:", err);
+        res.status(500).json({ error: err.message });
+    }
+
+
+
 })
 
 router.delete('/layout-management/layouts/{id}', protect, (req, res)=> {
