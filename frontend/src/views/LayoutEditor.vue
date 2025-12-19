@@ -1,5 +1,24 @@
 <template>
   <div class="layout-editor">
+    <!-- Modal für neues Layout -->
+    <div v-if="showNameModal" class="modal-overlay">
+      <div class="modal-content">
+        <h2>Neues Layout erstellen</h2>
+        <p>Bitte gib einen Namen für das neue Layout ein:</p>
+        <input 
+          v-model="layoutName" 
+          type="text" 
+          class="layout-name-input" 
+          placeholder="z.B. Layout Merketing, etc."
+          @keyup.enter="confirmLayoutName"
+          autofocus
+        />
+        <div class="modal-actions">
+          <button @click="confirmLayoutName" class="btn-confirm">Bestätigen</button>
+        </div>
+      </div>
+    </div>
+
     <div class="site-header">
       <div class="header-content">
         <h1>uxitra GmbH</h1>
@@ -55,7 +74,8 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
+import { useRoute } from 'vue-router';
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
 import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css';
 
@@ -79,6 +99,9 @@ export default {
     const cardElements = ref([]);
     const selectedElement = ref(null);
     const canvasBgColor = ref('white');
+    const layoutName = ref('');
+    const showNameModal = ref(false);
+    const route = useRoute();
 
     //simulierte Nutzerdaten
     const userProfile = {
@@ -213,6 +236,30 @@ export default {
       });
     };
 
+    // Prüfe beim Laden ob neues Layout (ohne ID) oder existierendes Layout (mit ID)
+    onMounted(() => {
+      const layoutIdFromRoute = route.params.id;
+      if (!layoutIdFromRoute) {
+        // Kein ID-Parameter = neues Layout → Modal anzeigen
+        showNameModal.value = true;
+      } else {
+        // Mit ID-Parameter = existierendes Layout laden
+        console.log('Lade existierendes Layout mit ID:', layoutIdFromRoute);
+        // TODO: Layout-Daten vom Backend laden
+      }
+    });
+
+    //Logik für Backend hier einfügen
+    // Modal bestätigen und Layout-Namen setzen
+    const confirmLayoutName = () => {
+      if (layoutName.value.trim() === '') {
+        alert('Bitte gib einen Layout-Namen ein!');
+        return;
+      }
+      showNameModal.value = false;
+      console.log('Layout-Name gesetzt:', layoutName.value);
+    };
+
     return {
       scale, 
       userProfile, 
@@ -220,6 +267,8 @@ export default {
       cardElements, 
       selectedElement,
       canvasBgColor,
+      layoutName,
+      showNameModal,
       addElementToCanvas, 
       elementComponent, 
       saveTemplate,
@@ -227,7 +276,8 @@ export default {
       selectElement,
       updateElement,
       deleteElement,
-      updateCanvasBg
+      updateCanvasBg,
+      confirmLayoutName
     }
   }
 }
@@ -335,11 +385,92 @@ TODO: Medie queries für alle Bildschirmgrößen
 }
 
 .save-btn-fixed:hover {
-  background-color: #218838;
+  background-color: #05b02d;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: #2e2e2e;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  min-width: 400px;
+  max-width: 500px;
+  color: white;
+  font-family: 'Dosis', sans-serif;
+}
+
+.modal-content h2 {
+  margin: 0 0 15px 0;
+  font-size: 1.8em;
+  font-weight: 600;
+  color: #4a9eff;
+}
+
+.modal-content p {
+  margin: 0 0 25px 0;
+  font-size: 1.1em;
+  color: #ccc;
+}
+
+.layout-name-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1em;
+  border: 2px solid #555;
+  border-radius: 6px;
+  background: #1e1e1e;
+  color: white;
+  font-family: 'Dosis', sans-serif;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.layout-name-input:focus {
+  outline: none;
+  border-color: #4a9eff;
+}
+
+.modal-actions {
+  margin-top: 25px;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-confirm {
+  padding: 10px 30px;
+  font-size: 1.1em;
+  font-weight: 600;
+  background: #4a9eff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Dosis', sans-serif;
+}
+
+.btn-confirm:hover {
+  background: #3a8fef;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74, 158, 255, 0.4);
+}
 
 .card-element{
   cursor: grab;
