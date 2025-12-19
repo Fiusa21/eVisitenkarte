@@ -20,7 +20,7 @@
     <main class="main-content">
       <router-view />
     </main>
-    <ConnectivityIndicator class="fixed-indicator" />
+    <!--<ConnectivityIndicator class="fixed-indicator" />-->
 
   </div>
 </template>
@@ -47,7 +47,6 @@ export default {
 </script>
 
 <style scoped>
-/* Basic Flexbox and Grid for Layout */
 .admin-layout {
     display: flex;
     flex-direction: column;
@@ -59,7 +58,7 @@ export default {
 }
 
 .main-header {
-  background-color: transparent; /* Primary color */
+  background-color: transparent; 
   color: white;
   padding: 15px 30px;
   display: grid;
@@ -146,7 +145,7 @@ nav {
   align-items: center;
   margin: 0;
   padding: 0;
-  line-height: 1; /* tighter baseline so it centers nicely next to the switch */
+  line-height: 1;
 }
 
 .admin-toggle {
@@ -154,18 +153,11 @@ nav {
   align-items: center;
 }
 .fixed-indicator {
-    /* 1. Use fixed positioning relative to the viewport */
     position: fixed; 
-    
-    /* 2. Anchor it to the bottom and right edges */
-    bottom: 20px; /* Adjust spacing from the bottom */
-    right: 20px;  /* Adjust spacing from the right */
-    
-    /* 3. Ensure it sits above all other content */
+    bottom: 20px; 
+    right: 20px;
     z-index: 1000; 
-    
-    /* Optional: Style adjustments for better visibility */
-    background-color: rgba(0, 0, 0, 0.7); /* Dark background */
+    background-color: rgba(0, 0, 0, 0.7);
     color: white; 
     padding: 8px 12px;
     border-radius: 8px;

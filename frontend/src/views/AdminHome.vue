@@ -12,9 +12,10 @@
             v-for="layout in layouts"
             :key="layout.id"
             class="business-cards"
+            @click="openLayout(layout.id)"
             > {{ layout.name }}
             </div>
-            <div class="add-layout">+</div>
+            <div class="add-layout" @click="createNewLayout">+</div>
         </div>
     </div>
   </div>
@@ -22,11 +23,13 @@
 
 <script>
 import { ref } from 'vue';
+import { useRouter } from 'vue-router';
 
 // Add logic here later, e.g., fetching user-specific data
 export default {
   name: 'AdminHome',
   setup() {
+    const router = useRouter();
      const layouts = ref([
       { id: 1, name: 'Layout 1', imagePlaceholder: 'Image of Layout 1' },
       { id: 2, name: 'Layout 2', imagePlaceholder: 'Image of Layout 2' },
@@ -39,9 +42,23 @@ export default {
       { id: 9, name: 'Layout 9', imagePlaceholder: 'Image of Layout 9' },
       { id: 10, name: 'Layout 10', imagePlaceholder: 'Image of Layout 10' },
     ]);
+
+    const openLayout = (id) => {
+      console.log("Öffne Layout ID:", id);
+      router.push({ name: 'layout-editor', params: { id } });
+    };
     
+    const createNewLayout = () => {
+      console.log("Navigiere zum Editor für neues Layout");
+      // Weiterleitung zum Editor ohne ID (löst das NameLayout-Modal aus)
+      router.push({ name: 'layout-editor' });
+    };
+
+
     return { 
       layouts, 
+      openLayout,
+      createNewLayout
     };
   }
 }
@@ -93,51 +110,60 @@ TODO: Medie queries für alle Bildschirmgrößen
 
 .layouts {
   flex-grow: 1; 
-  display: flex; /*Horrizontal*/
-  flex-wrap: wrap; /*Wrap cards to the next line*/
-  gap:30px; /*Place between cards*/
-  justify-content: flex-start; /*Cards start right*/
+  display: flex;
+  flex-wrap: wrap;
+  gap:30px; 
+  justify-content: flex-start; 
   align-items: center;
-  max-height: 560px; 
+  max-height: auto; 
   max-width: 1024px;
   overflow-y: auto;
   padding: 0 30px;
   margin-top: 25px;
+  padding-top: 10px;
+}
+
+.business-cards, .add-layout {
+  width: 296px; 
+  height: 128px;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 700;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.business-cards:hover, .add-layout:hover {
+  transform: translateY(-8px); 
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
+}
+
+.business-cards:active, .add-layout:active {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
 }
 
 .business-cards {
-  /*Cards*/
-  width: 296px; 
-  height: 128px;
-  
-  /*Placeholder*/
   background-color: white;
   color: black;
   padding: 15px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-weight: 700;
-  font-size: 1.2rem;
-  background-image: linear-gradient(to right, #ffffff, #000000); /*Mimic style in cards*/
+  background-image: linear-gradient(135deg, #ffffff 60%, #e0e0e0 100%);
 }
 
-.add-layout{
-  width: 296px; 
-  height: 128px;
-  border: solid 1px black;
-  border-radius: 8px;
-  background-color: rgba(168, 168, 168, 0.39);
+.add-layout {
+  border: 2px dashed #666;
+  background-color: rgba(168, 168, 168, 0.15);
+  color: #333;
+}
+
+.add-layout:hover {
+  background-color: rgba(168, 168, 168, 0.3);
+  border-color: black;
   color: black;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  font-weight: 700;
-  font-size: 1.2rem;
 }
 </style>
