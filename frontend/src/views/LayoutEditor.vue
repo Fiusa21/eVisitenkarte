@@ -101,6 +101,7 @@ export default {
     const canvasBgColor = ref('white');
     const layoutName = ref('');
     const showNameModal = ref(false);
+    const layoutId = ref(null); // Wird beim Erstellen des Layouts vom Backend gesetzt
     const route = useRoute();
 
     //simulierte Nutzerdaten
@@ -176,20 +177,26 @@ export default {
       }
     };
 
-    //Test
-    //Beispiel für Speichern
+    // Layout aktualisieren
     const saveTemplate = async () => {
+      if (!layoutId.value) {
+        alert('Bitte erstellen Sie zunächst ein Layout mit einem Namen!');
+        return;
+      }
+
       const layoutData = {
+        layout_id: layoutId.value,
+        name: layoutName.value,
         elements: cardElements.value,
         backgroundColor: canvasBgColor.value,
       };
 
-      console.log('--- Speichere Layout ---');
+      console.log('--- Aktualisiere Layout ---');
       console.log(JSON.stringify(layoutData, null, 2));
 
       try {
-        await ApiService.insertLayout(layoutData);
-        alert('Layout erfolgreich gespeichert!');
+        await ApiService.updateLayout(layoutData);
+        alert('Layout erfolgreich aktualisiert!');
       } catch (error) {
         console.error('Fehler beim Speichern:', error);
         alert(`Fehler beim Speichern: ${error.message}`);
@@ -237,27 +244,58 @@ export default {
     };
 
     // Prüfe beim Laden ob neues Layout (ohne ID) oder existierendes Layout (mit ID)
-    onMounted(() => {
+    onMounted(async () => {
       const layoutIdFromRoute = route.params.id;
       if (!layoutIdFromRoute) {
-        // Kein ID-Parameter = neues Layout → Modal anzeigen
+        // Kein ID-Parameter = neues Layout
         showNameModal.value = true;
       } else {
         // Mit ID-Parameter = existierendes Layout laden
         console.log('Lade existierendes Layout mit ID:', layoutIdFromRoute);
-        // TODO: Layout-Daten vom Backend laden
+        try {
+          const layoutData = await ApiService.getLayoutById(layoutIdFromRoute);
+          console.log('Layout-Daten vom Backend:', layoutData);
+          
+          // Lade die Daten vom Backend
+          layoutId.value = layoutData.layout_id || layoutData.id || layoutIdFromRoute;
+          layoutName.value = layoutData.name || '';
+          cardElements.value = Array.isArray(layoutData.elements) ? layoutData.elements : [];
+          canvasBgColor.value = layoutData.backgroundColor || layoutData.background_color || 'white';
+          
+          console.log('Layout erfolgreich geladen mit ID:', layoutId.value, 'Name:', layoutName.value);
+        } catch (error) {
+          console.error('Fehler beim Laden des Layouts - Full Error:', error);
+          console.error('Error Message:', error.message);
+          console.error('Error Stack:', error.stack);
+          alert(`Fehler beim Laden des Layouts: ${error.message || 'Unbekannter Fehler'}`);
+        }
       }
     });
 
-    //Logik für Backend hier einfügen
-    // Modal bestätigen und Layout-Namen setzen
-    const confirmLayoutName = () => {
+    // Modal bestätigen
+    const confirmLayoutName = async () => {
       if (layoutName.value.trim() === '') {
         alert('Bitte gib einen Layout-Namen ein!');
         return;
       }
-      showNameModal.value = false;
-      console.log('Layout-Name gesetzt:', layoutName.value);
+
+      const layoutData = {
+        name: layoutName.value,
+        backgroundColor: canvasBgColor.value,
+        elements: []
+      };
+
+      try {
+        const response = await ApiService.insertLayout(layoutData);
+        // Backend sollte die neue layout_id in der Response zurückgeben
+        layoutId.value = response.layout_id || response.id || response;
+        showNameModal.value = false;
+        console.log('Layout erstellt mit ID:', layoutId.value);
+        console.log('Willkommen! Du kannst jetzt Elemente hinzufügen und speichern.');
+      } catch (error) {
+        console.error('Fehler beim Erstellen des Layouts:', error);
+        alert(`Fehler beim Erstellen des Layouts: ${error.message}`);
+      }
     };
 
     return {

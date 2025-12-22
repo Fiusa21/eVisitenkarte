@@ -48,7 +48,7 @@ const router = createRouter({
       ]
     },
     {
-      path: '/editor',
+      path: '/editor/:id?',
       meta: { requiresAuth: true, requiresRole: 'admin' }, 
       component: EditorLayout,
       children: [

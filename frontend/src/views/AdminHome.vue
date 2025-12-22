@@ -37,10 +37,10 @@ export default {
       { id: 4, name: 'Layout 4', imagePlaceholder: 'Image of Layout 4' },
       { id: 5, name: 'Layout 5', imagePlaceholder: 'Image of Layout 5' },
       { id: 6, name: 'Layout 6', imagePlaceholder: 'Image of Layout 6' },
-      { id: 7, name: 'Layout 7', imagePlaceholder: 'Image of Layout 7' },
-      { id: 8, name: 'Layout 8', imagePlaceholder: 'Image of Layout 8' },
-      { id: 9, name: 'Layout 9', imagePlaceholder: 'Image of Layout 9' },
-      { id: 10, name: 'Layout 10', imagePlaceholder: 'Image of Layout 10' },
+      { id: 31, name: 'Layout 31', imagePlaceholder: 'Image of Layout 31' },
+      { id: 32, name: 'Layout 32', imagePlaceholder: 'Image of Layout 32' },
+      { id: 33, name: 'Layout 33', imagePlaceholder: 'Image of Layout 33' },
+      { id: 34, name: 'Layout 34', imagePlaceholder: 'Image of Layout 34' },
     ]);
 
     const openLayout = (id) => {
