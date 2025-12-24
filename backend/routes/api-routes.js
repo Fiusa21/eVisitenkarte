@@ -6,6 +6,7 @@ const router = express.Router();
 const layoutModel = require ('../models/query-model');
 const RaspberryService = require('../services/raspberry-service');
 
+
 //FOR DOCUMENTATION see /docs/api-docs
 //ALWAYS UPDATE IF YOU ADD OR MODIFY OR DELETE AN ENDPOINT
 
@@ -27,11 +28,6 @@ router.post('/protected', protect, (req, res) => {
     const company = req.kauth.grant.access_token.content.company;
     res.json({ message: `Hello, ${username}! You accessed a protected API. Your company is ${company}` });
 });
-
-router.get('/user', protect,(req, res)=>{
-    const userData= req.kauth.grant.access_token.content;
-    res.json(userData);
-})
 
 router.get('/layout-management/layouts', protect, async (req, res) => {
     try {
@@ -92,8 +88,6 @@ router.put('/layout-management/layouts/:id', protect, async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 
-
-
 })
 
 router.delete('/layout-management/layouts/{id}', protect, (req, res)=> {
@@ -132,6 +126,33 @@ router.get('/device/status', async (req, res) => {
     }
 });
 
+router.post(
+    '/display/upload',
+    // Middleware for binary data (scoped only to this route)
+    express.raw({ type: 'application/octet-stream', limit: '10mb' }),
+    async (req, res) => {
+        try {
+            // Validation
+            if (!req.body || req.body.length === 0) {
+                return res.status(400).json({ error: "No image data provided" });
+            }
+
+            // Call the service
+            const result = await RaspberryService.handleImageUpload(req.body);
+
+            // Respond based on service outcome
+            if (result.success) {
+                return res.status(200).json({ message: result.message });
+            } else {
+                return res.status(result.status).json({ error: result.message });
+            }
+
+        } catch (err) {
+            console.error("Route Error:", err);
+            res.status(500).json({ error: "Internal Server Error" });
+        }
+    }
+);
 
 
 module.exports = router;
