@@ -169,12 +169,10 @@ export default {
       }
     };
 
-    // Modal öffnen
     const openLayoutModal = (layout) => {
       selectedLayout.value = layout;
     };
 
-    // Modal schließen
     const closeLayoutModal = () => {
       selectedLayout.value = null;
     };
@@ -184,7 +182,7 @@ export default {
       try {
         const data = await ApiService.getAllLayouts();
         
-        // Gruppiere flache Element-Liste nach layout_id
+        
         const layoutsMap = new Map();
         
         data.forEach(row => {
@@ -204,12 +202,12 @@ export default {
             const layout = layoutsMap.get(layoutId);
             const element = {
               id: row.element_id,
-              type: row.typ, // Korrekte Feldname: typ statt element_type
-              x: parseFloat(row.pos_x) || 0, // pos_x statt x_position
-              y: parseFloat(row.pos_y) || 0, // pos_y statt y_position
-              w: parseFloat(row.size_x) || 50, // size_x statt width
-              h: parseFloat(row.size_y) || 50, // size_y statt height
-              content: row.uri, // uri statt content
+              type: row.typ, 
+              x: parseFloat(row.pos_x) || 0, 
+              y: parseFloat(row.pos_y) || 0, 
+              w: parseFloat(row.size_x) || 50, 
+              h: parseFloat(row.size_y) || 50, 
+              content: row.uri, 
               source: row.source,
               style: row.style || { color: 'black' }
             };
@@ -300,43 +298,39 @@ TODO: Medie queries für alle Bildschirmgrößen
   margin-top: -5px;
 }
 
-/*user-info and dashboard-layouts-container*/
+
 .main-content-wrapper{
   display: flex;
   justify-content: flex-start; 
   align-items: flex-start; 
-  gap: 200px; /* Space between the two columns */
+  gap: 200px; 
   margin-top: 15px;
   padding: 0 30px;
   width: 90%; 
 
 }
 
-/*All Label and Fields*/
 .user-info-card {
-  background-color: rgba(0, 0, 0, 0.2); /* Semi-transparent dark background */
+  background-color: rgba(0, 0, 0, 0.2); 
   padding: 15px;
   border-radius: 8px;
-  flex-basis: 350px; /* Fixed width for the user info box */
-  flex-shrink: 0; /* Prevents shrinking */
+  flex-basis: 350px; 
+  flex-shrink: 0; 
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
-/*Space between different fields*/
 .user-info {
   display: flex;
   flex-direction: column;
   gap: 15px; 
 }
 
-/*Label and Input*/
 .info-group {
   display: flex;
   flex-direction: column; 
   gap: 5px; 
 }
 
-/*Label*/
 .field-label {
   color: #ffffff;
   font-size: 0.95rem;
@@ -344,7 +338,6 @@ TODO: Medie queries für alle Bildschirmgrößen
   padding-left: 2px;
 }
 
-/*Input Fields*/
 .display-field {
   background-color: #ffffff;
   color: black;
@@ -359,10 +352,10 @@ TODO: Medie queries für alle Bildschirmgrößen
 
 .dashboard-layouts-container {
   flex-grow: 1; 
-  display: flex; /*Horrizontal*/
-  flex-wrap: wrap; /*Wrap cards to the next line*/
-  gap:30px; /*Place between cards*/
-  justify-content: flex-start; /*Cards start right*/
+  display: flex;
+  flex-wrap: wrap; 
+  gap:30px; 
+  justify-content: flex-start; 
   max-height: 565px; 
   overflow-y: auto;
   padding-bottom: 20px;
@@ -407,7 +400,6 @@ TODO: Medie queries für alle Bildschirmgrößen
   overflow: hidden;
 }
 
-/* Modal Styles */
 .modal-overlay {
   position: fixed;
   top: 0;
