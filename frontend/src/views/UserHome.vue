@@ -39,24 +39,26 @@
           class="business-cards"
           @click="openLayoutModal(layout)"
         >
-          <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor }">
-            <div
-              v-for="element in layout.elements"
-              :key="element.id"
-              class="preview-element"
-              :style="{
-                position: 'absolute',
-                left: (element.x / 3) + 'px',
-                top: (element.y / 3) + 'px',
-                width: (element.w / 3) + 'px',
-                height: (element.h / 3) + 'px'
-              }"
-            >
-              <component
-                :is="getElementComponent(element)"
-                :item="element"
-                :user-profile="userProfile"
-              />
+          <div class="card-preview-wrapper">
+            <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor }">
+              <div
+                v-for="element in layout.elements"
+                :key="element.id"
+                class="preview-element"
+                :style="{
+                  position: 'absolute',
+                  left: element.x + 'px',
+                  top: element.y + 'px',
+                  width: element.w + 'px',
+                  height: element.h + 'px'
+                }"
+              >
+                <component
+                  :is="getElementComponent(element)"
+                  :item="element"
+                  :user-profile="userProfile"
+                />
+              </div>
             </div>
           </div>
         </div>
@@ -211,6 +213,7 @@ export default {
               source: row.source,
               style: row.style || { color: 'black' }
             };
+            console.log(`Element ${row.element_id}: raw={pos_x: ${row.pos_x}, pos_y: ${row.pos_y}, size_x: ${row.size_x}, size_y: ${row.size_y}}, parsed={x: ${element.x}, y: ${element.y}, w: ${element.w}, h: ${element.h}}`);
             layout.elements.push(element);
           }
         });
@@ -360,17 +363,28 @@ TODO: Medie queries für alle Bildschirmgrößen
   box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
 }
 
-.card-preview {
-  width: 100%;
-  height: 100%;
-  position: relative;
+.card-preview-wrapper {
+  width: 296px;
+  height: 128px;
   overflow: hidden;
+  position: relative;
+}
+
+.card-preview {
+  width: 888px;
+  height: 384px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  transform: scale(0.333333);
+  transform-origin: top left;
 }
 
 .preview-element {
   position: absolute;
   pointer-events: none;
-  transform-origin: top left;
+  overflow: hidden;
 }
 
 /* Modal Styles */
