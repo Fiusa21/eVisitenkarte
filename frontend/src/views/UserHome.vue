@@ -219,6 +219,26 @@ export default {
         });
         
         layouts.value = Array.from(layoutsMap.values());
+        
+        //Überarbeiten wegen Scale fehler. 
+        // Skaliere Elemente so dass sie die volle 888px Breite ausfüllen
+        layouts.value.forEach(layout => {
+          if (layout.elements.length > 0) {
+            // Finde das rechteste Element
+            const maxX = Math.max(...layout.elements.map(el => el.x + el.w));
+            
+            // Wenn maxX < 888, skaliere alle Elemente proportional
+            if (maxX > 0 && maxX < 888) {
+              const scaleFactor = 888 / maxX;
+              layout.elements.forEach(el => {
+                el.x = el.x * scaleFactor;
+                el.w = el.w * scaleFactor;
+              });
+              console.log(`Layout ${layout.id}: skaliert von MaxX=${maxX} zu 888 (Faktor: ${scaleFactor.toFixed(3)})`);
+            }
+          }
+        });
+        
         console.log('Final layouts count:', layouts.value.length);
         layouts.value.forEach(l => {
           console.log(`Layout ${l.id}: ${l.elements.length} elements`);
