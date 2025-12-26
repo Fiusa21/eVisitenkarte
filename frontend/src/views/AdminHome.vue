@@ -13,7 +13,27 @@
             :key="layout.id"
             class="business-cards"
             @click="openLayout(layout.id)"
-            > {{ layout.name }}
+            >
+              <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor }">
+                <div
+                  v-for="element in layout.elements"
+                  :key="element.id"
+                  class="preview-element"
+                  :style="{
+                    position: 'absolute',
+                    left: (element.x / 3) + 'px',
+                    top: (element.y / 3) + 'px',
+                    width: (element.w / 3) + 'px',
+                    height: (element.h / 3) + 'px'
+                  }"
+                >
+                  <component
+                    :is="getElementComponent(element.type)"
+                    :item="element"
+                    :user-profile="userProfile"
+                  />
+                </div>
+              </div>
             </div>
             <div class="add-layout" @click="createNewLayout">+</div>
         </div>
@@ -22,26 +42,94 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
+import ApiService from '@/services/api-service';
+import TextElement from '@/elements/TextElement.vue';
+import RectangleElement from '@/elements/RectangleElement.vue';
+import CircleElement from '@/elements/CircleElement.vue';
+import TriangleElement from '@/elements/TriangleElement.vue';
 
 // Add logic here later, e.g., fetching user-specific data
 export default {
   name: 'AdminHome',
+  components: {
+    TextElement,
+    RectangleElement,
+    CircleElement,
+    TriangleElement
+  },
   setup() {
     const router = useRouter();
-     const layouts = ref([
-      { id: 1, name: 'Layout 1', imagePlaceholder: 'Image of Layout 1' },
-      { id: 2, name: 'Layout 2', imagePlaceholder: 'Image of Layout 2' },
-      { id: 3, name: 'Layout 3', imagePlaceholder: 'Image of Layout 3' },
-      { id: 4, name: 'Layout 4', imagePlaceholder: 'Image of Layout 4' },
-      { id: 5, name: 'Layout 5', imagePlaceholder: 'Image of Layout 5' },
-      { id: 6, name: 'Layout 6', imagePlaceholder: 'Image of Layout 6' },
-      { id: 31, name: 'Layout 31', imagePlaceholder: 'Image of Layout 31' },
-      { id: 32, name: 'Layout 32', imagePlaceholder: 'Image of Layout 32' },
-      { id: 33, name: 'Layout 33', imagePlaceholder: 'Image of Layout 33' },
-      { id: 34, name: 'Layout 34', imagePlaceholder: 'Image of Layout 34' },
-    ]);
+    const layouts = ref([]);
+    
+    // Mock user profile für dynamische Text-Felder
+    const userProfile = computed(() => ({
+      first_name: 'Max',
+      last_name: 'Mustermann',
+      company: 'uxitra GmbH',
+      title: 'Developer',
+      email: 'max@example.de',
+      phone_number: '07161 14009',
+      mobile_number: '+49 1525 2864577',
+      adress: 'Musterstraße 1'
+    }));
+    
+    // Element-Komponente basierend auf Typ zurückgeben
+    const getElementComponent = (type) => {
+      switch (type) {
+        case 'rectangle': return RectangleElement;
+        case 'circle': return CircleElement;
+        case 'triangle': return TriangleElement;
+        case 'text': return TextElement;
+        default: return null;
+      }
+    };
+
+    // Lade Layouts von der Datenbank
+    onMounted(async () => {
+      try {
+        const data = await ApiService.getAllLayouts();
+        
+        // Gruppiere Elemente nach layout_id
+        const layoutsMap = new Map();
+        
+        data.forEach(row => {
+          const layoutId = row.layout_id;
+          
+          if (!layoutsMap.has(layoutId)) {
+            layoutsMap.set(layoutId, {
+              id: layoutId,
+              layout_id: layoutId,
+              name: row.name || 'Unbenanntes Layout',
+              backgroundColor: row.backgroundcolor || 'white',
+              elements: []
+            });
+          }
+          
+          // Füge Element zum Layout hinzu
+          if (row.element_id) {
+            const layout = layoutsMap.get(layoutId);
+            layout.elements.push({
+              id: row.element_id,
+              type: row.typ,
+              x: parseFloat(row.pos_x) || 0,
+              y: parseFloat(row.pos_y) || 0,
+              w: parseFloat(row.size_x) || 50,
+              h: parseFloat(row.size_y) || 50,
+              content: row.uri,
+              source: row.source,
+              style: row.style || { color: 'black' }
+            });
+          }
+        });
+        
+        layouts.value = Array.from(layoutsMap.values());
+        console.log('Layouts geladen:', layouts.value);
+      } catch (error) {
+        console.error('Fehler beim Laden der Layouts:', error);
+      }
+    });
 
     const openLayout = (id) => {
       console.log("Öffne Layout ID:", id);
@@ -57,6 +145,8 @@ export default {
 
     return { 
       layouts, 
+      userProfile,
+      getElementComponent,
       openLayout,
       createNewLayout
     };
@@ -136,6 +226,7 @@ TODO: Medie queries für alle Bildschirmgrößen
   font-size: 1.2rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
   transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  overflow: hidden;
 }
 
 .business-cards:hover, .add-layout:hover {
@@ -149,10 +240,20 @@ TODO: Medie queries für alle Bildschirmgrößen
 }
 
 .business-cards {
-  background-color: white;
-  color: black;
-  padding: 15px;
-  background-image: linear-gradient(135deg, #ffffff 60%, #e0e0e0 100%);
+  padding: 0;
+  position: relative;
+}
+
+.card-preview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-element {
+  position: absolute;
+  pointer-events: none;
 }
 
 .add-layout {

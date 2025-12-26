@@ -247,22 +247,60 @@ export default {
     onMounted(async () => {
       const layoutIdFromRoute = route.params.id;
       if (!layoutIdFromRoute) {
-        // Kein ID-Parameter = neues Layout
+        // Kein ID-Parameter = neues Layout → Modal anzeigen
         showNameModal.value = true;
       } else {
         // Mit ID-Parameter = existierendes Layout laden
         console.log('Lade existierendes Layout mit ID:', layoutIdFromRoute);
         try {
-          const layoutData = await ApiService.getLayoutById(layoutIdFromRoute);
+          // Lade alle Layouts und filter nach der gewünschten ID
+          const allLayoutsData = await ApiService.getAllLayouts();
+          
+          // Gruppiere Elemente nach layout_id
+          const layoutsMap = new Map();
+          allLayoutsData.forEach(row => {
+            const id = row.layout_id;
+            if (!layoutsMap.has(id)) {
+              layoutsMap.set(id, {
+                layout_id: id,
+                name: row.name,
+                backgroundColor: row.backgroundcolor || 'white',
+                elements: []
+              });
+            }
+            
+            if (row.element_id) {
+              const layout = layoutsMap.get(id);
+              layout.elements.push({
+                id: row.element_id,
+                type: row.typ,
+                x: parseFloat(row.pos_x) || 0,
+                y: parseFloat(row.pos_y) || 0,
+                w: parseFloat(row.size_x) || 50,
+                h: parseFloat(row.size_y) || 50,
+                content: row.uri,
+                source: row.source,
+                style: row.style || { color: 'black' }
+              });
+            }
+          });
+          
+          // Finde das gesuchte Layout
+          const layoutData = layoutsMap.get(layoutIdFromRoute);
+          
+          if (!layoutData) {
+            throw new Error(`Layout mit ID ${layoutIdFromRoute} nicht gefunden`);
+          }
+          
           console.log('Layout-Daten vom Backend:', layoutData);
           
-          // Lade die Daten vom Backend
-          layoutId.value = layoutData.layout_id || layoutData.id || layoutIdFromRoute;
+          // Lade die Daten
+          layoutId.value = layoutData.layout_id;
           layoutName.value = layoutData.name || '';
-          cardElements.value = Array.isArray(layoutData.elements) ? layoutData.elements : [];
-          canvasBgColor.value = layoutData.backgroundColor || layoutData.background_color || 'white';
+          cardElements.value = layoutData.elements || [];
+          canvasBgColor.value = layoutData.backgroundColor || 'white';
           
-          console.log('Layout erfolgreich geladen mit ID:', layoutId.value, 'Name:', layoutName.value);
+          console.log('Layout erfolgreich geladen mit ID:', layoutId.value, 'Name:', layoutName.value, 'Elemente:', cardElements.value.length);
         } catch (error) {
           console.error('Fehler beim Laden des Layouts - Full Error:', error);
           console.error('Error Message:', error.message);
