@@ -33,46 +33,25 @@
       </div>
 
       <div class="dashboard-layouts-container">
-
         <div
           v-for="layout in layouts"
           :key="layout.id"
           class="business-cards"
           @click="openLayoutModal(layout)"
-          style="cursor: pointer;"
-          >
-          <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor}">
-            {{ layout.name }}
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Modal -->
-     <div v-if="selectedLayout" class="modal-overlay" @click="closeLayoutModal">
-        <div class="modal-content" @click.stop>
-          <!-- Close Button -->
-          <button class="close-button" @click="closeLayoutModal">X</button>
-
-          <div class="modal-canvas" :style="{ backgroundColor: selectedLayout.backgroundColor }">
-            <!-- Rendern aller Elemente des Layouts -->
+        >
+          <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor }">
             <div
-              v-for="element in selectedLayout.elements"
-              :key="elements.id"
-              class="modal-element"
+              v-for="element in layout.elements"
+              :key="element.id"
+              class="preview-element"
               :style="{
-                left: element.x + 'px',
-                top: element.y + 'px',
-                width: element.w + 'px',
-                height: element.h + 'px',
-                color: element.style.color,
                 position: 'absolute',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
+                left: (element.x / 3) + 'px',
+                top: (element.y / 3) + 'px',
+                width: (element.w / 3) + 'px',
+                height: (element.h / 3) + 'px'
               }"
-              >
-              <!-- Echte User Daten -->
+            >
               <component
                 :is="getElementComponent(element)"
                 :item="element"
@@ -80,23 +59,61 @@
               />
             </div>
           </div>
+        </div>
+      </div>
+    </div>
 
-          <!-- Info unter der Karte TEST -->
-          <div class="modal-info">
-            <h2>{{ selectedLayout.name }}</h2>
-            <p>{{ selectedLayout.backgroundColor === 'black' ? 'Dunkle' : 'Helle' }}</p>
+    <!-- Modal -->
+    <div v-if="selectedLayout" class="modal-overlay" @click="closeLayoutModal">
+      <div class="modal-content" @click.stop>
+        <button class="close-button" @click="closeLayoutModal">✕</button>
+        
+        <div class="modal-canvas" :style="{ backgroundColor: selectedLayout.backgroundColor }">
+          <div
+            v-for="element in selectedLayout.elements"
+            :key="element.id"
+            class="modal-element"
+            :style="{
+              position: 'absolute',
+              left: element.x + 'px',
+              top: element.y + 'px',
+              width: element.w + 'px',
+              height: element.h + 'px'
+            }"
+          >
+            <component
+              :is="getElementComponent(element)"
+              :item="element"
+              :user-profile="userProfile"
+            />
           </div>
         </div>
-     </div>
+        
+        <div class="modal-info">
+          <h3>{{ selectedLayout.name }}</h3>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
 <script>
-import { ref, computed } from 'vue'; //ref (for reactive objects which contain token data), computed (everytime token data changes, computed properties update)
+import { ref, computed, onMounted } from 'vue';
 import KeycloakService from '@/services/keycloak-service';
+import ApiService from '@/services/api-service';
+import TextElement from '@/elements/TextElement.vue';
+import RectangleElement from '@/elements/RectangleElement.vue';
+import CircleElement from '@/elements/CircleElement.vue';
+import TriangleElement from '@/elements/TriangleElement.vue';
 
 export default {
   name: 'UserHome',
+  components: {
+    TextElement,
+    RectangleElement,
+    CircleElement,
+    TriangleElement
+  },
   setup() {
 
     //Take from user profile fields in keycloak
@@ -136,24 +153,87 @@ export default {
       { key: 'mobile_number', label: 'Mobil'},
     ]);
 
-     const layouts = ref([
-      { id: 1, name: 'Layout 1', imagePlaceholder: 'Image of Layout 1' },
-      { id: 2, name: 'Layout 2', imagePlaceholder: 'Image of Layout 2' },
-      { id: 3, name: 'Layout 3', imagePlaceholder: 'Image of Layout 3' },
-      { id: 4, name: 'Layout 4', imagePlaceholder: 'Image of Layout 4' },
-      { id: 5, name: 'Layout 5', imagePlaceholder: 'Image of Layout 5' },
-      { id: 6, name: 'Layout 6', imagePlaceholder: 'Image of Layout 6' },
-      { id: 7, name: 'Layout 7', imagePlaceholder: 'Image of Layout 7' },
-      { id: 8, name: 'Layout 8', imagePlaceholder: 'Image of Layout 8' },
-      { id: 9, name: 'Layout 9', imagePlaceholder: 'Image of Layout 9' },
-      { id: 10, name: 'Layout 10', imagePlaceholder: 'Image of Layout 10' },
-    ]);
+    const layouts = ref([]);
+    const selectedLayout = ref(null);
+
+    // Element-Komponente basierend auf Typ zurückgeben
+    const getElementComponent = (element) => {
+      switch (element.type) {
+        case 'rectangle': return RectangleElement;
+        case 'circle': return CircleElement;
+        case 'triangle': return TriangleElement;
+        case 'text': return TextElement;
+        default: return null;
+      }
+    };
+
+    // Modal öffnen
+    const openLayoutModal = (layout) => {
+      selectedLayout.value = layout;
+    };
+
+    // Modal schließen
+    const closeLayoutModal = () => {
+      selectedLayout.value = null;
+    };
+
+    // Layouts von der Datenbank laden und gruppieren
+    onMounted(async () => {
+      try {
+        const data = await ApiService.getAllLayouts();
+        
+        // Gruppiere flache Element-Liste nach layout_id
+        const layoutsMap = new Map();
+        
+        data.forEach(row => {
+          const layoutId = row.layout_id;
+          
+          if (!layoutsMap.has(layoutId)) {
+            layoutsMap.set(layoutId, {
+              id: layoutId,
+              layout_id: layoutId,
+              name: row.name || 'Unbenanntes Layout',
+              backgroundColor: row.backgroundcolor || 'white',
+              elements: []
+            });
+          }
+          
+          if (row.element_id) {
+            const layout = layoutsMap.get(layoutId);
+            const element = {
+              id: row.element_id,
+              type: row.typ, // Korrekte Feldname: typ statt element_type
+              x: parseFloat(row.pos_x) || 0, // pos_x statt x_position
+              y: parseFloat(row.pos_y) || 0, // pos_y statt y_position
+              w: parseFloat(row.size_x) || 50, // size_x statt width
+              h: parseFloat(row.size_y) || 50, // size_y statt height
+              content: row.uri, // uri statt content
+              source: row.source,
+              style: row.style || { color: 'black' }
+            };
+            layout.elements.push(element);
+          }
+        });
+        
+        layouts.value = Array.from(layoutsMap.values());
+        console.log('Final layouts count:', layouts.value.length);
+        layouts.value.forEach(l => {
+          console.log(`Layout ${l.id}: ${l.elements.length} elements`);
+        });
+      } catch (error) {
+        console.error('Fehler beim Laden der Layouts:', error);
+      }
+    });
 
     return { 
       layouts,
       userProfile,
       userInfoFields,
-      formattedAddress
+      formattedAddress,
+      selectedLayout,
+      openLayoutModal,
+      closeLayoutModal,
+      getElementComponent
     };
   }
 }
@@ -266,22 +346,101 @@ TODO: Medie queries für alle Bildschirmgrößen
 }
 
 .business-cards {
-  /*Cards*/
   width: 296px; 
   height: 128px;
-  
-  /*Placeholder*/
-  background-color: white;
-  color: black;
-  padding: 15px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+}
+
+.business-cards:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.card-preview {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+.preview-element {
+  position: absolute;
+  pointer-events: none;
+  transform-origin: top left;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.close-button {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-weight: bold;
+}
+
+.close-button:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.modal-canvas {
+  width: 888px;
+  height: 384px;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.modal-element {
+  position: absolute;
+}
+
+.modal-info {
+  color: white;
   text-align: center;
-  font-weight: 700;
-  font-size: 1.2rem;
-  background-image: linear-gradient(to right, #ffffff, #000000); /*Mimic style in cards*/
+  font-family: 'Dosis', sans-serif;
+}
+
+.modal-info h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 </style>
