@@ -1,41 +1,130 @@
-# frontend
+# eVisitenkarte
 
-This template should help get you started developing with Vue 3 in Vite.
+Digital business card platform with a Vue 3 (Vite) frontend, Node.js/Express backend, PostgreSQL for layouts/elements, and Keycloak for auth. Includes Swagger docs for the API.
 
-## Recommended IDE Setup
+## Stack
+- Frontend: Vue 3 + Vite, vue-router, keycloak-js, vue3-draggable-resizable
+- Backend: Node.js (Express), keycloak-connect, pg-pool, swagger-jsdoc/ui
+- Auth: Keycloak
+- Data: PostgreSQL
+- Tooling: Docker Compose (Keycloak + Postgres), Swagger UI at `/api-docs`
 
-[VS Code](https://code.visualstudio.com/) + [Vue (Official)](https://marketplace.visualstudio.com/items?itemName=Vue.volar) (and disable Vetur).
+## Prerequisites
+- Node.js 20.x (or >=22.12.0) and npm
+- Docker + Docker Compose
+- Ports (defaults): frontend 5173, backend 3000, Keycloak 8080, Postgres 5432
+- Optional: Git, make
 
-## Recommended Browser Setup
+## Project Structure
+- `frontend/` — Vue 3 app (Vite)
+- `backend/` — Express API + Keycloak middleware + Postgres access
+- `docker-compose.yml` — Keycloak + Postgres services
+- `realm-export.json` — Keycloak realm export
+- `backend/docs/` — Swagger source (`/api-docs`)
 
-- Chromium-based browsers (Chrome, Edge, Brave, etc.):
-    - [Vue.js devtools](https://chromewebstore.google.com/detail/vuejs-devtools/nhdogjmejiglipccpnnnanhbledajbpd)
-    - [Turn on Custom Object Formatter in Chrome DevTools](http://bit.ly/object-formatters)
-- Firefox:
-    - [Vue.js devtools](https://addons.mozilla.org/en-US/firefox/addon/vue-js-devtools/)
-    - [Turn on Custom Object Formatter in Firefox DevTools](https://fxdx.dev/firefox-devtools-custom-object-formatters/)
+## Quick Start (all services)
+1) Start Keycloak + Postgres:
+   ```sh
+   cd /Users/rootys/IdeaProjects/eVisitenkarte
+   docker compose up -d
+   ```
+   Services: `keycloak` (8080), `keycloak-db`, `app-db` (5432 mapped).
 
-## Customize configuration
+2) Import Keycloak realm (one-time):
+   - Open `http://localhost:8080` → log in as admin (`KEYCLOAK_ADMIN`/`KEYCLOAK_ADMIN_PASSWORD`, default `admin`/`admin`).
+   - Create realm from `realm-export.json` with realm name `eVisitenkarte-development`.
+   - Clients expected by code:
+     - Backend: `eVisitenkarte-backend` (bearer-only)
+     - Frontend: `eVisitenkarte-app` (public client)
 
-See [Vite Configuration Reference](https://vite.dev/config/).
+3) Set valid redirect/web origins for the frontend client (e.g., `http://localhost:5173/*`).
 
-## Project Setup
+## Backend (Express)
+1) Install deps:
+   ```sh
+   cd /Users/rootys/IdeaProjects/eVisitenkarte/backend
+   npm install
+   ```
+2) Configure env (Postgres). Defaults in `db-service.js`:
+   ```sh
+   export PGHOST=localhost
+   export PGUSER=myuser
+   export PGPASSWORD='mypassword!'
+   export PGDATABASE=mydatabase
+   export PGPORT=5432
+   ```
+3) Run backend:
+   ```sh
+   npm start
+   ```
+   - API: `http://localhost:3000/api`
+   - Swagger: `http://localhost:3000/api-docs`
+   - CORS allowed origin: `http://localhost:5173`
 
-```sh
-npm install
-```
+4) Keycloak config (backend):
+   - Realm: `eVisitenkarte-development`
+   - Auth server: `http://localhost:8080/`
+   - Client: `eVisitenkarte-backend` (bearer-only)
 
-### Compile and Hot-Reload for Development
+## Frontend (Vue 3 + Vite)
+1) Install deps:
+   ```sh
+   cd /Users/rootys/IdeaProjects/eVisitenkarte/frontend
+   npm install
+   ```
+2) Run dev server:
+   ```sh
+   npm run dev -- --host
+   ```
+   Default: `http://localhost:5173`.
 
-```sh
-npm run dev
-```
+3) Build + preview:
+   ```sh
+   npm run build
+   npm run preview
+   ```
 
-### Compile and Minify for Production
+4) Keycloak config (frontend):
+   - In `src/services/keycloak-service.js`
+   - Defaults: realm `eVisitenkarte-development`, client `eVisitenkarte-app`
+   - Update `url` to your Keycloak base (typically `http://localhost:8080/`)
 
-```sh
-npm run build
-```
+## Database
+- Provided via `app-db` (Postgres 15) in `docker-compose.yml`.
+- Defaults (override via env):
+  - `APP_DB_USER`: `myuser`
+  - `APP_DB_PASSWORD`: `mypassword!`
+  - `APP_DB_NAME`: `mydatabase`
+- Backend uses `PG*` env vars; ensure they match the DB service.
 
-# backend
+## Auth Flow
+- Frontend uses `keycloak-js` to obtain tokens.
+- Backend protects routes via `keycloak-connect`; bearer token required.
+- Sample protected endpoints:
+  - `GET /api/protected`
+  - `GET /api/user`
+  - Layout management under `/api/layout-management/...`
 
+## API Docs
+- Swagger UI: `http://localhost:3000/api-docs`
+- Source annotations in `backend/docs/`
+
+## Development Notes
+- Session store is in-memory (development only); replace for production.
+- CORS limited to `http://localhost:5173`; adjust as needed.
+- Ensure valid redirect URIs/web origins are set in Keycloak for the frontend client.
+
+## Common Commands
+- Start infra: `docker compose up -d`
+- Stop infra: `docker compose down`
+- Backend dev: `cd backend && npm start`
+- Frontend dev: `cd frontend && npm run dev`
+- Import realm: use Keycloak admin console with `realm-export.json`
+
+## Troubleshooting
+- Auth 401: verify Keycloak realm/clients; update `KEYCLOAK_CONFIG.url`.
+- DB errors: ensure `PG*` env vars match `app-db`.
+- CORS issues: update allowed origin in `backend/server.js` or align frontend port.
+- Port clashes: adjust host port mapping in `docker-compose.yml` and configs.
+- We ran into an issue where pgAdmin (if used) created a local instance on the same default port, which was then running on the local OS in the background. If that is the case you will be unable to connect to the database running inside of Docker. make sure to kill those processes or adapt the default ports.
+- Make sure you are connected to the devices wifi.

@@ -5,6 +5,6 @@ All features must follow the DoD
 Feature works as intended
 Feature is manually tested
 Feature is reviewed
-Feature is merged into main
+Feature is merged into master
 Code is commented to a point where all team members understand it
 Documentation is up to date
