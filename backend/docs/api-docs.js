@@ -274,15 +274,64 @@
 /**
  * @swagger
  * /layout-management/layouts/{id}:
- *   delete:
- *     summary: delete a specfifc layout
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
+ *   put:
+ *     summary: Update an existing layout and its elements
+ *     description: Updates the layout name and replaces all existing elements with the new provided array. Protected by Keycloak.
+ *     tags: [Layout Management]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: The ID of the layout to update
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 example: "My Updated Layout"
+ *               elements:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       example: "element-1"
+ *                     type:
+ *                       type: string
+ *                       example: "image"
+ *                     content:
+ *                       type: string
+ *                       example: "https://example.com/img.png"
+ *                     x:
+ *                       type: integer
+ *                       example: 0
+ *                     y:
+ *                       type: integer
+ *                       example: 0
+ *                     w:
+ *                       type: integer
+ *                       example: 4
+ *                     h:
+ *                       type: integer
+ *                       example: 2
+ *                     source:
+ *                       type: string
+ *                       example: "internal"
+ *                     style:
+ *                       type: object
+ *                       example: { "backgroundColor": "red" }
  *     responses:
  *       200:
- *         description: Successfully authenticated and accessed the resource.
+ *         description: Layout updated successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -290,11 +339,16 @@
  *               properties:
  *                 message:
  *                   type: string
- *                   example: YourUsername
+ *                   example: "Layout updated successfully"
+ *                 layout_id:
+ *                   type: string
+ *                   example: "45"
  *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ *         description: Unauthorized. Token missing or invalid.
+ *       404:
+ *         description: Layout not found.
+ *       500:
+ *         description: Server error.
  */
 
 /**
@@ -453,4 +507,28 @@
  *       403:
  *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
  *
+ */
+
+/**
+ * @swagger
+ * /api/display/upload:
+ *   post:
+ *     summary: Upload an image and send it to the external display
+ *     tags: [Display]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/octet-stream:
+ *           schema:
+ *             type: string
+ *             format: binary
+ *     responses:
+ *       200:
+ *         description: Image successfully sent to device
+ *       400:
+ *         description: Invalid image data
+ *       503:
+ *         description: External display device is offline
+ *       500:
+ *         description: Server error
  */
