@@ -69,6 +69,7 @@
     <div v-if="selectedLayout" class="modal-overlay" @click="closeLayoutModal">
       <div class="modal-content" @click.stop>
         <button class="close-button" @click="closeLayoutModal">✕</button>
+        <button class="send-button" @click="sendImage">Send to display</button>
         
         <div class="modal-canvas" :style="{ backgroundColor: selectedLayout.backgroundColor }">
           <div
@@ -179,6 +180,11 @@ export default {
       selectedLayout.value = null;
     };
 
+    // Bild der Visitenkarte sendne
+    const sendImage = () => {
+      console.log('This should send a image to the backend');
+    };
+
     // Layouts von der Datenbank laden und gruppieren
     onMounted(async () => {
       try {
@@ -256,7 +262,8 @@ export default {
       selectedLayout,
       openLayoutModal,
       closeLayoutModal,
-      getElementComponent
+      getElementComponent,
+      sendImage
     };
   }
 }
@@ -438,6 +445,24 @@ TODO: Medie queries für alle Bildschirmgrößen
   border: none;
   border-radius: 50%;
   width: 35px;
+  height: 35px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-weight: bold;
+}
+
+.send-button {
+  position: absolute;
+  top: 400px;
+  right: 0;
+  background: lawngreen;
+  border: none;
+  border-radius: 10%;
+  width: 200px;
   height: 35px;
   font-size: 20px;
   cursor: pointer;
