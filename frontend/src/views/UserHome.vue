@@ -109,6 +109,7 @@ import RectangleElement from '@/elements/RectangleElement.vue';
 import CircleElement from '@/elements/CircleElement.vue';
 import TriangleElement from '@/elements/TriangleElement.vue';
 import * as htmlToImage from 'html-to-image';
+import Pica from 'pica';
 
 export default {
   name: 'UserHome',
@@ -123,83 +124,69 @@ export default {
     const canvasRef = ref(null);
     const isSending = ref(false);
 
+    //pica for high quality down scaling
+    const pica = Pica();
+
     const sendImage = async () => {
       const element = canvasRef.value || document.getElementById('target-canvas');
       if (!element) return;
 
       isSending.value = true;
       try {
-        //capture full
-        const originalCanvas = await htmlToImage.toCanvas(element, {
-          cacheBust: true,
+        //capture original
+        const sourceCanvas = await htmlToImage.toCanvas(element, {
           pixelRatio: 1,
+          cacheBust: true,
           backgroundColor: '#ffffff'
         });
 
-        const targetW = originalCanvas.width / 3;
-        const targetH = originalCanvas.height / 3;
+        // 2. Prepare the Downscaled Canvas (1x)
+        const targetW = sourceCanvas.width / 3;
+        const targetH = sourceCanvas.height / 3;
+        const downscaledCanvas = document.createElement('canvas');
+        downscaledCanvas.width = targetW;
+        downscaledCanvas.height = targetH;
 
-        //setup rotated canvas
+        // 3. Use Pica to Resize (High Quality Lanczos3 Filter)
+        await pica.resize(sourceCanvas, downscaledCanvas, {
+          unsharpAmount: 80, // Slightly sharpens text edges
+          unsharpRadius: 0.6,
+          unsharpThreshold: 2
+        });
+
+        // 4. Create Rotated Canvas (Swapping W/H)
         const rotatedCanvas = document.createElement('canvas');
         const ctx = rotatedCanvas.getContext('2d');
         rotatedCanvas.width = targetH;
         rotatedCanvas.height = targetW;
 
-        // Disable smoothing
-        ctx.imageSmoothingEnabled = false;
-
-        //rotate and scale down for display
         ctx.translate(rotatedCanvas.width, 0);
         ctx.rotate(90 * Math.PI / 180);
-        ctx.drawImage(originalCanvas, 0, 0, targetW, targetH);
+        ctx.drawImage(downscaledCanvas, 0, 0);
 
-        // 4. --- MANUALLY REMOVE GRAY PIXELS (THRESHOLDING) ---
-        const imageData = ctx.getImageData(0, 0, rotatedCanvas.width, rotatedCanvas.height);
-        const data = imageData.data; // This is a Uint8ClampedArray [R,G,B,A, R,G,B,A...]
 
-        for (let i = 0; i < data.length; i += 4) {
-          // Calculate luminance (how bright the pixel is)
-          // Standard formula: 0.299R + 0.587G + 0.114B
-          const avg = (data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114);
 
-          // THRESHOLD: If brightness is below 180, make it pure black.
-          // Otherwise, make it pure white.
-          //240 seems to be acceptable for now
-          const threshold = 240;
-          const color = avg < threshold ? 0 : 255;
+        // 6. Convert & Send
+        const blob = await new Promise(r => rotatedCanvas.toBlob(r, 'image/png'));
 
-          data[i]     = color; // R
-          data[i + 1] = color; // G
-          data[i + 2] = color; // B
-          data[i + 3] = 255;   // Alpha (Always fully opaque)
-        }
-
-        //processed pixels back on canvas
-        ctx.putImageData(imageData, 0, 0);
-
-        //convert to blob
-        const blob = await new Promise((resolve) => {
-          rotatedCanvas.toBlob((b) => resolve(b), 'image/png');
-        });
-
-        // --- DEBUG: Download to see the scaled version ---
+        // DEBUG DOWNLOAD
         const url = window.URL.createObjectURL(blob);
         const link = document.createElement('a');
         link.href = url;
-        link.download = `binary-epaper.png`;
+        link.download = `pro-epaper.png`;
         link.click();
 
-        //send to backend
         const buffer = await blob.arrayBuffer();
         await ApiService.uploadImage(buffer);
 
-        alert("Sent! Pixel-perfect image generated.");
+        alert("Sent high-quality dithered image!");
       } catch (error) {
         console.error(error);
       } finally {
         isSending.value = false;
       }
     };
+
 
     //Take from user profile fields in keycloak
     const userProfileRef = KeycloakService.getIdTokenParsed();
