@@ -232,6 +232,29 @@ const ApiService = {
         }
     },
 
+    /**
+     * Sends raw binary image data to the display endpoint
+     * @param {ArrayBuffer} imageBuffer - Raw binary data from html-to-image
+     */
+    uploadImage: async (imageBuffer) => {
+        const token = await ApiService.checkAuthorization();
+        try {
+            const response = await fetch(`${API_BASE_URL}/display/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/octet-stream',
+                },
+                body: imageBuffer, // Pass the ArrayBuffer directly as the body
+            });
+
+            return await ApiService.checkResponse(response);
+        } catch (error) {
+            console.error('Error uploading image to display:', error);
+            throw error;
+        }
+    },
+
 };
 
 export default ApiService;

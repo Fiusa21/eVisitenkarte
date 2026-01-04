@@ -70,8 +70,8 @@
       <div class="modal-content" @click.stop>
         <button class="close-button" @click="closeLayoutModal">✕</button>
         <button class="send-button" @click="sendImage">Send to display</button>
-        
-        <div class="modal-canvas" :style="{ backgroundColor: selectedLayout.backgroundColor }">
+
+        <div id="target-canvas" ref="canvasRef" class="modal-canvas" :style="{ backgroundColor: selectedLayout.backgroundColor }">
           <div
             v-for="element in selectedLayout.elements"
             :key="element.id"
@@ -91,7 +91,7 @@
             />
           </div>
         </div>
-        
+
         <div class="modal-info">
           <h3>{{ selectedLayout.name }}</h3>
         </div>
@@ -108,6 +108,7 @@ import TextElement from '@/elements/TextElement.vue';
 import RectangleElement from '@/elements/RectangleElement.vue';
 import CircleElement from '@/elements/CircleElement.vue';
 import TriangleElement from '@/elements/TriangleElement.vue';
+import * as htmlToImage from 'html-to-image';
 
 export default {
   name: 'UserHome',
@@ -118,6 +119,87 @@ export default {
     TriangleElement
   },
   setup() {
+
+    const canvasRef = ref(null);
+    const isSending = ref(false);
+
+    const sendImage = async () => {
+      const element = canvasRef.value || document.getElementById('target-canvas');
+      if (!element) return;
+
+      isSending.value = true;
+      try {
+        //capture full
+        const originalCanvas = await htmlToImage.toCanvas(element, {
+          cacheBust: true,
+          pixelRatio: 1,
+          backgroundColor: '#ffffff'
+        });
+
+        const targetW = originalCanvas.width / 3;
+        const targetH = originalCanvas.height / 3;
+
+        //setup rotated canvas
+        const rotatedCanvas = document.createElement('canvas');
+        const ctx = rotatedCanvas.getContext('2d');
+        rotatedCanvas.width = targetH;
+        rotatedCanvas.height = targetW;
+
+        // Disable smoothing
+        ctx.imageSmoothingEnabled = false;
+
+        //rotate and scale down for display
+        ctx.translate(rotatedCanvas.width, 0);
+        ctx.rotate(90 * Math.PI / 180);
+        ctx.drawImage(originalCanvas, 0, 0, targetW, targetH);
+
+        // 4. --- MANUALLY REMOVE GRAY PIXELS (THRESHOLDING) ---
+        const imageData = ctx.getImageData(0, 0, rotatedCanvas.width, rotatedCanvas.height);
+        const data = imageData.data; // This is a Uint8ClampedArray [R,G,B,A, R,G,B,A...]
+
+        for (let i = 0; i < data.length; i += 4) {
+          // Calculate luminance (how bright the pixel is)
+          // Standard formula: 0.299R + 0.587G + 0.114B
+          const avg = (data[i] * 0.299 + data[i+1] * 0.587 + data[i+2] * 0.114);
+
+          // THRESHOLD: If brightness is below 180, make it pure black.
+          // Otherwise, make it pure white.
+          //240 seems to be acceptable for now
+          const threshold = 240;
+          const color = avg < threshold ? 0 : 255;
+
+          data[i]     = color; // R
+          data[i + 1] = color; // G
+          data[i + 2] = color; // B
+          data[i + 3] = 255;   // Alpha (Always fully opaque)
+        }
+
+        //processed pixels back on canvas
+        ctx.putImageData(imageData, 0, 0);
+
+        //convert to blob
+        const blob = await new Promise((resolve) => {
+          rotatedCanvas.toBlob((b) => resolve(b), 'image/png');
+        });
+
+        // --- DEBUG: Download to see the scaled version ---
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `binary-epaper.png`;
+        link.click();
+
+        //send to backend
+        const buffer = await blob.arrayBuffer();
+        await ApiService.uploadImage(buffer);
+
+        alert("Sent! Pixel-perfect image generated.");
+      } catch (error) {
+        console.error(error);
+      } finally {
+        isSending.value = false;
+      }
+    };
 
     //Take from user profile fields in keycloak
     const userProfileRef = KeycloakService.getIdTokenParsed();
@@ -180,10 +262,6 @@ export default {
       selectedLayout.value = null;
     };
 
-    // Bild der Visitenkarte sendne
-    const sendImage = () => {
-      console.log('This should send a image to the backend');
-    };
 
     // Layouts von der Datenbank laden und gruppieren
     onMounted(async () => {
@@ -471,6 +549,14 @@ TODO: Medie queries für alle Bildschirmgrößen
   justify-content: center;
   transition: all 0.2s;
   font-weight: bold;
+  font-family: Dosis;
+}
+
+.send-button:hover {
+  background: lawngreen;
+  transform: scale(1.1);
+  border: white;
+  border-style: solid;
 }
 
 .close-button:hover {
@@ -485,6 +571,14 @@ TODO: Medie queries für alle Bildschirmgrößen
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   border-radius: 8px;
   overflow: hidden;
+  /* Helps browsers render text without subpixel anti-aliasing */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  /* If you have images/icons inside, keep them sharp too */
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
 }
 
 .modal-element {
