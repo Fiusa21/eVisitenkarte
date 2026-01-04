@@ -12,31 +12,69 @@
             v-for="layout in layouts"
             :key="layout.id"
             class="business-cards"
-            @click="openLayout(layout.id)"
+            @click="openLayoutModal(layout)"
             >
-              <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor }">
-                <div
-                  v-for="element in layout.elements"
-                  :key="element.id"
-                  class="preview-element"
-                  :style="{
-                    position: 'absolute',
-                    left: (element.x / 3) + 'px',
-                    top: (element.y / 3) + 'px',
-                    width: (element.w / 3) + 'px',
-                    height: (element.h / 3) + 'px'
-                  }"
-                >
-                  <component
-                    :is="getElementComponent(element.type)"
-                    :item="element"
-                    :user-profile="userProfile"
-                  />
+              <div class="card-preview-wrapper">
+                <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor }">
+                  <div
+                    v-for="element in layout.elements"
+                    :key="element.id"
+                    class="preview-element"
+                    :style="{
+                      position: 'absolute',
+                      left: element.x + 'px',
+                      top: element.y + 'px',
+                      width: element.w + 'px',
+                      height: element.h + 'px'
+                    }"
+                  >
+                    <component
+                      :is="getElementComponent(element.type)"
+                      :item="element"
+                      :user-profile="userProfile"
+                    />
+                  </div>
                 </div>
               </div>
             </div>
             <div class="add-layout" @click="createNewLayout">+</div>
         </div>
+    </div>
+
+    <!-- Modal -->
+    <div v-if="selectedLayout" class="modal-overlay" @click="closeLayoutModal">
+      <div class="modal-content" @click.stop>
+        <button class="close-button" @click="closeLayoutModal">✕</button>
+        
+        <div class="modal-canvas" :style="{ backgroundColor: selectedLayout.backgroundColor }">
+          <div
+            v-for="element in selectedLayout.elements"
+            :key="element.id"
+            class="modal-element"
+            :style="{
+              position: 'absolute',
+              left: element.x + 'px',
+              top: element.y + 'px',
+              width: element.w + 'px',
+              height: element.h + 'px'
+            }"
+          >
+            <component
+              :is="getElementComponent(element.type)"
+              :item="element"
+              :user-profile="userProfile"
+            />
+          </div>
+        </div>
+        
+        <div class="modal-info">
+          <h3>{{ selectedLayout.name }}</h3>
+          <div class="modal-buttons">
+            <button class="btn-bearbeiten" @click="editLayout(selectedLayout.id)">Bearbeiten</button>
+            <button class="btn-loeschen" @click="deleteLayoutConfirm(selectedLayout.id)">Löschen</button>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -62,6 +100,7 @@ export default {
   setup() {
     const router = useRouter();
     const layouts = ref([]);
+    const selectedLayout = ref(null);
     
     // Mock user profile für dynamische Text-Felder
     const userProfile = computed(() => ({
@@ -76,7 +115,8 @@ export default {
     }));
     
     // Element-Komponente basierend auf Typ zurückgeben
-    const getElementComponent = (type) => {
+    const getElementComponent = (element) => {
+      const type = element.type || element;
       switch (type) {
         case 'rectangle': return RectangleElement;
         case 'circle': return CircleElement;
@@ -86,8 +126,8 @@ export default {
       }
     };
 
-    // Lade Layouts von der Datenbank
-    onMounted(async () => {
+    // Lade und skaliere Layouts
+    const loadLayouts = async () => {
       try {
         const data = await ApiService.getAllLayouts();
         
@@ -125,15 +165,61 @@ export default {
         });
         
         layouts.value = Array.from(layoutsMap.values());
+        
+        // Skaliere Elemente so dass sie die volle 888px Breite ausfüllen
+        layouts.value.forEach(layout => {
+          if (layout.elements.length > 0) {
+            // Finde das rechteste Element
+            const maxX = Math.max(...layout.elements.map(el => el.x + el.w));
+            
+            // Wenn maxX < 888, skaliere alle Elemente proportional
+            if (maxX > 0 && maxX < 888) {
+              const scaleFactor = 888 / maxX;
+              layout.elements.forEach(el => {
+                el.x = el.x * scaleFactor;
+                el.w = el.w * scaleFactor;
+              });
+              console.log(`Layout ${layout.id}: skaliert von MaxX=${maxX} zu 888 (Faktor: ${scaleFactor.toFixed(3)})}`);
+            }
+          }
+        });
+        
         console.log('Layouts geladen:', layouts.value);
       } catch (error) {
         console.error('Fehler beim Laden der Layouts:', error);
       }
+    };
+
+    // Lade Layouts von der Datenbank
+    onMounted(() => {
+      loadLayouts();
     });
 
-    const openLayout = (id) => {
+    const openLayoutModal = (layout) => {
+      selectedLayout.value = layout;
+    };
+
+    const closeLayoutModal = () => {
+      selectedLayout.value = null;
+    };
+
+    const editLayout = (id) => {
       console.log("Öffne Layout ID:", id);
+      closeLayoutModal();
       router.push({ name: 'layout-editor', params: { id } });
+    };
+
+    const deleteLayoutConfirm = async (id) => {
+      if (confirm('Möchten Sie dieses Layout wirklich löschen?')) {
+        try {
+          await ApiService.deleteLayout(id);
+          closeLayoutModal();
+          // Lade Layouts neu
+          await loadLayouts();
+        } catch (error) {
+          console.error('Fehler beim Löschen des Layouts:', error);
+        }
+      }
     };
     
     const createNewLayout = () => {
@@ -144,10 +230,14 @@ export default {
 
 
     return { 
-      layouts, 
+      layouts,
+      selectedLayout,
       userProfile,
       getElementComponent,
-      openLayout,
+      openLayoutModal,
+      closeLayoutModal,
+      editLayout,
+      deleteLayoutConfirm,
       createNewLayout
     };
   }
@@ -213,7 +303,46 @@ TODO: Medie queries für alle Bildschirmgrößen
   padding-top: 10px;
 }
 
-.business-cards, .add-layout {
+.business-cards {
+  width: 296px; 
+  height: 128px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+}
+
+.business-cards:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.card-preview-wrapper {
+  width: 296px;
+  height: 128px;
+  overflow: hidden;
+  position: relative;
+}
+
+.card-preview {
+  width: 888px;
+  height: 384px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  transform: scale(0.333333);
+  transform-origin: top left;
+}
+
+.preview-element {
+  position: absolute;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.add-layout {
   width: 296px; 
   height: 128px;
   border-radius: 8px;
@@ -225,46 +354,127 @@ TODO: Medie queries für alle Bildschirmgrößen
   font-weight: 700;
   font-size: 1.2rem;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+  transition: transform 0.2s, box-shadow 0.2s;
   overflow: hidden;
-}
-
-.business-cards:hover, .add-layout:hover {
-  transform: translateY(-8px); 
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.5);
-}
-
-.business-cards:active, .add-layout:active {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-}
-
-.business-cards {
-  padding: 0;
-  position: relative;
-}
-
-.card-preview {
-  width: 100%;
-  height: 100%;
-  position: relative;
-  overflow: hidden;
-}
-
-.preview-element {
-  position: absolute;
-  pointer-events: none;
-}
-
-.add-layout {
   border: 2px dashed #666;
   background-color: rgba(168, 168, 168, 0.15);
   color: #333;
 }
 
 .add-layout:hover {
+  transform: translateY(-4px); 
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
   background-color: rgba(168, 168, 168, 0.3);
   border-color: black;
   color: black;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.close-button {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-weight: bold;
+}
+
+.close-button:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.modal-canvas {
+  width: 888px;
+  height: 384px;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.modal-element {
+  position: absolute;
+}
+
+.modal-info {
+  color: white;
+  text-align: center;
+  font-family: 'Dosis', sans-serif;
+}
+
+.modal-info h3 {
+  margin: 0 0 15px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+}
+
+.btn-bearbeiten {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.btn-bearbeiten:hover {
+  background-color: #0056b3;
+}
+
+.btn-loeschen {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.btn-loeschen:hover {
+  background-color: #c82333;
 }
 </style>
