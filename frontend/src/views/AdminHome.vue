@@ -165,22 +165,20 @@ export default {
         });
         
         layouts.value = Array.from(layoutsMap.values());
-        
-        // Skaliere X-Position und Breite proportional um die volle 888px Breite zu nutzen
+
         layouts.value.forEach(layout => {
           if (layout.elements.length > 0) {
-            // Finde das rechteste Element
             const maxX = Math.max(...layout.elements.map(el => el.x + el.w));
-            
-            // Wenn maxX < 888, skaliere X und Breite proportional
-            if (maxX > 0 && maxX < 888) {
-              const scaleFactor = 888 / maxX;
+            const containerWidth = 888;
+
+            if (maxX < containerWidth) {
+              // Berechne den verfügbaren Platz und teile ihn durch 2
+              const offset = (containerWidth - maxX) / 2;
+
               layout.elements.forEach(el => {
-                el.x = el.x * scaleFactor;
-                el.w = el.w * scaleFactor;
-                // Y und H bleiben unverändert (keine vertikale Verzerrung)
+                el.x = el.x + offset; // Schiebe jedes Element ein Stück nach rechts
               });
-              console.log(`Layout ${layout.id}: horizontal skaliert mit Faktor ${scaleFactor.toFixed(3)}`);
+              console.log(`Layout ${layout.id}: Zentriert mit Offset ${offset}`);
             }
           }
         });
