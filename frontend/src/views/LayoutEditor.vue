@@ -46,6 +46,8 @@
             :minW="10"
             :minH="10"
             :parent="true"
+            :parentW="888"
+            :parentH="384"
             :class="{ 'selected': selectedElement && selectedElement.id === item.id }"
             @click="selectElement(item)"
             @drag-end="(pos) => {item.x = pos.x; item.y = pos.y;}" 
@@ -375,13 +377,14 @@ TODO: Medie queries für alle Bildschirmgrößen
 
 .editor-main-content {
   display: flex;
-  width: 100%;
-  max-width: 1400px;
-  gap: 30px;
+  justify-content: center;
   align-items: center;
-  margin-top: 20px;
-  padding: 0 20px;
-  min-height: calc(100vh - 220px);
+  width: 100%;
+  max-width: 1600px;
+  gap: 40px;
+  margin: 0 auto;
+  padding: 40px;
+  min-height: calc(100vh - 250px);
 }
 
 .site-header{
@@ -419,17 +422,16 @@ TODO: Medie queries für alle Bildschirmgrößen
 }
 
 .canvas-container{
-  flex-grow: 1;
   display: flex;
   justify-content: center; 
   align-items: center;
-  padding: 30px 0;
-  min-width: 0;
+  padding: 0;
 }
 
 .canvas{
   height: 384px;
   width: 888px;
+  flex-shrink: 0;
   position: relative;
   background-color: white;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);

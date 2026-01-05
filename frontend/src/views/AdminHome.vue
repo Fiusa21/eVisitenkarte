@@ -14,8 +14,8 @@
             class="business-cards"
             @click="openLayoutModal(layout)"
             >
-              <div class="card-preview-wrapper">
-                <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor }">
+              <div class="card-preview-wrapper" :style="{ width: getLayoutWidth(layout.elements) + 'px' }">
+                <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor, width: getLayoutWidth(layout.elements) + 'px' }">
                   <div
                     v-for="element in layout.elements"
                     :key="element.id"
@@ -126,6 +126,12 @@ export default {
       }
     };
 
+    // Berechne die maximale Breite eines Layouts basierend auf Elementen
+    const getLayoutWidth = (elements) => {
+      // Canvas im Editor ist immer 888px, also auch in der Preview
+      return 888;
+    };
+
     // Lade und skaliere Layouts
     const loadLayouts = async () => {
       try {
@@ -165,24 +171,6 @@ export default {
         });
         
         layouts.value = Array.from(layoutsMap.values());
-        
-        //Skaliere Elemente so dass sie die volle 888px Breite ausfüllen
-        layouts.value.forEach(layout => {
-          if (layout.elements.length > 0) {
-            // Finde das rechteste Element
-            const maxX = Math.max(...layout.elements.map(el => el.x + el.w));
-            
-            // Wenn maxX < 888, skaliere alle Elemente proportional
-            if (maxX > 0 && maxX < 888) {
-              const scaleFactor = 888 / maxX;
-              layout.elements.forEach(el => {
-                el.x = el.x * scaleFactor;
-                el.w = el.w * scaleFactor;
-              });
-              console.log(`Layout ${layout.id}: skaliert von MaxX=${maxX} zu 888 (Faktor: ${scaleFactor.toFixed(3)})}`);
-            }
-          }
-        });
         
         console.log('Layouts geladen:', layouts.value);
       } catch (error) {
@@ -234,6 +222,7 @@ export default {
       selectedLayout,
       userProfile,
       getElementComponent,
+      getLayoutWidth,
       openLayoutModal,
       closeLayoutModal,
       editLayout,
@@ -304,7 +293,7 @@ TODO: Medie queries für alle Bildschirmgrößen
 }
 
 .business-cards {
-  width: 296px; 
+  width: 296px;
   height: 128px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
@@ -343,7 +332,7 @@ TODO: Medie queries für alle Bildschirmgrößen
 }
 
 .add-layout {
-  width: 296px; 
+  width: 296px;
   height: 128px;
   border-radius: 8px;
   cursor: pointer;
