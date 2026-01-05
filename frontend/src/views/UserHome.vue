@@ -211,36 +211,13 @@ export default {
               source: row.source,
               style: row.style || { color: 'black' }
             };
-            console.log(`Element ${row.element_id}: raw={pos_x: ${row.pos_x}, pos_y: ${row.pos_y}, size_x: ${row.size_x}, size_y: ${row.size_y}}, parsed={x: ${element.x}, y: ${element.y}, w: ${element.w}, h: ${element.h}}`);
             layout.elements.push(element);
           }
         });
         
         layouts.value = Array.from(layoutsMap.values());
         
-        //Überarbeiten wegen Scale fehler. 
-        // Skaliere Elemente so dass sie die volle 888px Breite ausfüllen
-        layouts.value.forEach(layout => {
-          if (layout.elements.length > 0) {
-            // Finde das rechteste Element
-            const maxX = Math.max(...layout.elements.map(el => el.x + el.w));
-            
-            // Wenn maxX < 888, skaliere alle Elemente proportional
-            if (maxX > 0 && maxX < 888) {
-              const scaleFactor = 888 / maxX;
-              layout.elements.forEach(el => {
-                el.x = el.x * scaleFactor;
-                el.w = el.w * scaleFactor;
-              });
-              console.log(`Layout ${layout.id}: skaliert von MaxX=${maxX} zu 888 (Faktor: ${scaleFactor.toFixed(3)})`);
-            }
-          }
-        });
-        
-        console.log('Final layouts count:', layouts.value.length);
-        layouts.value.forEach(l => {
-          console.log(`Layout ${l.id}: ${l.elements.length} elements`);
-        });
+        console.log('Layouts geladen:', layouts.value);
       } catch (error) {
         console.error('Fehler beim Laden der Layouts:', error);
       }
