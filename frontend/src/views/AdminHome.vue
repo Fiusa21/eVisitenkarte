@@ -166,7 +166,7 @@ export default {
         
         layouts.value = Array.from(layoutsMap.values());
         
-        // Skaliere Elemente so dass sie die volle 888px Breite ausfüllen
+        //Skaliere Elemente so dass sie die volle 888px Breite ausfüllen
         layouts.value.forEach(layout => {
           if (layout.elements.length > 0) {
             // Finde das rechteste Element
