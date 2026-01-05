@@ -166,22 +166,21 @@ export default {
         
         layouts.value = Array.from(layoutsMap.values());
         
-        // Skaliere Elemente proportional um die volle 888px Breite zu nutzen
+        // Skaliere nur die horizontale Dimension um die volle 888px Breite zu nutzen
         layouts.value.forEach(layout => {
           if (layout.elements.length > 0) {
-            // Finde das rechteste und unterste Element
+            // Finde das rechteste Element
             const maxX = Math.max(...layout.elements.map(el => el.x + el.w));
             
-            // Wenn maxX < 888, skaliere ALLE Dimensionen proportional
+            // Wenn maxX < 888, skaliere nur X und Breite
             if (maxX > 0 && maxX < 888) {
               const scaleFactor = 888 / maxX;
               layout.elements.forEach(el => {
                 el.x = el.x * scaleFactor;
-                el.y = el.y * scaleFactor;
                 el.w = el.w * scaleFactor;
-                el.h = el.h * scaleFactor;
+                // Y und H bleiben unverändert
               });
-              console.log(`Layout ${layout.id}: skaliert mit Faktor ${scaleFactor.toFixed(3)}`);
+              console.log(`Layout ${layout.id}: horizontal skaliert mit Faktor ${scaleFactor.toFixed(3)}`);
             }
           }
         });
