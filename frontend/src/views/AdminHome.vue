@@ -15,7 +15,10 @@
             @click="openLayoutModal(layout)"
             >
               <div class="card-preview-wrapper">
-                <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor }">
+                <div
+                  class="card-preview"
+                  :style="[ { backgroundColor: layout.backgroundColor }, getPreviewStyle(layout) ]"
+                >
                   <div
                     v-for="element in layout.elements"
                     :key="element.id"
@@ -46,24 +49,29 @@
       <div class="modal-content" @click.stop>
         <button class="close-button" @click="closeLayoutModal">✕</button>
         
-        <div class="modal-canvas" :style="{ backgroundColor: selectedLayout.backgroundColor }">
-          <div
-            v-for="element in selectedLayout.elements"
-            :key="element.id"
-            class="modal-element"
-            :style="{
-              position: 'absolute',
-              left: element.x + 'px',
-              top: element.y + 'px',
-              width: element.w + 'px',
-              height: element.h + 'px'
-            }"
-          >
-            <component
-              :is="getElementComponent(element.type)"
-              :item="element"
-              :user-profile="userProfile"
-            />
+        <div
+          class="modal-canvas"
+          :style="{ backgroundColor: selectedLayout.backgroundColor }"
+        >
+          <div :style="getModalStyle(selectedLayout)">
+            <div
+              v-for="element in selectedLayout.elements"
+              :key="element.id"
+              class="modal-element"
+              :style="{
+                position: 'absolute',
+                left: element.x + 'px',
+                top: element.y + 'px',
+                width: element.w + 'px',
+                height: element.h + 'px'
+              }"
+            >
+              <component
+                :is="getElementComponent(element.type)"
+                :item="element"
+                :user-profile="userProfile"
+              />
+            </div>
           </div>
         </div>
         
@@ -166,23 +174,6 @@ export default {
         
         layouts.value = Array.from(layoutsMap.values());
 
-        layouts.value.forEach(layout => {
-          if (layout.elements.length > 0) {
-            const maxX = Math.max(...layout.elements.map(el => el.x + el.w));
-            const containerWidth = 888;
-
-            if (maxX < containerWidth) {
-              // Berechne den verfügbaren Platz und teile ihn durch 2
-              const offset = (containerWidth - maxX) / 2;
-
-              layout.elements.forEach(el => {
-                el.x = el.x + offset; // Schiebe jedes Element ein Stück nach rechts
-              });
-              console.log(`Layout ${layout.id}: Zentriert mit Offset ${offset}`);
-            }
-          }
-        });
-        
         console.log('Layouts geladen:', layouts.value);
       } catch (error) {
         console.error('Fehler beim Laden der Layouts:', error);
@@ -193,6 +184,53 @@ export default {
     onMounted(() => {
       loadLayouts();
     });
+
+    const getPreviewStyle = (layout) => {
+      if (!layout || !layout.elements || !layout.elements.length) return {};
+
+      const xs = layout.elements.flatMap(el => [el.x, el.x + el.w]);
+      const ys = layout.elements.flatMap(el => [el.y, el.y + el.h]);
+
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+
+      const contentWidth = Math.max(1, maxX - minX);
+      const contentHeight = Math.max(1, maxY - minY);
+
+      const scaleX = 888 / contentWidth;
+      const scaleY = 384 / contentHeight;
+      const wrapperScale = 296 / 888; // equals 128/384
+
+      return {
+        transform: `translate(${-minX}px, ${-minY}px) scale(${scaleX}, ${scaleY}) scale(${wrapperScale})`,
+        transformOrigin: 'top left'
+      };
+    };
+
+    const getModalStyle = (layout) => {
+      if (!layout || !layout.elements || !layout.elements.length) return {};
+
+      const xs = layout.elements.flatMap(el => [el.x, el.x + el.w]);
+      const ys = layout.elements.flatMap(el => [el.y, el.y + el.h]);
+
+      const minX = Math.min(...xs);
+      const maxX = Math.max(...xs);
+      const minY = Math.min(...ys);
+      const maxY = Math.max(...ys);
+
+      const contentWidth = Math.max(1, maxX - minX);
+      const contentHeight = Math.max(1, maxY - minY);
+
+      const scaleX = 888 / contentWidth;
+      const scaleY = 384 / contentHeight;
+
+      return {
+        transform: `translate(${-minX}px, ${-minY}px) scale(${scaleX}, ${scaleY})`,
+        transformOrigin: 'top left'
+      };
+    };
 
     const openLayoutModal = (layout) => {
       selectedLayout.value = layout;
@@ -233,6 +271,8 @@ export default {
       selectedLayout,
       userProfile,
       getElementComponent,
+      getPreviewStyle,
+      getModalStyle,
       openLayoutModal,
       closeLayoutModal,
       editLayout,
@@ -331,8 +371,6 @@ TODO: Medie queries für alle Bildschirmgrößen
   top: 0;
   left: 0;
   overflow: hidden;
-  transform: scale(0.333333);
-  transform-origin: top left;
 }
 
 .preview-element {
