@@ -150,13 +150,28 @@ export default {
         h = (size.height + 10) * 1.5;
       }
       
+      // Verteile Elemente über die Canvas-Breite (5 pro Reihe)
+      const elementsPerRow = 5;
+      const index = cardElements.value.length;
+      const row = Math.floor(index / elementsPerRow);
+      const col = index % elementsPerRow;
+      
+      // Berechne Position mit gleichmäßiger Verteilung
+      const spacing = 888 / (elementsPerRow + 1);
+      const x = spacing * (col + 1) - (w / 2);
+      const y = 50 + (row * 80);
+      
+      // Halte Elemente innerhalb der Canvas
+      const safeX = Math.max(10, Math.min(x, 888 - w - 10));
+      const safeY = Math.max(10, Math.min(y, 384 - h - 10));
+      
       let newElement = {
         id: Date.now(),
         type: type,
 
         //Position bestimmen
-        x: 50 * scale + (cardElements.value.length * 10),
-        y: 50 * scale + (cardElements.value.length * 10),
+        x: safeX,
+        y: safeY,
         w: w,
         h: h,
         content: content,
