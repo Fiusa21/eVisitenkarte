@@ -192,6 +192,7 @@ export default {
       };
 
       console.log('--- Aktualisiere Layout ---');
+      console.log('Elements before save:', cardElements.value.map(el => ({ id: el.id, x: el.x, y: el.y, w: el.w, h: el.h })));
       console.log(JSON.stringify(layoutData, null, 2));
 
       try {
