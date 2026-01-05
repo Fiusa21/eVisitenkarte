@@ -165,27 +165,10 @@ export default {
         });
         
         layouts.value = Array.from(layoutsMap.values());
-        
-        // Skaliere X-Position und Breite proportional um die volle 888px Breite zu nutzen
-        layouts.value.forEach(layout => {
-          if (layout.elements.length > 0) {
-            // Finde das rechteste Element
-            const maxX = Math.max(...layout.elements.map(el => el.x + el.w));
-            
-            // Wenn maxX < 888, skaliere X und Breite proportional
-            if (maxX > 0 && maxX < 888) {
-              const scaleFactor = 888 / maxX;
-              layout.elements.forEach(el => {
-                el.x = el.x * scaleFactor;
-                el.w = el.w * scaleFactor;
-                // Y und H bleiben unverändert (keine vertikale Verzerrung)
-              });
-              console.log(`Layout ${layout.id}: horizontal skaliert mit Faktor ${scaleFactor.toFixed(3)}`);
-            }
-          }
-        });
-        
         console.log('Layouts geladen:', layouts.value);
+        layouts.value.forEach(layout => {
+          console.log(`Layout ${layout.id} (${layout.name}):`, layout.elements.map(el => ({ id: el.id, x: el.x, y: el.y, w: el.w, h: el.h })));
+        });
       } catch (error) {
         console.error('Fehler beim Laden der Layouts:', error);
       }
@@ -324,6 +307,7 @@ TODO: Medie queries für alle Bildschirmgrößen
   height: 128px;
   overflow: hidden;
   position: relative;
+  flex-shrink: 0;
 }
 
 .card-preview {
@@ -333,7 +317,7 @@ TODO: Medie queries für alle Bildschirmgrößen
   top: 0;
   left: 0;
   overflow: hidden;
-  transform: scale(0.333333);
+  transform: scale(calc(296px / 888px));
   transform-origin: top left;
 }
 
