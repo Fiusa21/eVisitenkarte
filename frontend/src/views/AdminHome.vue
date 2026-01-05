@@ -14,8 +14,8 @@
             class="business-cards"
             @click="openLayoutModal(layout)"
             >
-              <div class="card-preview-wrapper" :style="{ width: getLayoutWidth(layout.elements) + 'px' }">
-                <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor, width: getLayoutWidth(layout.elements) + 'px' }">
+              <div class="card-preview-wrapper">
+                <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor }">
                   <div
                     v-for="element in layout.elements"
                     :key="element.id"
@@ -126,12 +126,6 @@ export default {
       }
     };
 
-    // Berechne die maximale Breite eines Layouts basierend auf Elementen
-    const getLayoutWidth = (elements) => {
-      // Canvas im Editor ist immer 888px, also auch in der Preview
-      return 888;
-    };
-
     // Lade und skaliere Layouts
     const loadLayouts = async () => {
       try {
@@ -222,7 +216,6 @@ export default {
       selectedLayout,
       userProfile,
       getElementComponent,
-      getLayoutWidth,
       openLayoutModal,
       closeLayoutModal,
       editLayout,
