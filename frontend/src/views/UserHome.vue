@@ -336,6 +336,7 @@ TODO: Medie queries für alle Bildschirmgrößen
   max-height: 565px; 
   overflow-y: auto;
   padding-bottom: 20px;
+  padding-top: 20px;
 }
 
 .business-cards {
