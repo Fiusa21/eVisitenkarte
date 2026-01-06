@@ -90,8 +90,16 @@ router.put('/layout-management/layouts/:id', protect, async (req, res) => {
 
 })
 
-router.delete('/layout-management/layouts/{id}', protect, (req, res)=> {
-    res.json('placeholder: this would delete a layout');
+router.delete('/layout-management/layouts/:id', protect, async (req, res)=> {
+    try {
+        const { id } = req.params;
+        await layoutModel.deleteLayout(id)
+
+        res.json({message: 'Layout deleted successfully', layout_id: id});
+    } catch (err){
+        console.error("Error deleting layout:", err);
+        res.status(500).json({ error: err.message });
+    }
 })
 
 
