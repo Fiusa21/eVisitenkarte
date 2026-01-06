@@ -29,10 +29,12 @@
                     }"
                   >
                     <component
+                      v-if="element.type !== 'logo'"
                       :is="getElementComponent(element.type)"
                       :item="element"
                       :user-profile="userProfile"
                     />
+                    <img v-else :src="'/company-logos/' + element.content" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
                   </div>
                 </div>
               </div>
@@ -60,10 +62,12 @@
             }"
           >
             <component
+              v-if="element.type !== 'logo'"
               :is="getElementComponent(element.type)"
               :item="element"
               :user-profile="userProfile"
             />
+            <img v-else :src="'/company-logos/' + element.content" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
           </div>
         </div>
         
