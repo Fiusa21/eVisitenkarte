@@ -126,6 +126,7 @@ export default {
         case 'circle': return CircleElement;
         case 'triangle': return TriangleElement;
         case 'text': return TextElement;
+        case 'logo': return 'img';
         default: return null;
       }
     };
