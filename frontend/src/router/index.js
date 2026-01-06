@@ -48,7 +48,7 @@ const router = createRouter({
       ]
     },
     {
-      path: '/editor',
+      path: '/editor/:id?',
       meta: { requiresAuth: true, requiresRole: 'admin' }, 
       component: EditorLayout,
       children: [
@@ -65,7 +65,6 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   try{
-    //TODO: Move initializing to main.js
     await KeycloakService.init(); //Initializing Keycloak
   }catch(error){
     console.error('Keycloak initialization failed in Guard.', error);
