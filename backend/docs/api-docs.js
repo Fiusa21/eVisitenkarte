@@ -508,3 +508,27 @@
  *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
  *
  */
+
+/**
+ * @swagger
+ * /api/display/upload:
+ *   post:
+ *     summary: Upload an image and send it to the external display
+ *     tags: [Display]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/octet-stream:
+ *           schema:
+ *             type: string
+ *             format: binary
+ *     responses:
+ *       200:
+ *         description: Image successfully sent to device
+ *       400:
+ *         description: Invalid image data
+ *       503:
+ *         description: External display device is offline
+ *       500:
+ *         description: Server error
+ */

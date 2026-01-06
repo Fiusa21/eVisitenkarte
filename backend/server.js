@@ -14,7 +14,6 @@ const port = 3000;
 app.use(cors({ origin: 'http://localhost:5173' }));
 
 
-
 // Apply Keycloak session and middleware
 app.use(sessionMiddleware);
 app.use(keycloakMiddleware);
@@ -54,6 +53,8 @@ app.use('/', apiRoutes);
 app.get('/', (req, res) => {
     res.send('Node.js Backend is running!');
 });
+
+
 
 // Start the server
 app.listen(port, () => {
