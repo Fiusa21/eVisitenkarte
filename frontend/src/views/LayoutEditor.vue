@@ -365,4 +365,29 @@ TODO: Medie queries für alle Bildschirmgrößen
   object-fit: contain;
   background-color: black;
 }
+
+@media (max-width: 1700px) {
+  .editor-main-content {
+    max-width: 1300px;
+    margin: 0px;
+    padding: 0px;
+  }
+
+  .layout-editor {
+    justify-content: left;
+    align-items: top;
+  }
+  .save-btn-fixed{
+    position: fixed;
+    bottom: 30px;
+    right: 50%;
+    transform: translate(50%);
+  }
+
+}
+@media (max-height: 900px) {
+    .site-header{
+    padding: 0px;
+  }
+}
 </style>
