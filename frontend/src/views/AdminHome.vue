@@ -48,9 +48,7 @@ export default {
 </script>
 
 <style scoped>
-/*
-TODO: Medie queries für alle Bildschirmgrößen 
-*/
+
 
 .site-header{
   color: white;
@@ -96,7 +94,7 @@ TODO: Medie queries für alle Bildschirmgrößen
   display: flex; /*Horrizontal*/
   flex-wrap: wrap; /*Wrap cards to the next line*/
   gap:30px; /*Place between cards*/
-  justify-content: flex-start; /*Cards start right*/
+  justify-content: center;
   align-items: center;
   max-height: 560px; 
   max-width: 1024px;

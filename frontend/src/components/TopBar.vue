@@ -90,4 +90,11 @@ button {
 button:hover{
     background-color: #FB8500;
 }
+@media screen and (max-width: 750px) {
+    .wrapper {
+        width: 100%;
+        max-width: 100%;
+    }
+    
+}
 </style>

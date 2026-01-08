@@ -66,6 +66,7 @@ export default {
   grid-template-columns: 1fr auto 1fr; /* left / center (TopBar) / right */
   align-items: center;
   gap: 12px;
+  max-width: 100%;
 }
 
 .header-left {
@@ -81,6 +82,7 @@ export default {
 }
 
 .header-center {
+  width: 100%;
   justify-self: center;
   display: flex;
   align-items: center;
@@ -170,5 +172,42 @@ nav {
     padding: 8px 12px;
     border-radius: 8px;
     font-size: 0.9em;
+}
+@media screen and (max-width: 750px) {
+  .main-header {
+      max-width: 100%;
+  }
+  
+  /* Tablets (600px and up) */
+@media screen and (max-width: 732px) {
+  .site-header h1 {
+    font-size: 4em;
+  }
+  
+  .site-header p {
+    font-size: 1.3em;
+  }
+
+  .site-header {
+    padding: 0px;
+
+  }
+  .layouts {
+    justify-content: center;
+    gap: 20px;
+  }
+
+}
+
+/* Desktop (1024px and up) */
+@media screen and (min-width: 1024px) {
+  .site-header h1 {
+    font-size: 5em;
+  }
+
+  .site-header p {
+    font-size: 1.5em;
+  }
+}
 }
 </style>
