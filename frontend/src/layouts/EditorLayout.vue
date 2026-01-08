@@ -34,7 +34,7 @@ export default {
   name: 'AdminLayout',
   components: { AdminToggle, TopBar, LogoutButton },
   setup() {
-    const isAdminMode = ref(false); // Initial state is OFF
+    const isAdminMode = ref(true); // ON because we're in admin/editor mode
 
     return {
         isAdminMode
