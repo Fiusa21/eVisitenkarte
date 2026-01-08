@@ -477,4 +477,16 @@ TODO: Medie queries für alle Bildschirmgrößen
   font-size: 1.5rem;
   font-weight: 600;
 }
+
+@media (max-width: 1500px) {
+  .main-content-wrapper {
+    flex-direction: row;
+    justify-content: center;   
+    width: 100%;
+    gap: unset;
+  }
+  .dashboard-layouts-container {
+    justify-content: center;
+  }
+}
 </style>
