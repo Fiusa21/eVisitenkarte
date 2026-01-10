@@ -93,7 +93,7 @@ TODO: Medie queries für alle Bildschirmgrößen
 }
 
 .login-container p{
-    font-size: 1.2em;
+    font-size: 2em;
     font-family: 'Dosis', sans-serif;
     color: white;
 }
