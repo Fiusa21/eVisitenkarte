@@ -4,6 +4,7 @@
       <button @click="activeTab = 'text'" :class="{ 'active-tab': activeTab === 'text' }">Nutzer Daten</button>
       <button @click="activeTab = 'shapes'" :class="{ 'active-tab': activeTab === 'shapes' }">Formen</button>
       <button @click="activeTab = 'media'" :class="{ 'active-tab': activeTab === 'media' }">Medien</button>
+      <button @click="activeTab = 'qr'" :class="{ 'active-tab': activeTab === 'qr' }">QR</button>
     </div>
 
     <div v-if="activeTab === 'text'" class="tab-content data-options">
@@ -37,11 +38,16 @@
         {{ logo.replace('.png', '').replace('-', ' ').toUpperCase() }}
       </button>
     </div>
+
+    <div v-if="activeTab === 'qr'" class="tab-content qr-tab">
+      <QRGenerator @add-qr="(dataUrl) => $emit('add-element', { type: 'qr', content: dataUrl })" />
+    </div>
   </div>
 </template>
 
 <script>
 import { ref } from "vue";
+import QRGenerator from './QRGenerator.vue';
 
 export default {
   name: "ToolBox",
@@ -50,6 +56,7 @@ export default {
     dynamicTextOptions: Array
   },
   emits: ['add-element'],
+  components: { QRGenerator },
   setup() {
     const activeTab = ref("text");
     
@@ -109,6 +116,10 @@ export default {
 
 .tab-content {
   padding: 0 20px;
+}
+
+.qr-tab {
+  padding: 10px 0 0 0;
 }
 
 .tab-content h2 {

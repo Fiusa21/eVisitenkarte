@@ -55,7 +55,7 @@
           >
             <!-- Rendert die Elementkomponente-->
             <component v-if="elementComponent(item) !== 'img'" :is="elementComponent(item)" :item="item" :user-profile="userProfile"/>
-            <img v-else :src="'/company-logos/' + item.content" :alt="item.content" style="width: 100%; height: 100%; object-fit: contain;" />
+            <img v-else :src="imageSrc(item)" :alt="item.content" style="width: 100%; height: 100%; object-fit: contain;" />
             
           </Vue3DraggableResizable>
           
@@ -153,7 +153,7 @@ export default {
         h = (size.height + 10) * 1.5;
       }
 
-      if(type === 'logo'){
+      if(type === 'logo' || type === 'qr'){
         w = 150;
         h = 150;
       }
@@ -168,7 +168,7 @@ export default {
         w: w,
         h: h,
         content: content,
-        source: type === 'logo' ? 'logo' : (content in userProfile ? 'dynamic' : 'static'),
+        source: type === 'logo' || type === 'qr' ? 'logo' : (content in userProfile ? 'dynamic' : 'static'),
         style: { color: canvasBgColor.value === 'black' ? 'white' : 'black' }
       };
       cardElements.value.push(newElement);
@@ -181,13 +181,22 @@ export default {
         case 'circle': return CircleElement; 
         case 'triangle': return TriangleElement; 
         case 'text': return TextElement;
-        case 'logo': return 'img';
-        default: console.warn(`Unbekanter Elementtyp: ${type}`);
+        case 'logo':
+        case 'qr':
+          return 'img';
+        default: console.warn(`Unbekanter Elementtyp: ${item.type}`);
       }
     };
 
-    // Layout aktualisieren
-    const saveTemplate = async () => {
+    const imageSrc = (item) => {
+      if (typeof item.content === 'string' && item.content.startsWith('data:')) {
+        return item.content;
+      }
+      return `/company-logos/${item.content}`;
+    };
+
+        // Layout aktualisieren
+        const saveTemplate = async () => {
       if (!layoutId.value) {
         alert('Bitte erstellen Sie zunächst ein Layout mit einem Namen!');
         return;
@@ -355,6 +364,7 @@ export default {
       canvasBgColor,
       layoutName,
       showNameModal,
+      imageSrc,
       addElementToCanvas, 
       elementComponent, 
       saveTemplate,
