@@ -34,7 +34,7 @@
                       :item="element"
                       :user-profile="userProfile"
                     />
-                    <img v-else :src="getQRImageSrc(element)" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
+                    <img v-else :src="getImageSrc(element)" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
                   </div>
                 </div>
               </div>
@@ -67,7 +67,7 @@
               :item="element"
               :user-profile="userProfile"
             />
-            <img v-else :src="getQRImageSrc(element)" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
+            <img v-else :src="getImageSrc(element)" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
           </div>
         </div>
         
@@ -91,6 +91,7 @@ import TextElement from '@/elements/TextElement.vue';
 import RectangleElement from '@/elements/RectangleElement.vue';
 import CircleElement from '@/elements/CircleElement.vue';
 import TriangleElement from '@/elements/TriangleElement.vue';
+import { useQRImageSrc } from '@/composables/useQRImageSrc';
 
 // Add logic here later, e.g., fetching user-specific data
 export default {
@@ -105,6 +106,7 @@ export default {
     const router = useRouter();
     const layouts = ref([]);
     const selectedLayout = ref(null);
+    const { getImageSrc } = useQRImageSrc();
     
     // Mock user profile für dynamische Text-Felder
     const userProfile = computed(() => ({
@@ -129,15 +131,6 @@ export default {
         case 'logo': return 'img';
         default: return null;
       }
-    };
-
-    // Generate QR image URL from stored URL string
-    const getQRImageSrc = (element) => {
-      if (element.type === 'qr') {
-        const encoded = encodeURIComponent(element.content);
-        return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&format=png&data=${encoded}&color=000000&bgcolor=FFFFFF`;
-      }
-      return `/company-logos/${element.content}`;
     };
 
     // Lade und skaliere Layouts
@@ -230,7 +223,7 @@ export default {
       selectedLayout,
       userProfile,
       getElementComponent,
-      getQRImageSrc,
+      getImageSrc,
       openLayoutModal,
       closeLayoutModal,
       editLayout,

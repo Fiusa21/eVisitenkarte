@@ -59,7 +59,7 @@
                   :item="element"
                   :user-profile="userProfile"
                 />
-                <img v-else :src="getQRImageSrc(element)" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
+                <img v-else :src="getImageSrc(element)" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
               </div>
             </div>
           </div>
@@ -92,7 +92,7 @@
               :item="element"
               :user-profile="userProfile"
             />
-            <img v-else :src="getQRImageSrc(element)" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
+            <img v-else :src="getImageSrc(element)" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
           </div>
         </div>
 
@@ -114,6 +114,7 @@ import CircleElement from '@/elements/CircleElement.vue';
 import TriangleElement from '@/elements/TriangleElement.vue';
 import * as htmlToImage from 'html-to-image';
 import Pica from 'pica';
+import { useQRImageSrc } from '@/composables/useQRImageSrc';
 
 export default {
   name: 'UserHome',
@@ -127,6 +128,7 @@ export default {
 
     const canvasRef = ref(null);
     const isSending = ref(false);
+    const { getImageSrc } = useQRImageSrc();
 
     //pica for high quality down scaling
     const pica = Pica();
@@ -244,15 +246,6 @@ export default {
       }
     };
 
-    // Generate QR image URL from stored URL string
-    const getQRImageSrc = (element) => {
-      if (element.type === 'qr') {
-        const encoded = encodeURIComponent(element.content);
-        return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&format=png&data=${encoded}&color=000000&bgcolor=FFFFFF`;
-      }
-      return `/company-logos/${element.content}`;
-    };
-
     const openLayoutModal = (layout) => {
       selectedLayout.value = layout;
     };
@@ -317,7 +310,7 @@ export default {
       openLayoutModal,
       closeLayoutModal,
       getElementComponent,
-      getQRImageSrc,
+      getImageSrc,
       sendImage
     };
   }

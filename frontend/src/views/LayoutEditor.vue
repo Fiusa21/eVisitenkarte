@@ -55,7 +55,7 @@
           >
             <!-- Rendert die Elementkomponente-->
             <component v-if="elementComponent(item) !== 'img'" :is="elementComponent(item)" :item="item" :user-profile="userProfile"/>
-            <img v-else :src="getQRImageSrc(item)" :alt="item.content" style="width: 100%; height: 100%; object-fit: contain;" />
+            <img v-else :src="getImageSrc(item)" :alt="item.content" style="width: 100%; height: 100%; object-fit: contain;" />
             
           </Vue3DraggableResizable>
           
@@ -89,6 +89,7 @@ import TextElement from '../elements/TextElement.vue';
 import ToolBox from '../components/ToolBox.vue';
 import PropertyEditor from '../components/PropertyEditor.vue';
 import ApiService from '../services/api-service.js';
+import { useQRImageSrc } from '../composables/useQRImageSrc';
 
 export default {
   name: 'layout-editor',
@@ -106,6 +107,7 @@ export default {
     const showNameModal = ref(false);
     const layoutId = ref(null); // Wird beim Erstellen des Layouts vom Backend gesetzt
     const route = useRoute();
+    const { getImageSrc } = useQRImageSrc();
 
     //simulierte Nutzerdaten
     const userProfile = {
@@ -186,22 +188,6 @@ export default {
           return 'img';
         default: console.warn(`Unbekanter Elementtyp: ${item.type}`);
       }
-    };
-
-    const imageSrc = (item) => {
-      if (typeof item.content === 'string' && item.content.startsWith('data:')) {
-        return item.content;
-      }
-      return `/company-logos/${item.content}`;
-    };
-
-    // Generate QR image URL from stored URL string
-    const getQRImageSrc = (element) => {
-      if (element.type === 'qr') {
-        const encoded = encodeURIComponent(element.content);
-        return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&format=png&data=${encoded}&color=000000&bgcolor=FFFFFF`;
-      }
-      return imageSrc(element);
     };
 
     // Layout aktualisieren
@@ -373,10 +359,9 @@ export default {
       canvasBgColor,
       layoutName,
       showNameModal,
-      imageSrc,
       addElementToCanvas, 
       elementComponent,
-      getQRImageSrc,
+      getImageSrc,
       saveTemplate,
       handleAddElement,
       selectElement,
