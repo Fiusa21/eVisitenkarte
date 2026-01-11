@@ -40,7 +40,7 @@
     </div>
 
     <div v-if="activeTab === 'qr'" class="tab-content qr-tab">
-      <QRGenerator @add-qr="(dataUrl) => $emit('add-element', { type: 'qr', content: dataUrl })" />
+      <QRGenerator @add-qr="(urlString) => $emit('add-element', { type: 'qr', content: urlString })" />
     </div>
   </div>
 </template>

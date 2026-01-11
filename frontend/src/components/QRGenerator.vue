@@ -84,19 +84,13 @@ const downloadQR = async () => {
   }
 };
 
-// Fetch the QR, convert to data URL, and emit so parent can place it directly on canvas
+// Emit the URL string so it can be saved to database and regenerated on-the-fly
 const addToCanvas = async () => {
   try {
     loading.value = true;
-    const response = await fetch(qrUrl.value);
-    const blob = await response.blob();
-    const reader = new FileReader();
-    reader.onloadend = () => {
-      const dataUrl = reader.result;
-      emit('add-qr', dataUrl);
-      loading.value = false;
-    };
-    reader.readAsDataURL(blob);
+    // Just emit the URL - QR will be regenerated when needed
+    emit('add-qr', url.value);
+    loading.value = false;
   } catch (e) {
     loading.value = false;
   }

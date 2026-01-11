@@ -54,12 +54,12 @@
                 }"
               >
                 <component
-                  v-if="getElementComponent(element) !== 'img'"
+                  v-if="element.type !== 'logo' && element.type !== 'qr'"
                   :is="getElementComponent(element)"
                   :item="element"
                   :user-profile="userProfile"
                 />
-                <img v-else :src="'/company-logos/' + element.content" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
+                <img v-else :src="getQRImageSrc(element)" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
               </div>
             </div>
           </div>
@@ -87,12 +87,12 @@
             }"
           >
             <component
-              v-if="getElementComponent(element) !== 'img'"
+              v-if="element.type !== 'logo' && element.type !== 'qr'"
               :is="getElementComponent(element)"
               :item="element"
               :user-profile="userProfile"
             />
-            <img v-else :src="'/company-logos/' + element.content" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
+            <img v-else :src="getQRImageSrc(element)" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
           </div>
         </div>
 
@@ -244,6 +244,15 @@ export default {
       }
     };
 
+    // Generate QR image URL from stored URL string
+    const getQRImageSrc = (element) => {
+      if (element.type === 'qr') {
+        const encoded = encodeURIComponent(element.content);
+        return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&format=png&data=${encoded}&color=000000&bgcolor=FFFFFF`;
+      }
+      return `/company-logos/${element.content}`;
+    };
+
     const openLayoutModal = (layout) => {
       selectedLayout.value = layout;
     };
@@ -308,6 +317,7 @@ export default {
       openLayoutModal,
       closeLayoutModal,
       getElementComponent,
+      getQRImageSrc,
       sendImage
     };
   }

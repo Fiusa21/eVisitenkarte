@@ -55,7 +55,7 @@
           >
             <!-- Rendert die Elementkomponente-->
             <component v-if="elementComponent(item) !== 'img'" :is="elementComponent(item)" :item="item" :user-profile="userProfile"/>
-            <img v-else :src="imageSrc(item)" :alt="item.content" style="width: 100%; height: 100%; object-fit: contain;" />
+            <img v-else :src="getQRImageSrc(item)" :alt="item.content" style="width: 100%; height: 100%; object-fit: contain;" />
             
           </Vue3DraggableResizable>
           
@@ -195,8 +195,17 @@ export default {
       return `/company-logos/${item.content}`;
     };
 
-        // Layout aktualisieren
-        const saveTemplate = async () => {
+    // Generate QR image URL from stored URL string
+    const getQRImageSrc = (element) => {
+      if (element.type === 'qr') {
+        const encoded = encodeURIComponent(element.content);
+        return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&format=png&data=${encoded}&color=000000&bgcolor=FFFFFF`;
+      }
+      return imageSrc(element);
+    };
+
+    // Layout aktualisieren
+    const saveTemplate = async () => {
       if (!layoutId.value) {
         alert('Bitte erstellen Sie zunächst ein Layout mit einem Namen!');
         return;
@@ -366,7 +375,8 @@ export default {
       showNameModal,
       imageSrc,
       addElementToCanvas, 
-      elementComponent, 
+      elementComponent,
+      getQRImageSrc,
       saveTemplate,
       handleAddElement,
       selectElement,
