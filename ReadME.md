@@ -33,9 +33,28 @@ Digital business card platform with a Vue 3 (Vite) frontend, Node.js/Express bac
 2) Import Keycloak realm (one-time):
    - Open `http://localhost:8080` → log in as admin (`KEYCLOAK_ADMIN`/`KEYCLOAK_ADMIN_PASSWORD`, default `admin`/`admin`).
    - Create realm from `realm-export.json` with realm name `eVisitenkarte-development`.
+   - Create a user inside of keycloak following these steps:
+     - In the menu left, go to users
+     - click on 'Add user' and add the desired attributes
+     - after creation, in user details, navigate to role mapping.
+     - select 'default-roles-evisitenkarte-development' and click on 'assign role'
+     - in the pop-up change the filter to 'Filter by clients' and select the desired role of the user (either admin or user or both)
+     - Then navigate to 'credentials' and set a password
+     - Then navigate to attributes and set the attributes as followed:
+       - The key value in the left column, the desired value in the right (keys have to be exact as follows!)
+         - phoneNumber
+         - last name
+         - first name
+         - mobile number
+         - street
+         - company
+         - title 
+         - region
+         - postal_code
    - Clients expected by code:
      - Backend: `eVisitenkarte-backend` (bearer-only)
      - Frontend: `eVisitenkarte-app` (public client)
+     
 
 3) Set valid redirect/web origins for the frontend client (e.g., `http://localhost:5173/*`).
 
