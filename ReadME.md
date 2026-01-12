@@ -25,7 +25,7 @@ Digital business card platform with a Vue 3 (Vite) frontend, Node.js/Express bac
 ## Quick Start (all services)
 1) Start Keycloak + Postgres:
    ```sh
-   cd /Users/rootys/IdeaProjects/eVisitenkarte
+   cd /path/to/your-project/root
    docker compose up -d
    ```
    Services: `keycloak` (8080), `keycloak-db`, `app-db` (5432 mapped).
@@ -61,7 +61,7 @@ Digital business card platform with a Vue 3 (Vite) frontend, Node.js/Express bac
 ## Backend (Express)
 1) Install deps:
    ```sh
-   cd /Users/rootys/IdeaProjects/eVisitenkarte/backend
+   cd /path/to/your-project/root/backend
    npm install
    ```
 2) Configure env (Postgres). Defaults in `db-service.js`:
@@ -88,7 +88,7 @@ Digital business card platform with a Vue 3 (Vite) frontend, Node.js/Express bac
 ## Frontend (Vue 3 + Vite)
 1) Install deps:
    ```sh
-   cd /Users/rootys/IdeaProjects/eVisitenkarte/frontend
+   cd /path/to/your-project/root/frontend
    npm install
    ```
 2) Run dev server:
