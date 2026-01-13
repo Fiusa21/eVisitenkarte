@@ -59,7 +59,7 @@
                   :item="element"
                   :user-profile="userProfile"
                 />
-                <img v-else :src="getImageSrc(element)" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
+                <img v-else :src="elementImageSrcMap.get(element.id) || (element.type === 'logo' ? `/company-logos/${element.content}` : '')" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
               </div>
             </div>
           </div>
@@ -92,7 +92,7 @@
               :item="element"
               :user-profile="userProfile"
             />
-            <img v-else :src="getImageSrc(element)" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
+            <img v-else :src="elementImageSrcMap.get(element.id) || (element.type === 'logo' ? `/company-logos/${element.content}` : '')" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
           </div>
         </div>
 
@@ -128,7 +128,8 @@ export default {
 
     const canvasRef = ref(null);
     const isSending = ref(false);
-    const { getImageSrc } = useQRImageSrc();
+    const { getImageSrc: getImageSrcComposable } = useQRImageSrc();
+    const elementImageSrcMap = ref(new Map());
 
     //pica for high quality down scaling
     const pica = Pica();
@@ -196,6 +197,22 @@ export default {
 
     //Take from user profile fields in keycloak
     const userProfileRef = KeycloakService.getIdTokenParsed();
+
+    // Helper zum Laden von Bildern mit Cache
+    const getImageSrc = async (item) => {
+      if (elementImageSrcMap.value.has(item.id)) {
+        return elementImageSrcMap.value.get(item.id);
+      }
+      
+      try {
+        const src = await getImageSrcComposable(item);
+        elementImageSrcMap.value.set(item.id, src);
+        return src;
+      } catch (error) {
+        console.error('Fehler beim Laden des Bildes:', error);
+        return '';
+      }
+    };
 
     //Computed Property to access user profile data
     const userProfile = computed(() =>  userProfileRef.value || {});
@@ -295,6 +312,15 @@ export default {
         
         layouts.value = Array.from(layoutsMap.values());
         
+        // Preload QR-Code images
+        layouts.value.forEach(layout => {
+          layout.elements.forEach(item => {
+            if (item.type === 'qr' || item.type === 'logo') {
+              getImageSrc(item);
+            }
+          });
+        });
+        
         console.log('Layouts geladen:', layouts.value);
       } catch (error) {
         console.error('Fehler beim Laden der Layouts:', error);
@@ -310,8 +336,10 @@ export default {
       openLayoutModal,
       closeLayoutModal,
       getElementComponent,
-      getImageSrc,
-      sendImage
+      elementImageSrcMap,
+      sendImage,
+      canvasRef,
+      isSending
     };
   }
 }

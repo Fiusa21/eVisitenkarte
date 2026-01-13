@@ -34,7 +34,7 @@
                       :item="element"
                       :user-profile="userProfile"
                     />
-                    <img v-else :src="getImageSrc(element)" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
+                    <img v-else :src="elementImageSrcMap.get(element.id) || (element.type === 'logo' ? `/company-logos/${element.content}` : '')" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
                   </div>
                 </div>
               </div>
@@ -67,7 +67,7 @@
               :item="element"
               :user-profile="userProfile"
             />
-            <img v-else :src="getImageSrc(element)" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
+            <img v-else :src="elementImageSrcMap.get(element.id) || (element.type === 'logo' ? `/company-logos/${element.content}` : '')" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
           </div>
         </div>
         
@@ -106,7 +106,8 @@ export default {
     const router = useRouter();
     const layouts = ref([]);
     const selectedLayout = ref(null);
-    const { getImageSrc } = useQRImageSrc();
+    const { getImageSrc: getImageSrcComposable } = useQRImageSrc();
+    const elementImageSrcMap = ref(new Map());
     
     // Mock user profile für dynamische Text-Felder
     const userProfile = computed(() => ({
@@ -130,6 +131,22 @@ export default {
         case 'text': return TextElement;
         case 'logo': return 'img';
         default: return null;
+      }
+    };
+
+    // Helper zum Laden von Bildern mit Cache
+    const getImageSrc = async (item) => {
+      if (elementImageSrcMap.value.has(item.id)) {
+        return elementImageSrcMap.value.get(item.id);
+      }
+      
+      try {
+        const src = await getImageSrcComposable(item);
+        elementImageSrcMap.value.set(item.id, src);
+        return src;
+      } catch (error) {
+        console.error('Fehler beim Laden des Bildes:', error);
+        return '';
       }
     };
 
@@ -172,6 +189,15 @@ export default {
         });
         
         layouts.value = Array.from(layoutsMap.values());
+        
+        // Preload QR-Code images
+        layouts.value.forEach(layout => {
+          layout.elements.forEach(item => {
+            if (item.type === 'qr' || item.type === 'logo') {
+              getImageSrc(item);
+            }
+          });
+        });
         
         console.log('Layouts geladen:', layouts.value);
       } catch (error) {
@@ -223,7 +249,7 @@ export default {
       selectedLayout,
       userProfile,
       getElementComponent,
-      getImageSrc,
+      elementImageSrcMap,
       openLayoutModal,
       closeLayoutModal,
       editLayout,
