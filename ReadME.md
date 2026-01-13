@@ -13,7 +13,7 @@ Digital business card platform with a Vue 3 (Vite) frontend, Node.js/Express bac
 - Node.js 20.x (or >=22.12.0) and npm
 - Docker + Docker Compose
 - Ports (defaults): frontend 5173, backend 3000, Keycloak 8080, Postgres 5432
-- Optional: Git, make
+- Optional: Git, make, pgAdmin (recommended)
 
 ## Project Structure
 - `frontend/` — Vue 3 app (Vite)
