@@ -2,7 +2,7 @@
 -- PostgreSQL database dump
 --
 
-\restrict bN797TMxpPFTGTfxKQcz6gecHcTs9sbvcrnHzlgKZ1Kkqg3geHgvasmfR7loItK
+
 
 -- Dumped from database version 15.14
 -- Dumped by pg_dump version 18.0
@@ -123,5 +123,5 @@ ALTER TABLE ONLY public.elements
 -- PostgreSQL database dump complete
 --
 
-\unrestrict bN797TMxpPFTGTfxKQcz6gecHcTs9sbvcrnHzlgKZ1Kkqg3geHgvasmfR7loItK
+
 

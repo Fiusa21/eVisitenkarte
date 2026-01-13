@@ -29,6 +29,11 @@ Digital business card platform with a Vue 3 (Vite) frontend, Node.js/Express bac
    docker compose up -d
    ```
    Services: `keycloak` (8080), `keycloak-db`, `app-db` (5432 mapped).
+IMPORTANT: Until fixed, you have to manually execute/run the query inside of init.sql to create the Database-Schema! Either using pgAdmin or the following command in the project root (LINUX/MAC):
+    ```sh
+   cat init.sql | docker exec -i my_postgres_db psql -U myuser -d mydatabase
+   ```
+    
 
 2) Import Keycloak realm (one-time):
    - Open `http://localhost:8080` → log in as admin (`KEYCLOAK_ADMIN`/`KEYCLOAK_ADMIN_PASSWORD`, default `admin`/`admin`).
