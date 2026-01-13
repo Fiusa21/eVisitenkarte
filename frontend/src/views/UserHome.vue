@@ -54,10 +54,12 @@
                 }"
               >
                 <component
+                  v-if="getElementComponent(element) !== 'img'"
                   :is="getElementComponent(element)"
                   :item="element"
                   :user-profile="userProfile"
                 />
+                <img v-else :src="'/company-logos/' + element.content" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
               </div>
             </div>
           </div>
@@ -85,10 +87,12 @@
             }"
           >
             <component
+              v-if="getElementComponent(element) !== 'img'"
               :is="getElementComponent(element)"
               :item="element"
               :user-profile="userProfile"
             />
+            <img v-else :src="'/company-logos/' + element.content" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
           </div>
         </div>
 
@@ -235,6 +239,7 @@ export default {
         case 'circle': return CircleElement;
         case 'triangle': return TriangleElement;
         case 'text': return TextElement;
+        case 'logo': return 'img';
         default: return null;
       }
     };
@@ -528,14 +533,6 @@ TODO: Medie queries für alle Bildschirmgrößen
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   border-radius: 8px;
   overflow: hidden;
-  /* Helps browsers render text without subpixel anti-aliasing */
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-
-  /* If you have images/icons inside, keep them sharp too */
-  image-rendering: pixelated;
-  image-rendering: crisp-edges;
 }
 
 .modal-element {
