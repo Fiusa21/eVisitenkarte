@@ -53,8 +53,8 @@
         <p class="dynamic-info">{{ selectedElement.content }} (dynamisch)</p>
       </div>
 
-      <!-- Farbe ändern -->
-      <div class="property-section">
+      <!-- Farbe ändern (nur für Text und Formen, nicht für QR/Logo) -->
+      <div v-if="selectedElement.type !== 'qr' && selectedElement.type !== 'logo'" class="property-section">
         <label>Farbe</label>
         <div class="color-picker">
           <button 

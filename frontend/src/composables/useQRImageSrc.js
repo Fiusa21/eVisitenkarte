@@ -1,9 +1,5 @@
 import QRCode from 'qrcode';
 
-/**
- * Composable für QR-Code Generierung
- * Generiert QR-Codes lokal mit qrcode Bibliothek
- */
 export function useQRImageSrc() {
   const qrCache = new Map();
 

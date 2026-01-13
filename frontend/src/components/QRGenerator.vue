@@ -7,22 +7,7 @@
         v-model="url"
         type="text"
         placeholder="https://uxitra.de"
-        @input="onInput"
       />
-    </div>
-
-    <div class="toggle-row">
-      <label>Farbe</label>
-      <div class="toggle-buttons">
-        <button
-          :class="{ active: darkMode }"
-          @click="toggleDarkMode(true)"
-        >Schwarz</button>
-        <button
-          :class="{ active: !darkMode }"
-          @click="toggleDarkMode(false)"
-        >Weiß</button>
-      </div>
     </div>
 
     <div v-if="url" class="qr-preview">
@@ -46,11 +31,10 @@ import QRCode from 'qrcode';
 const emit = defineEmits(['add-qr']);
 
 const url = ref('https://uxitra.de');
-const darkMode = ref(true);
 const qrDataUrl = ref('');
 const loading = ref(false);
 
-// QR-Code generieren wenn URL oder Farbe sich ändert
+// QR-Code generieren wenn URL sich ändert
 const generateQR = async () => {
   if (!url.value) {
     qrDataUrl.value = '';
@@ -66,8 +50,8 @@ const generateQR = async () => {
       margin: 1,
       width: 220,
       color: {
-        dark: darkMode.value ? '#000000' : '#FFFFFF',
-        light: darkMode.value ? '#FFFFFF' : '#000000'
+        dark: '#000000',
+        light: '#FFFFFF'
       }
     });
     qrDataUrl.value = dataUrl;
@@ -76,12 +60,6 @@ const generateQR = async () => {
     console.error('Fehler beim QR-Code generieren:', error);
     loading.value = false;
   }
-};
-
-// Farbe wechseln
-const toggleDarkMode = (isDark) => {
-  darkMode.value = isDark;
-  generateQR();
 };
 
 // QR als PNG downloaden
@@ -116,8 +94,7 @@ watch(url, () => generateQR(), { immediate: true });
   gap: 12px;
 }
 
-.input-group label,
-.toggle-row label {
+.input-group label {
   font-size: 0.85rem;
   color: #ccc;
 }
@@ -129,32 +106,6 @@ input {
   border: 1px solid #444;
   background: #1c1c1c;
   color: #fff;
-}
-
-.toggle-row {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.toggle-buttons {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 8px;
-}
-
-.toggle-buttons button {
-  padding: 10px;
-  border: 1px solid #444;
-  border-radius: 6px;
-  background: #1c1c1c;
-  color: #fff;
-  cursor: pointer;
-}
-
-.toggle-buttons button.active {
-  border-color: #22c55e;
-  background: #1f3a1f;
 }
 
 .qr-preview {
