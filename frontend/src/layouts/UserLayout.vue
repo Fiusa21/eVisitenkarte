@@ -1,7 +1,7 @@
 <template>
   <div class="user-layout">
     <header class="main-header">
-      <div class="admin-slider">
+      <div class="admin-slider" v-if="isAdmin">
         <div class="text">Admin Modus</div>
         <AdminToggle class="admin-toggle" toggle-id="admin-mode-toggle" v-model="isAdminMode" /> 
       </div>
@@ -15,18 +15,21 @@
 </template>
 
 <script>
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import AdminToggle from '@/components/AdminSlider.vue';
 import LogoutButton from '@/components/LogoutButton.vue';
+import KeycloakService from '@/services/keycloak-service';
 
 export default {
   name: 'UserLayout',
   components: { AdminToggle, LogoutButton },
   setup() {
     const isAdminMode = ref(false); // Initial state is OFF
+    const isAdmin = computed(() => KeycloakService.hasRole('admin'));
 
     return {
-      isAdminMode
+      isAdminMode,
+      isAdmin
     };
   }
 }
