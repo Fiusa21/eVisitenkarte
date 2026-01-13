@@ -152,3 +152,4 @@ IMPORTANT: Until fixed, you have to manually execute/run the query inside of ini
 - Port clashes: adjust host port mapping in `docker-compose.yml` and configs.
 - We ran into an issue where pgAdmin (if used) created a local instance on the same default port, which was then running on the local OS in the background. If that is the case you will be unable to connect to the database running inside of Docker. make sure to kill those processes or adapt the default ports.
 - Make sure you are connected to the devices wifi.
+- In some rare cases, the app-db container was not running after docker compose. Manually start that container.
