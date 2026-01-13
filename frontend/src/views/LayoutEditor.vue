@@ -55,7 +55,12 @@
           >
             <!-- Rendert die Elementkomponente-->
             <component v-if="elementComponent(item) !== 'img'" :is="elementComponent(item)" :item="item" :user-profile="userProfile"/>
-            <img v-else :src="getImageSrc(item)" :alt="item.content" style="width: 100%; height: 100%; object-fit: contain;" />
+            <img 
+              v-else 
+              :src="elementImageSrcMap.get(item.id) || (item.type === 'logo' ? `/company-logos/${item.content}` : '')" 
+              :alt="item.content" 
+              style="width: 100%; height: 100%; object-fit: contain;" 
+            />
             
           </Vue3DraggableResizable>
           
@@ -77,7 +82,7 @@
 </template>
 
 <script>
-import { ref, onMounted } from 'vue';
+import { ref, onMounted, watch } from 'vue';
 import { useRoute } from 'vue-router';
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
 import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css';
@@ -107,7 +112,10 @@ export default {
     const showNameModal = ref(false);
     const layoutId = ref(null); // Wird beim Erstellen des Layouts vom Backend gesetzt
     const route = useRoute();
-    const { getImageSrc } = useQRImageSrc();
+    const { getImageSrc: getImageSrcComposable } = useQRImageSrc();
+    
+    // Map für gecachte Bildrücken - Reactive für Vue
+    const elementImageSrcMap = ref(new Map());
 
     //simulierte Nutzerdaten
     const userProfile = {
@@ -189,6 +197,35 @@ export default {
         default: console.warn(`Unbekanter Elementtyp: ${item.type}`);
       }
     };
+
+    // Wrapper für getImageSrc mit Async/Cache-Handling
+    const getImageSrc = async (item) => {
+      if (elementImageSrcMap.value.has(item.id)) {
+        return elementImageSrcMap.value.get(item.id);
+      }
+      
+      try {
+        const src = await getImageSrcComposable(item);
+        elementImageSrcMap.value.set(item.id, src);
+        return src;
+      } catch (error) {
+        console.error('Fehler beim Laden des Bildes:', error);
+        return '';
+      }
+    };
+
+    // Beobachte cardElements und lade Bilder async
+    watch(
+      cardElements,
+      (newElements) => {
+        newElements.forEach(item => {
+          if ((item.type === 'qr' || item.type === 'logo') && !elementImageSrcMap.value.has(item.id)) {
+            getImageSrc(item);
+          }
+        });
+      },
+      { deep: true }
+    );
 
     // Layout aktualisieren
     const saveTemplate = async () => {
@@ -361,7 +398,7 @@ export default {
       showNameModal,
       addElementToCanvas, 
       elementComponent,
-      getImageSrc,
+      elementImageSrcMap,
       saveTemplate,
       handleAddElement,
       selectElement,

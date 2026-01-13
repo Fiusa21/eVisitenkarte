@@ -1,40 +1,73 @@
-/**
- * Composable for handling QR code image generation and rendering
- * Provides a unified way to get the correct image source for QR codes across all views
- */
+import QRCode from 'qrcode';
 
+/**
+ * Composable für QR-Code Generierung
+ * Generiert QR-Codes lokal mit qrcode Bibliothek
+ */
 export function useQRImageSrc() {
+  const qrCache = new Map();
+
   /**
-   * Generate the correct image source for an element
-   * For QR codes: generates API URL from stored URL string
-   * For logos: returns the company-logos path
-   * For data URLs: returns them as-is
-   * 
-   * @param {Object} element - The element with type and content properties
-   * @returns {string} The correct image source URL
+   * Generiert QR-Code Bild und cached es
+   * @param {string} url - Die URL für den QR-Code
+   * @returns {Promise<string>} Data URL des QR-Codes
    */
-  const getImageSrc = (element) => {
-    // QR codes: generate from stored URL string
-    if (element.type === 'qr') {
-      const encoded = encodeURIComponent(element.content);
-      return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&format=png&data=${encoded}&color=000000&bgcolor=FFFFFF`;
+  const generateQRDataUrl = async (url) => {
+    // Cache prüfen um Performance zu verbessern
+    if (qrCache.has(url)) {
+      return qrCache.get(url);
     }
-    
-    // Logos and other images
+
+    try {
+      const dataUrl = await QRCode.toDataURL(url, {
+        errorCorrectionLevel: 'H',
+        type: 'image/png',
+        quality: 0.95,
+        margin: 1,
+        width: 220,
+        color: {
+          dark: '#000000',
+          light: '#FFFFFF'
+        }
+      });
+      
+      qrCache.set(url, dataUrl);
+      return dataUrl;
+    } catch (error) {
+      console.error('QR-Code Generierungsfehler:', error);
+      return '';
+    }
+  };
+
+  /**
+   * Gibt die korrekte Bildquelle für ein Element zurück
+   * Für QR: generiert lokal, für Logos: gibt Pfad zurück
+   * @param {Object} element - Element mit type und content Properties
+   * @returns {Promise<string>} Die Bild-URL oder Data URL
+   */
+  const getImageSrc = async (element) => {
+    // QR codes: lokal generiert
+    if (element.type === 'qr') {
+      return await generateQRDataUrl(element.content);
+    }
+
+    // Logos und andere Bilder
     if (element.type === 'logo') {
       return `/company-logos/${element.content}`;
     }
-    
-    // Data URLs (for backward compatibility)
+
+    // Data URLs (für Rückwärtskompatibilität)
     if (typeof element.content === 'string' && element.content.startsWith('data:')) {
       return element.content;
     }
-    
-    // Fallback for other image types
+
+    // Fallback für andere Bildtypen
     return `/company-logos/${element.content}`;
   };
 
   return {
-    getImageSrc
+    getImageSrc,
+    generateQRDataUrl,
+    clearCache: () => qrCache.clear()
   };
 }

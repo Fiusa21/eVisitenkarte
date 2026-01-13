@@ -15,20 +15,20 @@
       <label>Farbe</label>
       <div class="toggle-buttons">
         <button
-          :class="{ active: color === '000000' }"
-          @click="setColor('000000', 'FFFFFF')"
+          :class="{ active: darkMode }"
+          @click="toggleDarkMode(true)"
         >Schwarz</button>
         <button
-          :class="{ active: color === 'FFFFFF' }"
-          @click="setColor('FFFFFF', '000000')"
+          :class="{ active: !darkMode }"
+          @click="toggleDarkMode(false)"
         >Weiß</button>
       </div>
     </div>
 
     <div v-if="url" class="qr-preview">
       <div class="qr-frame">
-        <img :src="qrUrl" alt="QR Code" @load="loading = false" />
         <div v-if="loading" class="loader">Generiere...</div>
+        <img v-else :src="qrDataUrl" alt="QR Code" />
       </div>
       <div class="actions">
         <button @click="addToCanvas" :disabled="loading">Auf Canvas platzieren</button>
@@ -40,61 +40,69 @@
 </template>
 
 <script setup>
-import { ref, computed } from 'vue';
-const emit = defineEmits(['add-qr']); // notify parent when a QR is ready to place on canvas
+import { ref, watch } from 'vue';
+import QRCode from 'qrcode';
 
-const url = ref('https://uxitra.de'); // target URL for the QR code
-const color = ref('000000'); 
-const bgColor = ref('FFFFFF'); 
-const loading = ref(false); // toggles loading overlay/state
+const emit = defineEmits(['add-qr']);
 
-// Build the remote QR API URL each time url/color changes
-const qrUrl = computed(() => {
-  if (!url.value) return '';
-  const encoded = encodeURIComponent(url.value);
-  return `https://api.qrserver.com/v1/create-qr-code/?size=220x220&format=png&data=${encoded}&color=${color.value}&bgcolor=${bgColor.value}`;
-});
+const url = ref('https://uxitra.de');
+const darkMode = ref(true);
+const qrDataUrl = ref('');
+const loading = ref(false);
 
-// Switch QR colors and show loader until image loads
-const setColor = (fg, bg) => {
-  color.value = fg;
-  bgColor.value = bg;
-  loading.value = true;
+// QR-Code generieren wenn URL oder Farbe sich ändert
+const generateQR = async () => {
+  if (!url.value) {
+    qrDataUrl.value = '';
+    return;
+  }
+
+  try {
+    loading.value = true;
+    const dataUrl = await QRCode.toDataURL(url.value, {
+      errorCorrectionLevel: 'H',
+      type: 'image/png',
+      quality: 0.95,
+      margin: 1,
+      width: 220,
+      color: {
+        dark: darkMode.value ? '#000000' : '#FFFFFF',
+        light: darkMode.value ? '#FFFFFF' : '#000000'
+      }
+    });
+    qrDataUrl.value = dataUrl;
+    loading.value = false;
+  } catch (error) {
+    console.error('Fehler beim QR-Code generieren:', error);
+    loading.value = false;
+  }
 };
 
-// Mark as loading when URL input changes
-const onInput = () => {
-  loading.value = true;
+// Farbe wechseln
+const toggleDarkMode = (isDark) => {
+  darkMode.value = isDark;
+  generateQR();
 };
 
-// Download the generated QR as a PNG file
+// QR als PNG downloaden
 const downloadQR = async () => {
   try {
-    loading.value = true;
-    const response = await fetch(qrUrl.value);
-    const blob = await response.blob();
-    const objectUrl = URL.createObjectURL(blob);
     const link = document.createElement('a');
-    link.href = objectUrl;
+    link.href = qrDataUrl.value;
     link.download = 'qr-code.png';
     link.click();
-    URL.revokeObjectURL(objectUrl);
-  } finally {
-    loading.value = false;
+  } catch (error) {
+    console.error('Download-Fehler:', error);
   }
 };
 
-// Emit the URL string so it can be saved to database and regenerated on-the-fly
-const addToCanvas = async () => {
-  try {
-    loading.value = true;
-    // Just emit the URL - QR will be regenerated when needed
-    emit('add-qr', url.value);
-    loading.value = false;
-  } catch (e) {
-    loading.value = false;
-  }
+// Nur URL zum Canvas hinzufügen (QR wird später regeneriert)
+const addToCanvas = () => {
+  emit('add-qr', url.value);
 };
+
+// QR generieren wenn URL sich ändert
+watch(url, () => generateQR(), { immediate: true });
 </script>
 
 <style scoped>
