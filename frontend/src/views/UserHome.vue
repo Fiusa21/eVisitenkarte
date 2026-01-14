@@ -148,8 +148,8 @@ export default {
         });
 
         // 2. Prepare the Downscaled Canvas (1x)
-        const targetW = sourceCanvas.width / 3;
-        const targetH = sourceCanvas.height / 3;
+        const targetW = Math.floor(sourceCanvas.width / 3);
+        const targetH = Math.floor(sourceCanvas.height / 3);
         const downscaledCanvas = document.createElement('canvas');
         downscaledCanvas.width = targetW;
         downscaledCanvas.height = targetH;
