@@ -29,7 +29,6 @@
               {{ formattedAddress || 'Nicht hinterlegt' }}
             </div>
           </div>
-
         </div>
       </div>
 
@@ -38,22 +37,182 @@
           v-for="layout in layouts"
           :key="layout.id"
           class="business-cards"
-          > {{ layout.name }}</div>
+          @click="openLayoutModal(layout)"
+        >
+          <div class="card-preview-wrapper">
+            <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor }">
+              <div
+                v-for="element in layout.elements"
+                :key="element.id"
+                class="preview-element"
+                :style="{
+                  position: 'absolute',
+                  left: element.x + 'px',
+                  top: element.y + 'px',
+                  width: element.w + 'px',
+                  height: element.h + 'px'
+                }"
+              >
+                <component
+                  v-if="element.type !== 'logo' && element.type !== 'qr'"
+                  :is="getElementComponent(element)"
+                  :item="element"
+                  :user-profile="userProfile"
+                />
+                <img v-else :src="elementImageSrcMap.get(element.id) || (element.type === 'logo' ? `/company-logos/${element.content}` : '')" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal -->
+    <div v-if="selectedLayout" class="modal-overlay" @click="closeLayoutModal">
+      <div class="modal-content" @click.stop>
+        <button class="close-button" @click="closeLayoutModal">✕</button>
+        <button class="send-button" @click="sendImage">Send to display</button>
+
+        <div id="target-canvas" ref="canvasRef" class="modal-canvas" :style="{ backgroundColor: selectedLayout.backgroundColor }">
+          <div
+            v-for="element in selectedLayout.elements"
+            :key="element.id"
+            class="modal-element"
+            :style="{
+              position: 'absolute',
+              left: element.x + 'px',
+              top: element.y + 'px',
+              width: element.w + 'px',
+              height: element.h + 'px'
+            }"
+          >
+            <component
+              v-if="element.type !== 'logo' && element.type !== 'qr'"
+              :is="getElementComponent(element)"
+              :item="element"
+              :user-profile="userProfile"
+            />
+            <img v-else :src="elementImageSrcMap.get(element.id) || (element.type === 'logo' ? `/company-logos/${element.content}` : '')" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
+          </div>
+        </div>
+
+        <div class="modal-info">
+          <h3>{{ selectedLayout.name }}</h3>
+        </div>
       </div>
     </div>
   </div>
 </template>
 
 <script>
-import { ref, computed } from 'vue'; //ref (for reactive objects which contain token data), computed (everytime token data changes, computed properties update)
+import { ref, computed, onMounted } from 'vue';
 import KeycloakService from '@/services/keycloak-service';
+import ApiService from '@/services/api-service';
+import TextElement from '@/elements/TextElement.vue';
+import RectangleElement from '@/elements/RectangleElement.vue';
+import CircleElement from '@/elements/CircleElement.vue';
+import TriangleElement from '@/elements/TriangleElement.vue';
+import * as htmlToImage from 'html-to-image';
+import Pica from 'pica';
+import { useQRImageSrc } from '@/composables/useQRImageSrc';
 
 export default {
   name: 'UserHome',
+  components: {
+    TextElement,
+    RectangleElement,
+    CircleElement,
+    TriangleElement
+  },
   setup() {
+
+    const canvasRef = ref(null);
+    const isSending = ref(false);
+    const { getImageSrc: getImageSrcComposable } = useQRImageSrc();
+    const elementImageSrcMap = ref(new Map());
+
+    //pica for high quality down scaling
+    const pica = Pica();
+
+    const sendImage = async () => {
+      const element = canvasRef.value || document.getElementById('target-canvas');
+      if (!element) return;
+
+      isSending.value = true;
+      try {
+        //capture original
+        const sourceCanvas = await htmlToImage.toCanvas(element, {
+          pixelRatio: 1,
+          cacheBust: true,
+          backgroundColor: '#ffffff'
+        });
+
+        // 2. Prepare the Downscaled Canvas (1x)
+        const targetW = sourceCanvas.width / 3;
+        const targetH = sourceCanvas.height / 3;
+        const downscaledCanvas = document.createElement('canvas');
+        downscaledCanvas.width = targetW;
+        downscaledCanvas.height = targetH;
+
+        // 3. Use Pica to Resize (High Quality Lanczos3 Filter)
+        await pica.resize(sourceCanvas, downscaledCanvas, {
+          unsharpAmount: 80, // Slightly sharpens text edges
+          unsharpRadius: 0.6,
+          unsharpThreshold: 2
+        });
+
+        // 4. Create Rotated Canvas (Swapping W/H)
+        const rotatedCanvas = document.createElement('canvas');
+        const ctx = rotatedCanvas.getContext('2d');
+        rotatedCanvas.width = targetH;
+        rotatedCanvas.height = targetW;
+
+        ctx.translate(rotatedCanvas.width, 0);
+        ctx.rotate(90 * Math.PI / 180);
+        ctx.drawImage(downscaledCanvas, 0, 0);
+
+
+
+        // 6. Convert & Send
+        const blob = await new Promise(r => rotatedCanvas.toBlob(r, 'image/png'));
+
+        // DEBUG DOWNLOAD
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+        link.download = `pro-epaper.png`;
+        link.click();
+
+        const buffer = await blob.arrayBuffer();
+        await ApiService.uploadImage(buffer);
+
+        alert("Sent high-quality dithered image!");
+      } catch (error) {
+        console.error(error);
+      } finally {
+        isSending.value = false;
+      }
+    };
+
 
     //Take from user profile fields in keycloak
     const userProfileRef = KeycloakService.getIdTokenParsed();
+
+    // Helper zum Laden von Bildern mit Cache
+    const getImageSrc = async (item) => {
+      if (elementImageSrcMap.value.has(item.id)) {
+        return elementImageSrcMap.value.get(item.id);
+      }
+      
+      try {
+        const src = await getImageSrcComposable(item);
+        elementImageSrcMap.value.set(item.id, src);
+        return src;
+      } catch (error) {
+        console.error('Fehler beim Laden des Bildes:', error);
+        return '';
+      }
+    };
 
     //Computed Property to access user profile data
     const userProfile = computed(() =>  userProfileRef.value || {});
@@ -89,24 +248,98 @@ export default {
       { key: 'mobile_number', label: 'Mobil'},
     ]);
 
-     const layouts = ref([
-      { id: 1, name: 'Layout 1', imagePlaceholder: 'Image of Layout 1' },
-      { id: 2, name: 'Layout 2', imagePlaceholder: 'Image of Layout 2' },
-      { id: 3, name: 'Layout 3', imagePlaceholder: 'Image of Layout 3' },
-      { id: 4, name: 'Layout 4', imagePlaceholder: 'Image of Layout 4' },
-      { id: 5, name: 'Layout 5', imagePlaceholder: 'Image of Layout 5' },
-      { id: 6, name: 'Layout 6', imagePlaceholder: 'Image of Layout 6' },
-      { id: 7, name: 'Layout 7', imagePlaceholder: 'Image of Layout 7' },
-      { id: 8, name: 'Layout 8', imagePlaceholder: 'Image of Layout 8' },
-      { id: 9, name: 'Layout 9', imagePlaceholder: 'Image of Layout 9' },
-      { id: 10, name: 'Layout 10', imagePlaceholder: 'Image of Layout 10' },
-    ]);
+    const layouts = ref([]);
+    const selectedLayout = ref(null);
+
+    // Element-Komponente basierend auf Typ zurückgeben
+    const getElementComponent = (element) => {
+      switch (element.type) {
+        case 'rectangle': return RectangleElement;
+        case 'circle': return CircleElement;
+        case 'triangle': return TriangleElement;
+        case 'text': return TextElement;
+        case 'logo': return 'img';
+        default: return null;
+      }
+    };
+
+    const openLayoutModal = (layout) => {
+      selectedLayout.value = layout;
+    };
+
+    const closeLayoutModal = () => {
+      selectedLayout.value = null;
+    };
+
+
+    // Layouts von der Datenbank laden und gruppieren
+    onMounted(async () => {
+      try {
+        const data = await ApiService.getAllLayouts();
+        
+        
+        const layoutsMap = new Map();
+        
+        data.forEach(row => {
+          const layoutId = row.layout_id;
+          
+          if (!layoutsMap.has(layoutId)) {
+            layoutsMap.set(layoutId, {
+              id: layoutId,
+              layout_id: layoutId,
+              name: row.name || 'Unbenanntes Layout',
+              backgroundColor: row.backgroundcolor || 'white',
+              elements: []
+            });
+          }
+          
+          if (row.element_id) {
+            const layout = layoutsMap.get(layoutId);
+            const element = {
+              id: row.element_id,
+              type: row.typ, 
+              x: parseFloat(row.pos_x) || 0, 
+              y: parseFloat(row.pos_y) || 0, 
+              w: parseFloat(row.size_x) || 50, 
+              h: parseFloat(row.size_y) || 50, 
+              content: row.uri, 
+              source: row.source,
+              style: row.style || { color: 'black' }
+            };
+            layout.elements.push(element);
+          }
+        });
+        
+        layouts.value = Array.from(layoutsMap.values());
+        
+        // Preload QR-Code images
+        layouts.value.forEach(layout => {
+          layout.elements.forEach(item => {
+            if (item.type === 'qr' || item.type === 'logo') {
+              getImageSrc(item);
+            }
+          });
+        });
+        
+        console.log('Layouts geladen:', layouts.value);
+      } catch (error) {
+        console.error('Fehler beim Laden der Layouts:', error);
+      }
+    });
 
     return { 
       layouts,
       userProfile,
       userInfoFields,
-      formattedAddress
+      formattedAddress,
+      selectedLayout,
+      openLayoutModal,
+      closeLayoutModal,
+      getElementComponent,
+      elementImageSrcMap,
+      sendImage,
+      canvasRef,
+      isSending
     };
   }
 }
@@ -150,43 +383,39 @@ TODO: Medie queries für alle Bildschirmgrößen
   margin-top: -5px;
 }
 
-/*user-info and dashboard-layouts-container*/
+
 .main-content-wrapper{
   display: flex;
   justify-content: flex-start; 
   align-items: flex-start; 
-  gap: 200px; /* Space between the two columns */
+  gap: 200px; 
   margin-top: 15px;
   padding: 0 30px;
   width: 90%; 
 
 }
 
-/*All Label and Fields*/
 .user-info-card {
-  background-color: rgba(0, 0, 0, 0.2); /* Semi-transparent dark background */
+  background-color: rgba(0, 0, 0, 0.2); 
   padding: 15px;
   border-radius: 8px;
-  flex-basis: 350px; /* Fixed width for the user info box */
-  flex-shrink: 0; /* Prevents shrinking */
+  flex-basis: 350px; 
+  flex-shrink: 0; 
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
 }
 
-/*Space between different fields*/
 .user-info {
   display: flex;
   flex-direction: column;
   gap: 15px; 
 }
 
-/*Label and Input*/
 .info-group {
   display: flex;
   flex-direction: column; 
   gap: 5px; 
 }
 
-/*Label*/
 .field-label {
   color: #ffffff;
   font-size: 0.95rem;
@@ -194,7 +423,6 @@ TODO: Medie queries für alle Bildschirmgrößen
   padding-left: 2px;
 }
 
-/*Input Fields*/
 .display-field {
   background-color: #ffffff;
   color: black;
@@ -209,32 +437,148 @@ TODO: Medie queries für alle Bildschirmgrößen
 
 .dashboard-layouts-container {
   flex-grow: 1; 
-  display: flex; /*Horrizontal*/
-  flex-wrap: wrap; /*Wrap cards to the next line*/
-  gap:30px; /*Place between cards*/
-  justify-content: flex-start; /*Cards start right*/
+  display: flex;
+  flex-wrap: wrap; 
+  gap:30px; 
+  justify-content: flex-start; 
   max-height: 565px; 
   overflow-y: auto;
   padding-bottom: 20px;
+  padding-top: 20px;
 }
 
 .business-cards {
-  /*Cards*/
   width: 296px; 
   height: 128px;
-  
-  /*Placeholder*/
-  background-color: white;
-  color: black;
-  padding: 15px;
   border-radius: 8px;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+}
+
+.business-cards:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+}
+
+.card-preview-wrapper {
+  width: 296px;
+  height: 128px;
+  overflow: hidden;
+  position: relative;
+}
+
+.card-preview {
+  width: 888px;
+  height: 384px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  overflow: hidden;
+  transform: scale(0.333333);
+  transform-origin: top left;
+}
+
+.preview-element {
+  position: absolute;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.8);
   display: flex;
   align-items: center;
   justify-content: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.close-button {
+  position: absolute;
+  top: -40px;
+  right: 0;
+  background: rgba(255, 255, 255, 0.9);
+  border: none;
+  border-radius: 50%;
+  width: 35px;
+  height: 35px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-weight: bold;
+}
+
+.send-button {
+  position: absolute;
+  top: 400px;
+  right: 0;
+  background: lawngreen;
+  border: none;
+  border-radius: 10%;
+  width: 200px;
+  height: 35px;
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-weight: bold;
+  font-family: Dosis;
+}
+
+.send-button:hover {
+  background: lawngreen;
+  transform: scale(1.1);
+  border: white;
+  border-style: solid;
+}
+
+.close-button:hover {
+  background: white;
+  transform: scale(1.1);
+}
+
+.modal-canvas {
+  width: 888px;
+  height: 384px;
+  position: relative;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.modal-element {
+  position: absolute;
+}
+
+.modal-info {
+  color: white;
   text-align: center;
-  font-weight: 700;
-  font-size: 1.2rem;
-  background-image: linear-gradient(to right, #ffffff, #000000); /*Mimic style in cards*/
+  font-family: 'Dosis', sans-serif;
+}
+
+.modal-info h3 {
+  margin: 0;
+  font-size: 1.5rem;
+  font-weight: 600;
 }
 </style>

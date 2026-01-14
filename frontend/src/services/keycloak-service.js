@@ -67,13 +67,28 @@ const KeycloakService = {
         if (keycloakInstance) {
             keycloakInstance.logout();
         }
+        userToken.value = null;
     },
 
     getIdTokenParsed: () => {
         return userToken;
-    }
+    },
 
-    //maybe more functions required
+    getUserRoles: () => {
+        const parsed = userToken.value;
+        if (!parsed) return [];
+
+        const realmRoles = parsed.realm_access?.roles || [];
+        const clientRoles = Object.values(parsed.resource_access || {})
+            .flatMap((client) => client?.roles || []);
+
+        return [...new Set([...realmRoles, ...clientRoles])];
+    },
+
+    hasRole: (roleName) => {
+        if (!roleName) return false;
+        return KeycloakService.getUserRoles().includes(roleName);
+    }
 };
 
 export default KeycloakService;

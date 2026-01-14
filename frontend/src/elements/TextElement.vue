@@ -15,6 +15,21 @@ export default {
     displayText() {
       // Wenn dynamisch, Text aus userProfile
       if(this.item.source === 'dynamic') {
+        // Special handling for adress 
+        if(this.item.content === 'adress') {
+          const addressClaim = this.userProfile?.address;
+          if(!addressClaim || typeof addressClaim !== 'object') {
+            return '';
+          }
+          const street = addressClaim.street_address || '';
+          const postalCode = addressClaim.postal_code || '';
+          const locality = addressClaim.locality || '';
+          const parts = [
+            street,
+            `${postalCode} ${locality}`.trim()
+          ].filter(p => p);
+          return parts.join(', '); // Use comma for single-line display
+        }
         return this.userProfile[this.item.content] || '';
       }
       return this.item.content;

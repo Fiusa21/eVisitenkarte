@@ -2,7 +2,7 @@
   <div class="admin-layout">
     <header class="main-header">
       <div class="header-left">
-        <div class="admin-slider">
+        <div class="admin-slider" v-if="isAdmin">
           <div class="slider-text">Admin Modus</div>
           <AdminToggle class="admin-toggle" toggle-id="admin-mode-toggle" v-model="isAdminMode" /> 
         </div>
@@ -26,28 +26,30 @@
 </template>
 
 <script> 
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import AdminToggle from '@/components/AdminSlider.vue';
 import TopBar from '@/components/TopBar.vue';
 import LogoutButton from '@/components/LogoutButton.vue';
 import ConnectivityIndicator from '@/components/ConnectivityIndicator.vue';
+import KeycloakService from '@/services/keycloak-service';
 
 export default {
 
   name: 'AdminLayout',
   components: { AdminToggle, TopBar, LogoutButton, ConnectivityIndicator },
   setup() {
-    const isAdminMode = ref(false); // Initial state is OFF
+    const isAdminMode = ref(true); // ON because we're in admin mode
+    const isAdmin = computed(() => KeycloakService.hasRole('admin'));
 
     return {
-        isAdminMode
+        isAdminMode,
+        isAdmin
     };
   }
 }
 </script>
 
 <style scoped>
-/* Basic Flexbox and Grid for Layout */
 .admin-layout {
     display: flex;
     flex-direction: column;
@@ -59,7 +61,7 @@ export default {
 }
 
 .main-header {
-  background-color: transparent; /* Primary color */
+  background-color: transparent; 
   color: white;
   padding: 15px 30px;
   display: grid;
@@ -146,7 +148,7 @@ nav {
   align-items: center;
   margin: 0;
   padding: 0;
-  line-height: 1; /* tighter baseline so it centers nicely next to the switch */
+  line-height: 1;
 }
 
 .admin-toggle {
@@ -154,18 +156,11 @@ nav {
   align-items: center;
 }
 .fixed-indicator {
-    /* 1. Use fixed positioning relative to the viewport */
     position: fixed; 
-    
-    /* 2. Anchor it to the bottom and right edges */
-    bottom: 20px; /* Adjust spacing from the bottom */
-    right: 20px;  /* Adjust spacing from the right */
-    
-    /* 3. Ensure it sits above all other content */
+    bottom: 20px; 
+    right: 20px;
     z-index: 1000; 
-    
-    /* Optional: Style adjustments for better visibility */
-    background-color: rgba(0, 0, 0, 0.7); /* Dark background */
+    background-color: rgba(0, 0, 0, 0.7);
     color: white; 
     padding: 8px 12px;
     border-radius: 8px;

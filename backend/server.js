@@ -9,10 +9,9 @@ const app = express();
 app.use(express.json());
 const port = 3000;
 
-// Enable CORS for your frontend origin
+
 //conditional: product or dev?
 app.use(cors({ origin: 'http://localhost:5173' }));
-
 
 
 // Apply Keycloak session and middleware
@@ -54,6 +53,8 @@ app.use('/', apiRoutes);
 app.get('/', (req, res) => {
     res.send('Node.js Backend is running!');
 });
+
+
 
 // Start the server
 app.listen(port, () => {

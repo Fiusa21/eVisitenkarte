@@ -15,13 +15,11 @@ const keycloak = new Keycloak({ store: memoryStore }, keycloakConfig);
 
 module.exports = {
     sessionMiddleware: session({
-        secret: 'some secret', // Use a strong secret in production
+        secret: 'some secret', //strong secret in production
         resave: false,
         saveUninitialized: true,
         store: memoryStore
     }),
     keycloakMiddleware: keycloak.middleware(),
     protect: keycloak.protect(),
-    // You can also expose the keycloak instance if you need it elsewhere
-    // keycloakInstance: keycloak
 };

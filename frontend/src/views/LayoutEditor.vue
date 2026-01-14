@@ -1,10 +1,26 @@
 <template>
   <div class="layout-editor">
+    <!-- Modal für neues Layout -->
+    <div v-if="showNameModal" class="modal-overlay">
+      <div class="modal-content">
+        <h2>Neues Layout erstellen</h2>
+        <p>Bitte gib einen Namen für das neue Layout ein:</p>
+        <input 
+          v-model="layoutName" 
+          type="text" 
+          class="layout-name-input" 
+          placeholder="z.B. Layout Merketing, etc."
+          @keyup.enter="confirmLayoutName"
+          autofocus
+        />
+        <div class="modal-actions">
+          <button @click="confirmLayoutName" class="btn-confirm">Bestätigen</button>
+        </div>
+      </div>
+    </div>
+
     <div class="site-header">
       <div class="header-content">
-        <button class="btn-save" @click="downloadImage">
-          Send Layout
-        </button>
         <h1>uxitra GmbH</h1>
         <p>eVisitenkarten Editor</p>
       </div>
@@ -18,11 +34,8 @@
       />
 
       <div class="canvas-container">
-        <div class="canvas" ref="canvasRef" id="capture-target" :style="{ backgroundColor: canvasBgColor }">
-          <!-- 
-          Logik für drag/resize: direkt im Template mit Inline-Funktionen
-          Werte werden direkt updated: @drag-end und @resize-end aktualisieren item.x, item.y, item.w, item.h
-          -->
+        <div class="canvas" :style="{ backgroundColor: canvasBgColor }">
+          <!-- Logik für drag/resize -->
           <Vue3DraggableResizable
             v-for="item in cardElements"
             :key="item.id"
@@ -33,12 +46,21 @@
             :minW="10"
             :minH="10"
             :parent="true"
+            :parentW="888"
+            :parentH="384"
             :class="{ 'selected': selectedElement && selectedElement.id === item.id }"
             @click="selectElement(item)"
             @drag-end="(pos) => {item.x = pos.x; item.y = pos.y;}" 
             @resize-end="(pos) => {item.x = pos.x; item.y = pos.y; item.w = pos.w; item.h = pos.h;}"
           >
-            <component :is="elementComponent(item)" :item="item" :user-profile="userProfile"/>
+            <!-- Rendert die Elementkomponente-->
+            <component v-if="elementComponent(item) !== 'img'" :is="elementComponent(item)" :item="item" :user-profile="userProfile"/>
+            <img 
+              v-else 
+              :src="elementImageSrcMap.get(item.id) || (item.type === 'logo' ? `/company-logos/${item.content}` : '')" 
+              :alt="item.content" 
+              style="width: 100%; height: 100%; object-fit: contain;" 
+            />
             
           </Vue3DraggableResizable>
           
@@ -54,15 +76,14 @@
       />
     </div>
 
-    <!--Save Button-->
     <button @click="saveTemplate" class="save-btn-fixed">Template Speichern</button>
 
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
-import {toPng} from 'html-to-image';
+import { ref, onMounted, watch } from 'vue';
+import { useRoute } from 'vue-router';
 import Vue3DraggableResizable from 'vue3-draggable-resizable';
 import 'vue3-draggable-resizable/dist/Vue3DraggableResizable.css';
 
@@ -73,6 +94,7 @@ import TextElement from '../elements/TextElement.vue';
 import ToolBox from '../components/ToolBox.vue';
 import PropertyEditor from '../components/PropertyEditor.vue';
 import ApiService from '../services/api-service.js';
+import { useQRImageSrc } from '../composables/useQRImageSrc';
 
 export default {
   name: 'layout-editor',
@@ -83,7 +105,18 @@ export default {
   },
   setup(){
     const scale = 3;
+    const cardElements = ref([]);
+    const selectedElement = ref(null);
+    const canvasBgColor = ref('white');
+    const layoutName = ref('');
+    const showNameModal = ref(false);
+    const layoutId = ref(null); // Wird beim Erstellen des Layouts vom Backend gesetzt
+    const route = useRoute();
+    const { getImageSrc: getImageSrcComposable } = useQRImageSrc();
     
+    // Map für gecachte Bildrücken - Reactive für Vue
+    const elementImageSrcMap = ref(new Map());
+
     //simulierte Nutzerdaten
     const userProfile = {
       first_name: 'Maximilian',
@@ -96,7 +129,7 @@ export default {
       adress: 'Beispielstraße 12, 12345 Musterstadt'
     };
 
-    //fields to display {key: Claim-Namen from Token, label: Label in UI}
+    //Textfelder inhalte
     const dynamicTextOptions = ([
       { key: 'first_name', label: 'Vorname'},
       { key: 'last_name', label: 'Nachname'},
@@ -108,138 +141,144 @@ export default {
       { key: 'adress', label: 'Adresse' }
     ]);
 
-    const cardElements = ref([]);
-    const selectedElement = ref(null);
-    const canvasBgColor = ref('white');
-    const canvasRef = ref(null);
-
-    const measureTextSize = (text, fontSize = 16, fontFamily = 'Dosis') => {
+    //Messung Textgröße
+    const measureTextSize = (text, fontSize, fontFamily = 'Dosis') => {
       const canvas = document.createElement('canvas');
       const context = canvas.getContext('2d');
       context.font = `${fontSize}px ${fontFamily}`;
       const metrics = context.measureText(text);
       const width = metrics.width;
-      const height = fontSize; // grobe Annahme für Höhe
+      const height = fontSize;
       return { width, height };
     };
-
-    //TODO: MOVE THIS TO USER-HOME!
-    async function downloadImage() {
-      // ERROR WAS HERE: Do not use 'this.$refs'. Use the variable directly.
-      const element = canvasRef.value;
-
-      if (!element) {
-        console.error("Canvas element not found. Make sure ref='canvasRef' is on the div.");
-        return;
-      }
-
-      // Optional: Deselect elements temporarily so blue borders don't show in photo
-      const previousSelection = selectedElement.value;
-      selectedElement.value = null;
-
-      try {
-        const dataUrl = await toPng(element, {
-          quality: 0.95,
-          backgroundColor: canvasBgColor.value || 'white',
-          skipFonts: true,
-        });
-
-        const link = document.createElement('a');
-        link.download = 'my-layout.png';
-        link.href = dataUrl;
-        link.click();
-
-      } catch (error) {
-        console.error('Error generating image:', error);
-      } finally {
-        // Restore selection
-        selectedElement.value = previousSelection;
-      }
-    }
 
     //Logik zum Hinzufügen von Elementen
     const addElementToCanvas = (type, content = '') => {
       let w = 50 * scale;
       let h = 50 * scale;
 
-      // nur für Text: w und h auf Textgröße setzen und 1.5x größer spawnen
       if(type === 'text'){
         const size = measureTextSize(userProfile[content] || content, 16, 'Dosis');
-        w = (size.width + 20) * 1.5;   // Text-Breite + Padding, 50% größer
-        h = (size.height + 10) * 1.5;  // Text-Höhe + Padding, 50% größer
+        w = (size.width + 20) * 1.5;
+        h = (size.height + 10) * 1.5;
+      }
+
+      if(type === 'logo' || type === 'qr'){
+        w = 150;
+        h = 150;
       }
       
       let newElement = {
         id: Date.now(),
         type: type,
+
         //Position bestimmen
         x: 50 * scale + (cardElements.value.length * 10),
         y: 50 * scale + (cardElements.value.length * 10),
         w: w,
         h: h,
         content: content,
-        source: content in userProfile ? 'dynamic' : 'static',
-        style: { color: canvasBgColor.value === 'black' ? 'white' : 'black' } // Kontrast zur Canvas-Farbe
+        source: type === 'logo' || type === 'qr' ? 'logo' : (content in userProfile ? 'dynamic' : 'static'),
+        style: { color: canvasBgColor.value === 'black' ? 'white' : 'black' }
       };
       cardElements.value.push(newElement);
     };
 
-    //Switch-Anweisung für Unterscheidung nach 'type' 
+    //Switch Anweisung für Type
     const elementComponent = (item) =>{ 
       switch (item.type){ 
         case 'rectangle': return RectangleElement; 
         case 'circle': return CircleElement; 
         case 'triangle': return TriangleElement; 
-        case 'text': return TextElement; 
-        default: console.warn(`Unbekanter Elementtyp: ${type}`);
+        case 'text': return TextElement;
+        case 'logo':
+        case 'qr':
+          return 'img';
+        default: console.warn(`Unbekanter Elementtyp: ${item.type}`);
       }
     };
 
-    //Test
-    //Beispiel für Speichern
+    // Wrapper für getImageSrc mit Async/Cache-Handling
+    const getImageSrc = async (item) => {
+      if (elementImageSrcMap.value.has(item.id)) {
+        return elementImageSrcMap.value.get(item.id);
+      }
+      
+      try {
+        const src = await getImageSrcComposable(item);
+        elementImageSrcMap.value.set(item.id, src);
+        return src;
+      } catch (error) {
+        console.error('Fehler beim Laden des Bildes:', error);
+        return '';
+      }
+    };
+
+    // Beobachte cardElements und lade Bilder async
+    watch(
+      cardElements,
+      (newElements) => {
+        newElements.forEach(item => {
+          if ((item.type === 'qr' || item.type === 'logo') && !elementImageSrcMap.value.has(item.id)) {
+            getImageSrc(item);
+          }
+        });
+      },
+      { deep: true }
+    );
+
+    // Layout aktualisieren
     const saveTemplate = async () => {
+      if (!layoutId.value) {
+        alert('Bitte erstellen Sie zunächst ein Layout mit einem Namen!');
+        return;
+      }
+
       const layoutData = {
+        layout_id: layoutId.value,
+        name: layoutName.value,
         elements: cardElements.value,
         backgroundColor: canvasBgColor.value,
       };
 
-      console.log('--- Speichere Layout ---');
+      console.log('--- Aktualisiere Layout ---');
+      console.log('Elements before save:', cardElements.value.map(el => ({ id: el.id, x: el.x, y: el.y, w: el.w, h: el.h })));
       console.log(JSON.stringify(layoutData, null, 2));
 
       try {
-        await ApiService.insertLayout(layoutData);
-        alert('Layout erfolgreich gespeichert!');
+        await ApiService.updateLayout(layoutData);
+        alert('Layout erfolgreich aktualisiert!');
       } catch (error) {
         console.error('Fehler beim Speichern:', error);
         alert(`Fehler beim Speichern: ${error.message}`);
       }
     };
 
-    //Handler für Toolbox add-element Event
+    //Handler für Toolbox addElement Event
     const handleAddElement = (payload) => {
       addElementToCanvas(payload.type, payload.content);
     };
 
-    //Handler für Element-Auswahl
+    //Handler für selectedElement
     const selectElement = (item) => {
       selectedElement.value = item;
     };
 
-    //Handler für Element-Update vom PropertyEditor
+    //Handler für updateElement
     const updateElement = (updatedItem) => {
       const idx = cardElements.value.findIndex(el => el.id === updatedItem.id);
       if (idx !== -1) {
         cardElements.value[idx] = updatedItem;
-        selectedElement.value = updatedItem; // Aktualisiere auch die Auswahl
+        selectedElement.value = updatedItem;
       }
     };
 
-    //Handler für Element-Löschen
+    //Handler für deleteElement
     const deleteElement = (id) => {
       const idx = cardElements.value.findIndex(el => el.id === id);
       if (idx !== -1) {
         cardElements.value.splice(idx, 1);
-        selectedElement.value = null; // Deselektiere nach Löschen
+        selectedElement.value = null;
       }
     };
 
@@ -247,7 +286,6 @@ export default {
     const updateCanvasBg = (color) => {
       canvasBgColor.value = color;
 
-      // Alle existierenden Elemente auf Kontrastfarbe setzen
       const contrastColor = color === 'black' ? 'white' : 'black';
       cardElements.value.forEach(element => {
         if (element.style) {
@@ -256,23 +294,118 @@ export default {
       });
     };
 
+    // Prüfe beim Laden ob neues Layout (ohne ID) oder existierendes Layout (mit ID)
+    onMounted(async () => {
+      const layoutIdFromRoute = route.params.id;
+      if (!layoutIdFromRoute) {
+        // Kein ID-Parameter
+        showNameModal.value = true;
+      } else {
+        // Mit ID-Parameter
+        console.log('Lade existierendes Layout mit ID:', layoutIdFromRoute);
+        try {
+          // Lade alle Layouts und filter nach der gewünschten ID
+          const allLayoutsData = await ApiService.getAllLayouts();
+          
+          // Gruppiere Elemente nach layout_id
+          const layoutsMap = new Map();
+          allLayoutsData.forEach(row => {
+            const id = row.layout_id;
+            if (!layoutsMap.has(id)) {
+              layoutsMap.set(id, {
+                layout_id: id,
+                name: row.name,
+                backgroundColor: row.backgroundcolor || 'white',
+                elements: []
+              });
+            }
+            
+            if (row.element_id) {
+              const layout = layoutsMap.get(id);
+              layout.elements.push({
+                id: row.element_id,
+                type: row.typ,
+                x: parseFloat(row.pos_x) || 0,
+                y: parseFloat(row.pos_y) || 0,
+                w: parseFloat(row.size_x) || 50,
+                h: parseFloat(row.size_y) || 50,
+                content: row.uri,
+                source: row.source,
+                style: row.style || { color: 'black' }
+              });
+            }
+          });
+          
+          // Finde das gesuchte Layout
+          const layoutData = layoutsMap.get(layoutIdFromRoute);
+          
+          if (!layoutData) {
+            throw new Error(`Layout mit ID ${layoutIdFromRoute} nicht gefunden`);
+          }
+          
+          console.log('Layout-Daten vom Backend:', layoutData);
+          
+          // Lade die Daten
+          layoutId.value = layoutData.layout_id;
+          layoutName.value = layoutData.name || '';
+          cardElements.value = layoutData.elements || [];
+          canvasBgColor.value = layoutData.backgroundColor || 'white';
+          
+          console.log('Layout erfolgreich geladen mit ID:', layoutId.value, 'Name:', layoutName.value, 'Elemente:', cardElements.value.length);
+        } catch (error) {
+          console.error('Fehler beim Laden des Layouts - Full Error:', error);
+          console.error('Error Message:', error.message);
+          console.error('Error Stack:', error.stack);
+          alert(`Fehler beim Laden des Layouts: ${error.message || 'Unbekannter Fehler'}`);
+        }
+      }
+    });
+
+    // Modal bestätigen
+    const confirmLayoutName = async () => {
+      if (layoutName.value.trim() === '') {
+        alert('Bitte gib einen Layout-Namen ein!');
+        return;
+      }
+
+      const layoutData = {
+        name: layoutName.value,
+        backgroundColor: canvasBgColor.value,
+        elements: []
+      };
+
+      try {
+        const response = await ApiService.insertLayout(layoutData);
+        // Backend sollte die neue layout_id in der Response zurückgeben
+        layoutId.value = response.layout_id || response.id || response;
+        showNameModal.value = false;
+        console.log('Layout erstellt mit ID:', layoutId.value);
+        console.log('Willkommen! Du kannst jetzt Elemente hinzufügen und speichern.');
+      } catch (error) {
+        console.error('Fehler beim Erstellen des Layouts:', error);
+        alert(`Fehler beim Erstellen des Layouts: ${error.message}`);
+      }
+    };
+
     return {
       scale, 
       userProfile, 
       dynamicTextOptions, 
-      cardElements,
-      canvasRef,
+      cardElements, 
       selectedElement,
       canvasBgColor,
+      layoutName,
+      showNameModal,
       addElementToCanvas, 
-      elementComponent, 
+      elementComponent,
+      elementImageSrcMap,
       saveTemplate,
       handleAddElement,
       selectElement,
       updateElement,
       deleteElement,
       updateCanvasBg,
-      downloadImage
+      confirmLayoutName
     }
   }
 }
@@ -293,13 +426,14 @@ TODO: Medie queries für alle Bildschirmgrößen
 
 .editor-main-content {
   display: flex;
+  justify-content: center;
+  align-items: center;
   width: 100%;
-  max-width: 1400px;
-  gap: 30px;
-  align-items: center; /* Toolbox und Canvas vertikal zentrieren */
-  margin-top: 20px; /* Fügt eine visuelle Trennung zum Header hinzu */
-  padding: 0 20px; /* Abstand zum Seitenrand */
-  min-height: calc(100vh - 220px); /* genug Höhe für vertikale Zentrierung */
+  max-width: 1600px;
+  gap: 40px;
+  margin: 0 auto;
+  padding: 40px;
+  min-height: calc(100vh - 250px);
 }
 
 .site-header{
@@ -337,17 +471,16 @@ TODO: Medie queries für alle Bildschirmgrößen
 }
 
 .canvas-container{
-  flex-grow: 1;
   display: flex;
-  justify-content: center; /* horizontal zentrieren */
-  align-items: center; /* vertical zentrieren */
-  padding: 30px 0;
-  min-width: 0; /* verhindert Überlauf in flexbox */
+  justify-content: center; 
+  align-items: center;
+  padding: 0;
 }
 
 .canvas{
   height: 384px;
   width: 888px;
+  flex-shrink: 0;
   position: relative;
   background-color: white;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
@@ -355,9 +488,8 @@ TODO: Medie queries für alle Bildschirmgrößen
   transition: background-color 0.3s;
 }
 
-/* Ausgewähltes Element hervorheben */
 .selected {
-  outline: 2px solid #007bff !important;
+  outline: 2px solid #007bff;
   outline-offset: 2px;
   z-index: 100;
 }
@@ -381,11 +513,92 @@ TODO: Medie queries für alle Bildschirmgrößen
 }
 
 .save-btn-fixed:hover {
-  background-color: #218838;
+  background-color: #05b02d;
   transform: translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+  backdrop-filter: blur(4px);
+}
+
+.modal-content {
+  background: #2e2e2e;
+  padding: 40px;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  min-width: 400px;
+  max-width: 500px;
+  color: white;
+  font-family: 'Dosis', sans-serif;
+}
+
+.modal-content h2 {
+  margin: 0 0 15px 0;
+  font-size: 1.8em;
+  font-weight: 600;
+  color: #4a9eff;
+}
+
+.modal-content p {
+  margin: 0 0 25px 0;
+  font-size: 1.1em;
+  color: #ccc;
+}
+
+.layout-name-input {
+  width: 100%;
+  padding: 12px;
+  font-size: 1.1em;
+  border: 2px solid #555;
+  border-radius: 6px;
+  background: #1e1e1e;
+  color: white;
+  font-family: 'Dosis', sans-serif;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.layout-name-input:focus {
+  outline: none;
+  border-color: #4a9eff;
+}
+
+.modal-actions {
+  margin-top: 25px;
+  display: flex;
+  justify-content: center;
+}
+
+.btn-confirm {
+  padding: 10px 30px;
+  font-size: 1.1em;
+  font-weight: 600;
+  background: #4a9eff;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: 'Dosis', sans-serif;
+}
+
+.btn-confirm:hover {
+  background: #3a8fef;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(74, 158, 255, 0.4);
+}
 
 .card-element{
   cursor: grab;

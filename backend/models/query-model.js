@@ -14,70 +14,84 @@ const getKeys = {
     deleteElement: 'DELETE FROM elements WHERE layout_id = $1',
 };
 
-module.exports = {
-  getAllLayouts: async () => {
-    const result = await db.executeQuery(getKeys.select);
-    return result;
-  },
-
-  getLayoutById: async (id) => {
-    const result = await db.executeQuery(getKeys.selectByID, [id]);
-    return result;
-  },
-
-    insertLayout: async (layout) => {
-        const { erstelldatum, user_id_ersteller, name } = layout;
-
-        const res = await db.executeQuery(getKeys.insertLayout, [erstelldatum, user_id_ersteller, name]);
-        // DEBUG: Uncomment this to see exactly what the DB returns
-        console.log("Database Result:", res);
-        //NOTE: access Layout_id from the autoincrement out of the query return!!!
-        return res[0].layout_id;
-    },
-
-    insertElement: async (element) => {
-        const {
-            element_id, typ, uri, layout_id,
-            pos_x, pos_y, size_x, size_y,
-            source, style
-        } = element;
-
-        await db.executeQuery(getKeys.insertElement, [
-            element_id, typ, uri, layout_id,
-            pos_x, pos_y, size_x, size_y,
-            source, style
+//INTERNAL HELPER
+async function _insertElementsInternal(client, layoutId, elementsArray) {
+    if (!elementsArray || elementsArray.length === 0) return;
+    for (const el of elementsArray) {
+        await client.query(getKeys.insertElement, [
+            el.id, el.type, el.content, layoutId,
+            el.x, el.y, el.w, el.h, el.source, JSON.stringify(el.style)
         ]);
+    }
+}
+
+module.exports = {
+    getAllLayouts: async () => {
+        const result = await db.executeQuery(getKeys.select);
+        return result;
     },
-//TODO: TRANSACTION
-//HELPER FUNCTION TO MAP THE ELEMENTS IN THE ARRAY
-    saveLayoutWithElements: async (layoutData, elementsArray) => {
 
-        // 1. Capture the returned ID into a variable
-        const newLayoutId = await module.exports.insertLayout(layoutData);
+    getLayoutById: async (id) => {
+        const result = await db.executeQuery(getKeys.selectByID, [id]);
+        return result;
+    },
 
-        //DEBUG
-        console.log("Created Layout ID:", newLayoutId); // Debug check
 
-        if (elementsArray && elementsArray.length > 0) {
-            for (const el of elementsArray) {
+    createLayoutWithElements: async (layoutData, elementsArray) => {
+        const client = await db.pool.connect(); // Get a client from the pool
+        try {
+            await client.query('BEGIN'); // Start Transaction
 
-                const elementToSave = {
-                    layout_id: newLayoutId,             // <--- HERE IS THE FIX
-                    element_id: el.id,
-                    typ: el.type,
-                    uri: el.content,
-                    pos_x: el.x,
-                    pos_y: el.y,
-                    size_x: el.w,
-                    size_y: el.h,
-                    source: el.source,
-                    style: JSON.stringify(el.style)
-                };
 
-                await module.exports.insertElement(elementToSave);
-            }
+            const res = await client.query(getKeys.insertLayout, [
+                layoutData.erstelldatum,
+                layoutData.user_id_ersteller,
+                layoutData.name
+            ]);
+
+
+            const newLayoutId = res.rows[0].layout_id;
+
+
+            await _insertElementsInternal(client, newLayoutId, elementsArray);
+
+            await client.query('COMMIT');
+            return newLayoutId;
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release(); // Return client to pool
         }
     },
+
+    updateLayoutWithElements: async (layoutData, elementsArray) => {
+        const client = await db.pool.connect();
+        try {
+            await client.query('BEGIN');
+
+            await client.query(getKeys.updateLayout, [
+                layoutData.id,
+                layoutData.erstelldatum,
+                layoutData.user_id_ersteller,
+                layoutData.name
+            ]);
+
+            // 2. Clean slate: Delete all old elements for this layout
+            await client.query(getKeys.deleteElement, [layoutData.id]);
+
+            // 3. Re-insert the new set of elements
+            await _insertElementsInternal(client, layoutData.id, elementsArray);
+
+            await client.query('COMMIT');
+        } catch (err) {
+            await client.query('ROLLBACK');
+            throw err;
+        } finally {
+            client.release();
+        }
+
+},
 
 
 
