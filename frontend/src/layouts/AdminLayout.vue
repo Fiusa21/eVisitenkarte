@@ -2,7 +2,7 @@
   <div class="admin-layout">
     <header class="main-header">
       <div class="header-left">
-        <div class="admin-slider">
+        <div class="admin-slider" v-if="isAdmin">
           <div class="slider-text">Admin Modus</div>
           <AdminToggle class="admin-toggle" toggle-id="admin-mode-toggle" v-model="isAdminMode" /> 
         </div>
@@ -26,21 +26,24 @@
 </template>
 
 <script> 
-import { ref } from 'vue';
+import { computed, ref } from 'vue';
 import AdminToggle from '@/components/AdminSlider.vue';
 import TopBar from '@/components/TopBar.vue';
 import LogoutButton from '@/components/LogoutButton.vue';
 import ConnectivityIndicator from '@/components/ConnectivityIndicator.vue';
+import KeycloakService from '@/services/keycloak-service';
 
 export default {
 
   name: 'AdminLayout',
   components: { AdminToggle, TopBar, LogoutButton, ConnectivityIndicator },
   setup() {
-    const isAdminMode = ref(false); // Initial state is OFF
+    const isAdminMode = ref(true); // ON because we're in admin mode
+    const isAdmin = computed(() => KeycloakService.hasRole('admin'));
 
     return {
-        isAdminMode
+        isAdminMode,
+        isAdmin
     };
   }
 }

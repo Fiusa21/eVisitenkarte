@@ -21,170 +21,54 @@
 // --- ROUTES ---
 /**
  * @swagger
- * /:
- *   get:
- *     summary: CHECK BACKEND RUNNING
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully authenticated and accessed the resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Hello, testuser! You accessed a protected API. Your company is ExampleCorp"
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
- */
-
-
-
-/**
- * @swagger
- * /protected:
- *   get:
- *     summary: Access a protected route
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully authenticated and accessed the resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Hello, testuser! You accessed a protected API. Your company is ExampleCorp"
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ * tags:
+ *   - name: Layout Management
+ *     description: Operations regarding screen layouts
+ *   - name: Device
+ *     description: Hardware interaction and status
  */
 
 /**
  * @swagger
- * /protected:
- *   post:
- *     summary: Access a protected route
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully authenticated and accessed the resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Hello, testuser! You accessed a protected API. Your company is ExampleCorp"
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
- */
-
-/**
- * @swagger
- * /user:
+ * /layout-management/layouts:
  *   get:
- *     summary: Access user data
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
+ *     summary: Retrieve all layouts
+ *     description: Fetches a list of all layouts from the database. Protected by Keycloak.
+ *     tags: [Layout Management]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Successfully authenticated and accessed the resource.
+ *         description: A list of layouts.
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: YourUsername
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
- */
-
-/**
-* @swagger
-* /layout-management/layouts:
-    *   get:
-    *     summary: Access all layouts
-*     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
-*     tags: [Authentication]
-*     security:
-*       - bearerAuth: []
-*     responses:
-*       200:
-*         description: Successfully authenticated and accessed the resource.
-*         content:
-*           application/json:
-*             schema:
-    *               type: object
-*               properties:
-*                 message:
-    *                   type: string
-*                   example: YourUsername
-*       401:
-*         description: Unauthorized. The token is missing or invalid.
-*       403:
-*         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
-*/
-
-/**
- * @swagger
- * /layout-management/layouts/{id}:
- *   get:
- *     summary: Access a specific layout
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully authenticated and accessed the resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: YourUsername
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: integer
+ *                   name:
+ *                     type: string
+ *                   user_id_ersteller:
+ *                     type: string
+ *                   erstelldatum:
+ *                     type: string
+ *                     format: date-time
+ *       500:
+ *         description: Server error.
  */
 
 /**
  * @swagger
  * /layout-management/layouts:
  *   post:
- *     summary: Insert a new layout
- *     tags: [Authentication]
+ *     summary: Create a new layout
+ *     description: Saves a new layout and its associated elements. User ID is extracted from the Keycloak token.
+ *     tags: [Layout Management]
  *     security:
- *       - bearerAuth: []           # This tells Swagger to require the 'Authorize' button
+ *       - bearerAuth: []
  *     requestBody:
  *       required: true
  *       content:
@@ -195,68 +79,16 @@
  *               - name
  *               - elements
  *             properties:
- *
  *               name:
  *                 type: string
- *                 example: "My Business Card"
+ *                 example: "New Exhibition Layout"
  *               elements:
  *                 type: array
  *                 items:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: integer
- *                       format: int64
- *                       description: Unique ID generated by frontend (timestamp)
- *                       example: 1765038155609
- *                     type:
- *                       type: string
- *                       example: "text"
- *                     x:
- *                       type: number
- *                       example: 149
- *                     y:
- *                       type: number
- *                       example: 150
- *                     w:
- *                       type: number
- *                       example: 142.9
- *                     h:
- *                       type: number
- *                       example: 39
- *                     content:
- *                       type: string
- *                       example: "company"
- *                     source:
- *                       type: string
- *                       enum: [static, dynamic]
- *                       example: "dynamic"
- *                     style:
- *                       type: object
- *                       properties:
- *                         color:
- *                           type: string
- *                           example: "black"
- *
+ *                   $ref: '#/components/schemas/LayoutElement'
  *     responses:
- *       200:
- *         description: Successfully inserted
- *       500:
- *         description: Server error
- */
-
-/**
- * @swagger
- * /layout-management/layouts/{id}:
- *   put:
- *     summary: Update a specfifc layout
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully authenticated and accessed the resource.
+ *       201:
+ *         description: Layout created successfully.
  *         content:
  *           application/json:
  *             schema:
@@ -264,19 +96,18 @@
  *               properties:
  *                 message:
  *                   type: string
- *                   example: YourUsername
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
+ *                 layout_id:
+ *                   type: integer
+ *       500:
+ *         description: Server error.
  */
 
 /**
  * @swagger
  * /layout-management/layouts/{id}:
  *   put:
- *     summary: Update an existing layout and its elements
- *     description: Updates the layout name and replaces all existing elements with the new provided array. Protected by Keycloak.
+ *     summary: Update an existing layout
+ *     description: Updates layout details and replaces its elements.
  *     tags: [Layout Management]
  *     security:
  *       - bearerAuth: []
@@ -285,8 +116,8 @@
  *         name: id
  *         required: true
  *         schema:
- *           type: integer
- *         description: The ID of the layout to update
+ *           type: string
+ *         description: The layout ID
  *     requestBody:
  *       required: true
  *       content:
@@ -296,226 +127,71 @@
  *             properties:
  *               name:
  *                 type: string
- *                 example: "My Updated Layout"
  *               elements:
  *                 type: array
  *                 items:
- *                   type: object
- *                   properties:
- *                     id:
- *                       type: string
- *                       example: "element-1"
- *                     type:
- *                       type: string
- *                       example: "image"
- *                     content:
- *                       type: string
- *                       example: "https://example.com/img.png"
- *                     x:
- *                       type: integer
- *                       example: 0
- *                     y:
- *                       type: integer
- *                       example: 0
- *                     w:
- *                       type: integer
- *                       example: 4
- *                     h:
- *                       type: integer
- *                       example: 2
- *                     source:
- *                       type: string
- *                       example: "internal"
- *                     style:
- *                       type: object
- *                       example: { "backgroundColor": "red" }
+ *                   $ref: '#/components/schemas/LayoutElement'
  *     responses:
  *       200:
  *         description: Layout updated successfully.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: "Layout updated successfully"
- *                 layout_id:
- *                   type: string
- *                   example: "45"
- *       401:
- *         description: Unauthorized. Token missing or invalid.
- *       404:
- *         description: Layout not found.
  *       500:
  *         description: Server error.
  */
 
 /**
  * @swagger
- * /layout-management/layouts/{id}/elements:
- *   get:
- *     summary: retrieve all elements
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully authenticated and accessed the resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: YourUsername
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
- */
-
-/**
- * @swagger
- * /layout-management/layouts/{id}/elements/{id}:
- *   get:
- *     summary: retrieve a specific element
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully authenticated and accessed the resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: YourUsername
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
- */
-
-/**
- * @swagger
- * /layout-management/layouts/{id}/elements/{id}:
- *   post:
- *     summary: insert a new element
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully authenticated and accessed the resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: YourUsername
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
- */
-
-/**
- * @swagger
- * /layout-management/layouts/{id}/elements/{id}:
- *   put:
- *     summary: update a specific element
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Successfully authenticated and accessed the resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: YourUsername
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
- */
-
-/**
- * @swagger
- * /layout-management/layouts/{id}/elements/{id}:
+ * /layout-management/layouts/{id}:
  *   delete:
- *     summary: delete a specfifc element
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
+ *     summary: Delete a layout
+ *     tags: [Layout Management]
  *     security:
  *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
- *         description: Successfully authenticated and accessed the resource.
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- *               properties:
- *                 message:
- *                   type: string
- *                   example: YourUsername
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
- *
+ *         description: Layout deleted.
+ *       500:
+ *         description: Server error.
  */
 
 /**
  * @swagger
  * /device/status:
  *   get:
- *     summary: check wifi connection
- *     description: This endpoint is protected by Keycloak. You must provide a valid Bearer token in the Authorization header.
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
+ *     summary: Check Raspberry Pi connection
+ *     description: Checks if the device service is reachable.
+ *     tags: [Device]
  *     responses:
  *       200:
- *         description: Successfully authenticated and accessed the resource.
+ *         description: Device is online.
  *         content:
  *           application/json:
  *             schema:
  *               type: object
  *               properties:
+ *                 status:
+ *                   type: string
+ *                   example: "online"
  *                 message:
  *                   type: string
- *                   example: Device is ready
- *       401:
- *         description: Unauthorized. The token is missing or invalid.
- *       403:
- *         description: Forbidden. The token is valid, but the user does not have permission to access this resource.
- *
+ *       503:
+ *         description: Device is offline.
  */
 
 /**
  * @swagger
- * /api/display/upload:
+ * /display/upload:
  *   post:
- *     summary: Upload an image and send it to the external display
- *     tags: [Display]
+ *     summary: Upload image to display
+ *     description: Sends raw binary image data to the Raspberry service.
+ *     tags: [Device]
  *     requestBody:
+ *       description: Binary image data (PNG/JPG)
  *       required: true
  *       content:
  *         application/octet-stream:
@@ -524,11 +200,50 @@
  *             format: binary
  *     responses:
  *       200:
- *         description: Image successfully sent to device
+ *         description: Image uploaded successfully.
  *       400:
- *         description: Invalid image data
- *       503:
- *         description: External display device is offline
+ *         description: No image data provided.
  *       500:
- *         description: Server error
+ *         description: Internal Server Error.
+ */
+
+/**
+ * @swagger
+ * components:
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
+ *   schemas:
+ *     LayoutElement:
+ *       type: object
+ *       properties:
+ *         id:
+ *           type: string
+ *           example: "element-1"
+ *         type:
+ *           type: string
+ *           example: "image"
+ *         content:
+ *           type: string
+ *           example: "https://example.com/img.png"
+ *         x:
+ *           type: integer
+ *           example: 0
+ *         y:
+ *           type: integer
+ *           example: 0
+ *         w:
+ *           type: integer
+ *           example: 4
+ *         h:
+ *           type: integer
+ *           example: 2
+ *         source:
+ *           type: string
+ *           example: "internal"
+ *         style:
+ *           type: object
+ *           example: { "backgroundColor": "red" }
  */

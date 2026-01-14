@@ -13,7 +13,7 @@ Digital business card platform with a Vue 3 (Vite) frontend, Node.js/Express bac
 - Node.js 20.x (or >=22.12.0) and npm
 - Docker + Docker Compose
 - Ports (defaults): frontend 5173, backend 3000, Keycloak 8080, Postgres 5432
-- Optional: Git, make
+- Optional: Git, make, pgAdmin (recommended)
 
 ## Project Structure
 - `frontend/` — Vue 3 app (Vite)
@@ -25,24 +25,48 @@ Digital business card platform with a Vue 3 (Vite) frontend, Node.js/Express bac
 ## Quick Start (all services)
 1) Start Keycloak + Postgres:
    ```sh
-   cd /Users/rootys/IdeaProjects/eVisitenkarte
+   cd /path/to/your-project/root
    docker compose up -d
    ```
    Services: `keycloak` (8080), `keycloak-db`, `app-db` (5432 mapped).
+IMPORTANT: Until fixed, you have to manually execute/run the query inside of init.sql to create the Database-Schema! Either using pgAdmin or the following command in the project root (LINUX/MAC):
+    ```sh
+   cat init.sql | docker exec -i app-db -U myuser -d mydatabase
+   ```
+    
 
 2) Import Keycloak realm (one-time):
    - Open `http://localhost:8080` → log in as admin (`KEYCLOAK_ADMIN`/`KEYCLOAK_ADMIN_PASSWORD`, default `admin`/`admin`).
    - Create realm from `realm-export.json` with realm name `eVisitenkarte-development`.
+   - Create a user inside of keycloak following these steps:
+     - In the menu left, go to users
+     - click on 'Add user' and add the desired attributes
+     - after creation, in user details, navigate to role mapping.
+     - select 'default-roles-evisitenkarte-development' and click on 'assign role'
+     - in the pop-up change the filter to 'Filter by clients' and select the desired role of the user (either admin or user or both)
+     - Then navigate to 'credentials' and set a password
+     - Then navigate to attributes and set the attributes as followed:
+       - The key value in the left column, the desired value in the right (keys have to be exact as follows!)
+         - phoneNumber
+         - last name
+         - first name
+         - mobile number
+         - street
+         - company
+         - title 
+         - region
+         - postal_code
    - Clients expected by code:
      - Backend: `eVisitenkarte-backend` (bearer-only)
      - Frontend: `eVisitenkarte-app` (public client)
+     
 
 3) Set valid redirect/web origins for the frontend client (e.g., `http://localhost:5173/*`).
 
 ## Backend (Express)
 1) Install deps:
    ```sh
-   cd /Users/rootys/IdeaProjects/eVisitenkarte/backend
+   cd /path/to/your-project/root/backend
    npm install
    ```
 2) Configure env (Postgres). Defaults in `db-service.js`:
@@ -69,7 +93,7 @@ Digital business card platform with a Vue 3 (Vite) frontend, Node.js/Express bac
 ## Frontend (Vue 3 + Vite)
 1) Install deps:
    ```sh
-   cd /Users/rootys/IdeaProjects/eVisitenkarte/frontend
+   cd /path/to/your-project/root/frontend
    npm install
    ```
 2) Run dev server:
@@ -128,3 +152,4 @@ Digital business card platform with a Vue 3 (Vite) frontend, Node.js/Express bac
 - Port clashes: adjust host port mapping in `docker-compose.yml` and configs.
 - We ran into an issue where pgAdmin (if used) created a local instance on the same default port, which was then running on the local OS in the background. If that is the case you will be unable to connect to the database running inside of Docker. make sure to kill those processes or adapt the default ports.
 - Make sure you are connected to the devices wifi.
+- In some rare cases, the app-db container was not running after docker compose. Manually start that container.

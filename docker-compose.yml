@@ -52,6 +52,7 @@ services:
       POSTGRES_USER: ${APP_DB_USER:-myuser}
       POSTGRES_PASSWORD: ${APP_DB_PASSWORD:-mypassword!}
     volumes:
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
       - app_db_data:/var/lib/postgresql/data
     networks:
       - app-network
