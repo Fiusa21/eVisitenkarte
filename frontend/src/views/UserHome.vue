@@ -33,74 +33,29 @@
       </div>
 
       <div class="dashboard-layouts-container">
-        <div
+        <LayoutCard
           v-for="layout in layouts"
           :key="layout.id"
-          class="business-cards"
-          @click="openLayoutModal(layout)"
-        >
-          <div class="card-preview-wrapper">
-            <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor }">
-              <div
-                v-for="element in layout.elements"
-                :key="element.id"
-                class="preview-element"
-                :style="{
-                  position: 'absolute',
-                  left: element.x + 'px',
-                  top: element.y + 'px',
-                  width: element.w + 'px',
-                  height: element.h + 'px'
-                }"
-              >
-                <component
-                  v-if="element.type !== 'logo' && element.type !== 'qr'"
-                  :is="getElementComponent(element)"
-                  :item="element"
-                  :user-profile="userProfile"
-                />
-                <img v-else :src="elementImageSrcMap.get(element.id) || (element.type === 'logo' ? `/company-logos/${element.content}` : '')" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
-              </div>
-            </div>
-          </div>
-        </div>
+          :layout="layout"
+          :user-profile="userProfile"
+          @open="openLayoutModal"
+        />
       </div>
     </div>
 
     <!-- Modal -->
-    <div v-if="selectedLayout" class="modal-overlay" @click="closeLayoutModal">
-      <div class="modal-content" @click.stop>
-        <button class="close-button" @click="closeLayoutModal">✕</button>
-        <button class="send-button" @click="sendImage">Send to display</button>
-
-        <div id="target-canvas" ref="canvasRef" class="modal-canvas" :style="{ backgroundColor: selectedLayout.backgroundColor }">
-          <div
-            v-for="element in selectedLayout.elements"
-            :key="element.id"
-            class="modal-element"
-            :style="{
-              position: 'absolute',
-              left: element.x + 'px',
-              top: element.y + 'px',
-              width: element.w + 'px',
-              height: element.h + 'px'
-            }"
-          >
-            <component
-              v-if="element.type !== 'logo' && element.type !== 'qr'"
-              :is="getElementComponent(element)"
-              :item="element"
-              :user-profile="userProfile"
-            />
-            <img v-else :src="elementImageSrcMap.get(element.id) || (element.type === 'logo' ? `/company-logos/${element.content}` : '')" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
-          </div>
-        </div>
-
-        <div class="modal-info">
-          <h3>{{ selectedLayout.name }}</h3>
-        </div>
-      </div>
-    </div>
+    <LayoutPreviewModal 
+      ref="modalRef"
+      :layout="selectedLayout" 
+      :user-profile="userProfile"
+      @close="closeLayoutModal"
+    >
+      <template #actions>
+        <button class="send-button" @click="sendImage" :disabled="isSending">
+          {{ isSending ? 'Wird gesendet...' : 'Send to display' }}
+        </button>
+      </template>
+    </LayoutPreviewModal>
   </div>
 </template>
 
@@ -108,40 +63,34 @@
 import { ref, computed, onMounted } from 'vue';
 import KeycloakService from '@/services/keycloak-service';
 import ApiService from '@/services/api-service';
-import TextElement from '@/elements/TextElement.vue';
-import RectangleElement from '@/elements/RectangleElement.vue';
-import CircleElement from '@/elements/CircleElement.vue';
-import TriangleElement from '@/elements/TriangleElement.vue';
+import LayoutCard from '@/components/LayoutCard.vue';
+import LayoutPreviewModal from '@/components/LayoutPreviewModal.vue';
 import * as htmlToImage from 'html-to-image';
 import Pica from 'pica';
-import { useQRImageSrc } from '@/composables/useQRImageSrc';
 
 export default {
   name: 'UserHome',
   components: {
-    TextElement,
-    RectangleElement,
-    CircleElement,
-    TriangleElement
+    LayoutCard,
+    LayoutPreviewModal
   },
   setup() {
 
     const canvasRef = ref(null);
     const isSending = ref(false);
-    const { getImageSrc: getImageSrcComposable } = useQRImageSrc();
-    const elementImageSrcMap = ref(new Map());
+    const modalRef = ref(null);
 
     //pica for high quality down scaling
     const pica = Pica();
 
     const sendImage = async () => {
-      const element = canvasRef.value || document.getElementById('target-canvas');
-      if (!element) return;
+      const canvasElement = modalRef.value?.canvasRef?.value;
+      if (!canvasElement) return;
 
       isSending.value = true;
       try {
         //capture original
-        const sourceCanvas = await htmlToImage.toCanvas(element, {
+        const sourceCanvas = await htmlToImage.toCanvas(canvasElement, {
           pixelRatio: 1,
           cacheBust: true,
           backgroundColor: '#ffffff'
@@ -251,32 +200,10 @@ export default {
     const layouts = ref([]);
     const selectedLayout = ref(null);
 
-    // Element-Komponente basierend auf Typ zurückgeben
-    const getElementComponent = (element) => {
-      switch (element.type) {
-        case 'rectangle': return RectangleElement;
-        case 'circle': return CircleElement;
-        case 'triangle': return TriangleElement;
-        case 'text': return TextElement;
-        case 'logo': return 'img';
-        default: return null;
-      }
-    };
-
-    const openLayoutModal = (layout) => {
-      selectedLayout.value = layout;
-    };
-
-    const closeLayoutModal = () => {
-      selectedLayout.value = null;
-    };
-
-
     // Layouts von der Datenbank laden und gruppieren
     onMounted(async () => {
       try {
         const data = await ApiService.getAllLayouts();
-        
         
         const layoutsMap = new Map();
         
@@ -312,20 +239,19 @@ export default {
         
         layouts.value = Array.from(layoutsMap.values());
         
-        // Preload QR-Code images
-        layouts.value.forEach(layout => {
-          layout.elements.forEach(item => {
-            if (item.type === 'qr' || item.type === 'logo') {
-              getImageSrc(item);
-            }
-          });
-        });
-        
         console.log('Layouts geladen:', layouts.value);
       } catch (error) {
         console.error('Fehler beim Laden der Layouts:', error);
       }
     });
+
+    const openLayoutModal = (layout) => {
+      selectedLayout.value = layout;
+    };
+
+    const closeLayoutModal = () => {
+      selectedLayout.value = null;
+    };
 
     return { 
       layouts,
@@ -335,11 +261,9 @@ export default {
       selectedLayout,
       openLayoutModal,
       closeLayoutModal,
-      getElementComponent,
-      elementImageSrcMap,
       sendImage,
-      canvasRef,
-      isSending
+      isSending,
+      modalRef
     };
   }
 }

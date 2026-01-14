@@ -8,78 +8,30 @@
     </div>
     <div class="layout-wrapper">
         <div class="layouts">
-            <div
-            v-for="layout in layouts"
-            :key="layout.id"
-            class="business-cards"
-            @click="openLayoutModal(layout)"
-            >
-              <div class="card-preview-wrapper">
-                <div class="card-preview" :style="{ backgroundColor: layout.backgroundColor }">
-                  <div
-                    v-for="element in layout.elements"
-                    :key="element.id"
-                    class="preview-element"
-                    :style="{
-                      position: 'absolute',
-                      left: element.x + 'px',
-                      top: element.y + 'px',
-                      width: element.w + 'px',
-                      height: element.h + 'px'
-                    }"
-                  >
-                    <component
-                      v-if="element.type !== 'logo' && element.type !== 'qr'"
-                      :is="getElementComponent(element.type)"
-                      :item="element"
-                      :user-profile="userProfile"
-                    />
-                    <img v-else :src="elementImageSrcMap.get(element.id) || (element.type === 'logo' ? `/company-logos/${element.content}` : '')" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
-                  </div>
-                </div>
-              </div>
-            </div>
+            <LayoutCard
+              v-for="layout in layouts"
+              :key="layout.id"
+              :layout="layout"
+              :user-profile="userProfile"
+              @open="openLayoutModal"
+            />
             <div class="add-layout" @click="createNewLayout">+</div>
         </div>
     </div>
 
     <!-- Modal -->
-    <div v-if="selectedLayout" class="modal-overlay" @click="closeLayoutModal">
-      <div class="modal-content" @click.stop>
-        <button class="close-button" @click="closeLayoutModal">✕</button>
-        
-        <div class="modal-canvas" :style="{ backgroundColor: selectedLayout.backgroundColor }">
-          <div
-            v-for="element in selectedLayout.elements"
-            :key="element.id"
-            class="modal-element"
-            :style="{
-              position: 'absolute',
-              left: element.x + 'px',
-              top: element.y + 'px',
-              width: element.w + 'px',
-              height: element.h + 'px'
-            }"
-          >
-            <component
-              v-if="element.type !== 'logo' && element.type !== 'qr'"
-              :is="getElementComponent(element.type)"
-              :item="element"
-              :user-profile="userProfile"
-            />
-            <img v-else :src="elementImageSrcMap.get(element.id) || (element.type === 'logo' ? `/company-logos/${element.content}` : '')" :alt="element.content" style="width: 100%; height: 100%; object-fit: contain;" />
-          </div>
+    <LayoutPreviewModal 
+      :layout="selectedLayout" 
+      :user-profile="userProfile"
+      @close="closeLayoutModal"
+    >
+      <template #actions>
+        <div class="modal-buttons">
+          <button class="btn-bearbeiten" @click="editLayout(selectedLayout.id)">Bearbeiten</button>
+          <button class="btn-loeschen" @click="deleteLayoutConfirm(selectedLayout.id)">Löschen</button>
         </div>
-        
-        <div class="modal-info">
-          <h3>{{ selectedLayout.name }}</h3>
-          <div class="modal-buttons">
-            <button class="btn-bearbeiten" @click="editLayout(selectedLayout.id)">Bearbeiten</button>
-            <button class="btn-loeschen" @click="deleteLayoutConfirm(selectedLayout.id)">Löschen</button>
-          </div>
-        </div>
-      </div>
-    </div>
+      </template>
+    </LayoutPreviewModal>
   </div>
 </template>
 
@@ -87,27 +39,20 @@
 import { ref, onMounted, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import ApiService from '@/services/api-service';
-import TextElement from '@/elements/TextElement.vue';
-import RectangleElement from '@/elements/RectangleElement.vue';
-import CircleElement from '@/elements/CircleElement.vue';
-import TriangleElement from '@/elements/TriangleElement.vue';
-import { useQRImageSrc } from '@/composables/useQRImageSrc';
+import LayoutCard from '@/components/LayoutCard.vue';
+import LayoutPreviewModal from '@/components/LayoutPreviewModal.vue';
 
 // Add logic here later, e.g., fetching user-specific data
 export default {
   name: 'AdminHome',
   components: {
-    TextElement,
-    RectangleElement,
-    CircleElement,
-    TriangleElement
+    LayoutCard,
+    LayoutPreviewModal
   },
   setup() {
     const router = useRouter();
     const layouts = ref([]);
     const selectedLayout = ref(null);
-    const { getImageSrc: getImageSrcComposable } = useQRImageSrc();
-    const elementImageSrcMap = ref(new Map());
     
     // Mock user profile für dynamische Text-Felder
     const userProfile = computed(() => ({
@@ -120,37 +65,7 @@ export default {
       mobile_number: '+49 1525 2864577',
       adress: 'Musterstraße 1'
     }));
-    
-    // Element-Komponente basierend auf Typ zurückgeben
-    const getElementComponent = (element) => {
-      const type = element.type || element;
-      switch (type) {
-        case 'rectangle': return RectangleElement;
-        case 'circle': return CircleElement;
-        case 'triangle': return TriangleElement;
-        case 'text': return TextElement;
-        case 'logo': return 'img';
-        default: return null;
-      }
-    };
 
-    // Helper zum Laden von Bildern mit Cache
-    const getImageSrc = async (item) => {
-      if (elementImageSrcMap.value.has(item.id)) {
-        return elementImageSrcMap.value.get(item.id);
-      }
-      
-      try {
-        const src = await getImageSrcComposable(item);
-        elementImageSrcMap.value.set(item.id, src);
-        return src;
-      } catch (error) {
-        console.error('Fehler beim Laden des Bildes:', error);
-        return '';
-      }
-    };
-
-    // Lade und skaliere Layouts
     const loadLayouts = async () => {
       try {
         const data = await ApiService.getAllLayouts();
@@ -189,15 +104,6 @@ export default {
         });
         
         layouts.value = Array.from(layoutsMap.values());
-        
-        // Preload QR-Code images
-        layouts.value.forEach(layout => {
-          layout.elements.forEach(item => {
-            if (item.type === 'qr' || item.type === 'logo') {
-              getImageSrc(item);
-            }
-          });
-        });
         
         console.log('Layouts geladen:', layouts.value);
       } catch (error) {
@@ -248,8 +154,6 @@ export default {
       layouts,
       selectedLayout,
       userProfile,
-      getElementComponent,
-      elementImageSrcMap,
       openLayoutModal,
       closeLayoutModal,
       editLayout,
@@ -319,45 +223,6 @@ TODO: Medie queries für alle Bildschirmgrößen
   padding-top: 10px;
 }
 
-.business-cards {
-  width: 296px;
-  height: 128px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-  cursor: pointer;
-  transition: transform 0.2s, box-shadow 0.2s;
-  overflow: hidden;
-}
-
-.business-cards:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
-}
-
-.card-preview-wrapper {
-  width: 296px;
-  height: 128px;
-  overflow: hidden;
-  position: relative;
-}
-
-.card-preview {
-  width: 888px;
-  height: 384px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  overflow: hidden;
-  transform: scale(0.333333);
-  transform-origin: top left;
-}
-
-.preview-element {
-  position: absolute;
-  pointer-events: none;
-  overflow: hidden;
-}
-
 .add-layout {
   width: 296px;
   height: 128px;
@@ -383,77 +248,6 @@ TODO: Medie queries für alle Bildschirmgrößen
   background-color: rgba(168, 168, 168, 0.3);
   border-color: black;
   color: black;
-}
-
-/* Modal Styles */
-.modal-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100vw;
-  height: 100vh;
-  background: rgba(0, 0, 0, 0.8);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 9999;
-  backdrop-filter: blur(4px);
-}
-
-.modal-content {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 20px;
-}
-
-.close-button {
-  position: absolute;
-  top: -40px;
-  right: 0;
-  background: rgba(255, 255, 255, 0.9);
-  border: none;
-  border-radius: 50%;
-  width: 35px;
-  height: 35px;
-  font-size: 20px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  transition: all 0.2s;
-  font-weight: bold;
-}
-
-.close-button:hover {
-  background: white;
-  transform: scale(1.1);
-}
-
-.modal-canvas {
-  width: 888px;
-  height: 384px;
-  position: relative;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
-  border-radius: 8px;
-  overflow: hidden;
-}
-
-.modal-element {
-  position: absolute;
-}
-
-.modal-info {
-  color: white;
-  text-align: center;
-  font-family: 'Dosis', sans-serif;
-}
-
-.modal-info h3 {
-  margin: 0 0 15px 0;
-  font-size: 1.5rem;
-  font-weight: 600;
 }
 
 .modal-buttons {
