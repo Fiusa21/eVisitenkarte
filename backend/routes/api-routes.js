@@ -1,5 +1,5 @@
 const express = require('express');
-const { protect } = require('../middleware/keycloak-middleware');// Import protect middleware
+const { protect } = require('../middleware/keycloak-middleware');
 
 const router = express.Router();
 const layoutModel = require ('../models/query-model');
@@ -7,7 +7,7 @@ const RaspberryService = require('../services/raspberry-service');
 
 
 //FOR DOCUMENTATION see /docs/api-docs
-//ALWAYS UPDATE IF YOU ADD OR MODIFY OR DELETE AN ENDPOINT
+//ALWAYS UPDATE IF YOU ADD, MODIFY OR DELETE AN ENDPOINT
 
 //basic route testing
 router.get('/', protect, (req, res) => {
@@ -23,6 +23,7 @@ router.get('/layout-management/layouts', protect, async (req, res) => {
     }
 });
 
+//LAYOUT MANAGEMENT
 router.post('/layout-management/layouts', protect, async (req, res) => {
     try {
         const userId = req.kauth.grant.access_token.content.sub;
@@ -58,7 +59,7 @@ router.put('/layout-management/layouts/:id', protect, async (req, res) => {
             id: id,
             name: name,
             user_id_ersteller: userId,
-            erstelldatum: new Date() // Usually you update the "last modified" or keep original
+            erstelldatum: new Date()
         };
 
         await layoutModel.updateLayoutWithElements(layoutData, elements);
@@ -84,7 +85,6 @@ router.delete('/layout-management/layouts/:id', protect, async (req, res)=> {
 })
 
 
-
 //DEVICE HANDLING
 router.get('/device/status', async (req, res) => {
     const isOnline = await RaspberryService.checkConnection();
@@ -98,19 +98,17 @@ router.get('/device/status', async (req, res) => {
 
 router.post(
     '/display/upload',
-    // Middleware for binary data (scoped only to this route)
+    //MIDDLEWARE FOR BINARY DATA
     express.raw({ type: 'application/octet-stream', limit: '10mb' }),
     async (req, res) => {
         try {
-            // Validation
+
             if (!req.body || req.body.length === 0) {
                 return res.status(400).json({ error: "No image data provided" });
             }
 
-            // Call the service
             const result = await RaspberryService.handleImageUpload(req.body);
 
-            // Respond based on service outcome
             if (result.success) {
                 return res.status(200).json({ message: result.message });
             } else {

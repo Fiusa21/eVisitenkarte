@@ -69,13 +69,9 @@ IMPORTANT: Until fixed, you have to manually execute/run the query inside of ini
    cd /path/to/your-project/root/backend
    npm install
    ```
-2) Configure env (Postgres). Defaults in `db-service.js`:
+2) Configure env:
    ```sh
-   export PGHOST=localhost
-   export PGUSER=myuser
-   export PGPASSWORD='mypassword!'
-   export PGDATABASE=mydatabase
-   export PGPORT=5432
+   cp .env.example .env
    ```
 3) Run backend:
    ```sh
