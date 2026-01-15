@@ -4,7 +4,7 @@ import {ref} from "vue";
 //for testing with echo api, there is a public/unprotected endpoint /public
 const API_BASE_URL = 'http://localhost:3000/api'; //base api url, for testing see echo api
 
-
+//TODO: check for unused api calls
 const ApiService = {
     //check if user is logged in and get token
     checkAuthorization: async () => {

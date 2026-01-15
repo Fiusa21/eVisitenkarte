@@ -3,6 +3,8 @@
  * @param {Array<Object>} rows - The flat array of rows returned from the joined DB query.
  * @returns {Array<Object>} - The nested array of layouts, each containing an array of elements.
  */
+
+//TODO: remove comments?!
 function processLayoutAndElements(rows) {
     const layoutsMap = new Map();
 

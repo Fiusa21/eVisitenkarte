@@ -7,8 +7,7 @@ const keycloakConfig = require('../config/keycloak-config');
 It will leak memory under most conditions, does not scale past a single process,
 and is meant for debugging and developing.*/
 
-//ALSO BE AWARE: VALID REDIRECT URL IS CURRENTLY '*' WHICH SHOULD LATER BE SPECIFIED
-//SINCE IT IS A SECURITY FLAW
+//ALSO BE AWARE: VALID REDIRECT URL IS CURRENTLY '*' WHICH SHOULD LATER BE SPECIFIED SINCE IT IS A SECURITY FLAW
 //using wildcard is easier for develop and testing purposes
 const memoryStore = new session.MemoryStore();
 const keycloak = new Keycloak({ store: memoryStore }, keycloakConfig);
