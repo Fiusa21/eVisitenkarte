@@ -533,6 +533,7 @@ TODO: Medie queries für alle Bildschirmgrößen
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
   border-radius: 8px;
   overflow: hidden;
+  border: solid 2px #ffffff;
 }
 
 .modal-element {
