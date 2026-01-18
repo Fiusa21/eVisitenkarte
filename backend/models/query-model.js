@@ -1,4 +1,3 @@
-const { get } = require('../routes/api-routes');
 const db = require('../services/db-service');
 
 

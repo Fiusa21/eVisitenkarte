@@ -20,14 +20,14 @@ const ApiService = {
     },
 
     //generic response checker
-    checkResponse: async (response) => {if (response.ok) {
+    checkResponse: async (response) => {
         if (response.ok) {
             return await response.json();
         } else {
             const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
             throw new Error(`API call failed: ${response.status} - ${errorData.message || response.statusText}`);
         }
-    }},
+    },
 
     checkConnectivity : async () => {
         try {

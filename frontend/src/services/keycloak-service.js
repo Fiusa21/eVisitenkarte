@@ -2,7 +2,7 @@ import Keycloak from 'keycloak-js';
 import { ref } from 'vue';
 
 const KEYCLOAK_CONFIG = {
-    url: 'http://localhost:5173/',
+    url: 'http://localhost:8080/',
     realm: 'eVisitenkarte-development', //keycloak-realm
     clientId: 'eVisitenkarte-app', //keycloak frontend-client
 };
