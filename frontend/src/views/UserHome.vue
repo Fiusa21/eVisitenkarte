@@ -62,6 +62,7 @@
 <script>
 import { ref, onMounted } from 'vue';
 import ApiService from '@/services/api-service';
+import LayoutService from '@/services/frontend-layout-service';
 import LayoutCard from '@/components/LayoutCard.vue';
 import LayoutPreviewModal from '@/components/LayoutPreviewModal.vue';
 import * as htmlToImage from 'html-to-image';
@@ -150,43 +151,7 @@ export default {
     // Layouts von der Datenbank laden und gruppieren
     onMounted(async () => {
       try {
-        
-        const data = await ApiService.getAllLayouts();
-        
-        const layoutsMap = new Map();
-        
-        data.forEach(row => {
-          const layoutId = row.layout_id;
-          
-          if (!layoutsMap.has(layoutId)) {
-            layoutsMap.set(layoutId, {
-              id: layoutId,
-              layout_id: layoutId,
-              name: row.name || 'Unbenanntes Layout',
-              backgroundColor: row.backgroundcolor || 'white',
-              elements: []
-            });
-          }
-          
-          if (row.element_id) {
-            const layout = layoutsMap.get(layoutId);
-            const element = {
-              id: row.element_id,
-              type: row.typ, 
-              x: parseFloat(row.pos_x) || 0, 
-              y: parseFloat(row.pos_y) || 0, 
-              w: parseFloat(row.size_x) || 50, 
-              h: parseFloat(row.size_y) || 50, 
-              content: row.uri, 
-              source: row.source,
-              style: row.style || { color: 'black' }
-            };
-            layout.elements.push(element);
-          }
-        });
-        
-        layouts.value = Array.from(layoutsMap.values());
-        
+        layouts.value = await LayoutService.loadAllLayouts();
         console.log('Layouts geladen:', layouts.value);
       } catch (error) {
         console.error('Fehler beim Laden der Layouts:', error);
