@@ -60,13 +60,13 @@
 </template>
 
 <script>
-import { ref, computed, onMounted } from 'vue';
-import KeycloakService from '@/services/keycloak-service';
+import { ref, onMounted } from 'vue';
 import ApiService from '@/services/api-service';
 import LayoutCard from '@/components/LayoutCard.vue';
 import LayoutPreviewModal from '@/components/LayoutPreviewModal.vue';
 import * as htmlToImage from 'html-to-image';
 import Pica from 'pica';
+import { useUserProfile } from '@/composables/userProfile';
 
 export default {
   name: 'UserHome',
@@ -75,8 +75,8 @@ export default {
     LayoutPreviewModal
   },
   setup() {
+    const { userProfile, formattedAddress, userInfoFields } = useUserProfile();
 
-    const canvasRef = ref(null);
     const isSending = ref(false);
     const modalRef = ref(null);
 
@@ -144,65 +144,13 @@ export default {
     };
 
 
-    //Take from user profile fields in keycloak
-    const userProfileRef = KeycloakService.getIdTokenParsed();
-
-    // Helper zum Laden von Bildern mit Cache
-    const getImageSrc = async (item) => {
-      if (elementImageSrcMap.value.has(item.id)) {
-        return elementImageSrcMap.value.get(item.id);
-      }
-      
-      try {
-        const src = await getImageSrcComposable(item);
-        elementImageSrcMap.value.set(item.id, src);
-        return src;
-      } catch (error) {
-        console.error('Fehler beim Laden des Bildes:', error);
-        return '';
-      }
-    };
-
-    //Computed Property to access user profile data
-    const userProfile = computed(() =>  userProfileRef.value || {});
-
-    //Compute the address
-    const formattedAddress = computed(() => {
-      //addressClaim saves address object from token
-      const addressClaim = userProfile.value.address;
-      if(!addressClaim || typeof addressClaim !== 'object') {
-        return '';
-      }
-      //fetch components of address
-      const street = addressClaim.street_address || '';
-      const postalCode = addressClaim.postal_code || '';
-      const locality = addressClaim.locality || '';
-
-      //Combine components into single string
-      const parts = [
-        street,
-        `${postalCode} ${locality}`.trim()
-      ].filter(p => p); //filters out falsy (empty) values
-      return parts.join('\n'); //Adds new line
-    });
-
-    //fields to display {key: Claim-Namen from Token, label: Label in UI}
-    const userInfoFields = ([
-      { key: 'first_name', label: 'Vorname'},
-      { key: 'last_name', label: 'Nachname'},
-      { key: 'company', label: 'Firma'},
-      { key: 'title', label: 'Titel'},
-      { key: 'email', label: 'E-Mail'},
-      { key: 'phone_number', label: 'Telefon'},
-      { key: 'mobile_number', label: 'Mobil'},
-    ]);
-
     const layouts = ref([]);
     const selectedLayout = ref(null);
 
     // Layouts von der Datenbank laden und gruppieren
     onMounted(async () => {
       try {
+        
         const data = await ApiService.getAllLayouts();
         
         const layoutsMap = new Map();
