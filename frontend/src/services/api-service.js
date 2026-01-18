@@ -176,61 +176,6 @@ const ApiService = {
         }
     },
 
-    //insert new element
-    insertElement: async (element) => {
-        const token = await ApiService.checkAuthorization();
-        try {
-            const response = await fetch(`${API_BASE_URL}/layout-management/layouts/${element.layout_id}/elements/${element.element_id}`, {
-                method: 'POST',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(element),
-            }); 
-            return await ApiService.checkResponse(response);
-        } catch (error) {
-            console.error('Error inserting element:', error);
-            throw error;
-        }
-    },
-
-    //update element
-    updateElement: async (element) => {
-        const token = await ApiService.checkAuthorization();
-        try {
-            const response = await fetch(`${API_BASE_URL}/layout-management/layouts/${element.layout_id}/elements/${element.element_id}`, {
-                method: 'PUT',
-                headers: { 
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                }, 
-                body: JSON.stringify(element),
-            }); 
-            return await ApiService.checkResponse(response);
-        } catch (error) {
-            console.error('Error updating element:', error);
-            throw error;
-        }
-    },
-
-    //delete element
-    deleteElement: async (layoutId, elementId) => {
-        const token = await ApiService.checkAuthorization();
-        try {
-            const response = await fetch(`${API_BASE_URL}/layout-management/layouts/${layoutId}/elements/${elementId}`, {
-                method: 'DELETE',
-                headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                },
-            }); 
-            return await ApiService.checkResponse(response);
-        } catch (error) {
-            console.error('Error deleting element:', error);
-            throw error;
-        }
-    },
 
     /**
      * Sends raw binary image data to the display endpoint
