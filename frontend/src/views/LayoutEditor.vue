@@ -619,4 +619,19 @@ TODO: Medie queries für alle Bildschirmgrößen
   object-fit: contain;
   background-color: black;
 }
+
+  .layout-editor {
+    justify-content: left;
+    align-items: top;
+  }
+  .save-btn-fixed{
+    position: fixed;
+    bottom: 30px;
+    right: 50%;
+    transform: translate(50%);
+  }
+
+
+
+
 </style>
