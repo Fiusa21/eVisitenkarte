@@ -366,13 +366,6 @@ TODO: Medie queries für alle Bildschirmgrößen
   background-color: black;
 }
 
-@media (max-width: 1700px) {
-  .editor-main-content {
-    max-width: 1300px;
-    margin: 0px;
-    padding: 0px;
-  }
-
   .layout-editor {
     justify-content: left;
     align-items: top;
@@ -384,10 +377,7 @@ TODO: Medie queries für alle Bildschirmgrößen
     transform: translate(50%);
   }
 
-}
-@media (max-height: 900px) {
-    .site-header{
-    padding: 0px;
-  }
-}
+
+
+
 </style>
