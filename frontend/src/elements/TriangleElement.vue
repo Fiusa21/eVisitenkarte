@@ -15,6 +15,8 @@ export default {
       // bottom-left, top-middle, bottom-right
       const w = this.item.w;
       const h = this.item.h;
+
+      // 'x, y'
       return `0,${h} ${w / 2},0 ${w},${h}`;
     }
   }

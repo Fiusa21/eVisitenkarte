@@ -1,16 +1,12 @@
 const Pool = require('pg-pool')
-// --- PostgreSQL Setup ---
-// The Pool will handle connection pooling for efficiency.
-// It reads connection parameters from environment variables (e.g., PGHOST, PGUSER, PGDATABASE, PGPASSWORD, PGPORT).
-// PGPORT will default to 5432 if not explicitly set in the environment.
+require('dotenv').config();
+
 const pool = new Pool({
-    // You can explicitly define connection details here, 
-    // but using environment variables is preferred.
-    host: process.env.PGHOST || 'localhost',
-    user: process.env.PGUSER || 'myuser',
-    database: process.env.PGDATABASE || 'mydatabase',
-    password: process.env.PGPASSWORD || 'mypassword!',
-    port: process.env.PGPORT || 5432, // PostgreSQL default port
+    host: process.env.PGHOST,
+    user: process.env.PGUSER,
+    database: process.env.PGDATABASE,
+    password: process.env.PGPASSWORD,
+    port: process.env.PGPORT,
 });
 
 pool.on('error', (err) => {
@@ -29,13 +25,13 @@ async function executeQuery(sqlText, params = []) {
     try {
         client = await pool.connect();
         
-        // Use client.query with parameters for safety (prevents SQL injection)
+        //Use client.query with parameters for safety (prevents SQL injection)
         const result = await client.query(sqlText, params);
         
         return result.rows;
     } catch (err) {
         console.error('Database query error:', err.stack);
-        throw new Error('Database query failed.'); // Re-throw a generic error
+        throw new Error('Database query failed.');
     } finally {
         if (client) {
             client.release();
@@ -45,5 +41,5 @@ async function executeQuery(sqlText, params = []) {
 
 module.exports = {
     executeQuery,
-    pool // Optional: export pool if other files need to connect/close/manage it
+    pool
 };

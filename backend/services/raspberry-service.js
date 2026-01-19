@@ -1,7 +1,7 @@
-const axios = require('axios');
+require('dotenv').config();
 
 //CHECK CONNECTION
-const deviceUrl = 'http://192.168.4.1:3000';//TODO: .env
+const deviceUrl = process.env.DEVICE_URL;
 async function checkConnection() {
     try {
         const controller = new AbortController();
@@ -14,13 +14,11 @@ async function checkConnection() {
 
         clearTimeout(timeoutId);
 
-        return response.ok; // Returns true if status is 200-299
+        return response.ok; //200-299
     } catch (error) {
-        // Network error, timeout, or device offline
         console.log("Device unreachable:", error.message);
         return false;
     }
-
 }
 
 /**
@@ -29,13 +27,12 @@ async function checkConnection() {
  * @returns {Promise<{success: boolean, status: number, message: string}>}
  */
 async function handleImageUpload(imageBuffer) {
-    // 1. Check connection
+
     const isOnline = await checkConnection();
     if (!isOnline) {
         return { success: false, status: 503, message: "Display device is offline" };
     }
 
-    // 2. Forward to device
     try {
         const deviceResponse = await fetch(`${deviceUrl}/api`, {
             method: 'POST',

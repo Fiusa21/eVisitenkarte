@@ -8,47 +8,166 @@
     </div>
     <div class="layout-wrapper">
         <div class="layouts">
-            <div
-            v-for="layout in layouts"
-            :key="layout.id"
-            class="business-cards"
-            > {{ layout.name }}
-            </div>
-            <div class="add-layout">+</div>
+            <LayoutCard
+              v-for="layout in layouts"
+              :key="layout.id"
+              :layout="layout"
+              :user-profile="userProfile"
+              @open="openLayoutModal"
+            />
+            <div class="add-layout" @click="createNewLayout">+</div>
         </div>
     </div>
+
+    <!-- Modal -->
+    <LayoutPreviewModal 
+      :layout="selectedLayout" 
+      :user-profile="userProfile"
+      @close="closeLayoutModal"
+    >
+      <template #actions>
+        <div class="modal-buttons">
+          <button class="btn-bearbeiten" @click="editLayout(selectedLayout.id)">Bearbeiten</button>
+          <button class="btn-loeschen" @click="deleteLayoutConfirm(selectedLayout.id)">Löschen</button>
+        </div>
+      </template>
+    </LayoutPreviewModal>
   </div>
 </template>
 
 <script>
-import { ref } from 'vue';
+import { ref, onMounted, computed } from 'vue';
+import { useRouter } from 'vue-router';
+import ApiService from '@/services/api-service';
+import LayoutCard from '@/components/LayoutCard.vue';
+import LayoutPreviewModal from '@/components/LayoutPreviewModal.vue';
 
 // Add logic here later, e.g., fetching user-specific data
 export default {
   name: 'AdminHome',
+  components: {
+    LayoutCard,
+    LayoutPreviewModal
+  },
   setup() {
-     const layouts = ref([
-      { id: 1, name: 'Layout 1', imagePlaceholder: 'Image of Layout 1' },
-      { id: 2, name: 'Layout 2', imagePlaceholder: 'Image of Layout 2' },
-      { id: 3, name: 'Layout 3', imagePlaceholder: 'Image of Layout 3' },
-      { id: 4, name: 'Layout 4', imagePlaceholder: 'Image of Layout 4' },
-      { id: 5, name: 'Layout 5', imagePlaceholder: 'Image of Layout 5' },
-      { id: 6, name: 'Layout 6', imagePlaceholder: 'Image of Layout 6' },
-      { id: 7, name: 'Layout 7', imagePlaceholder: 'Image of Layout 7' },
-      { id: 8, name: 'Layout 8', imagePlaceholder: 'Image of Layout 8' },
-      { id: 9, name: 'Layout 9', imagePlaceholder: 'Image of Layout 9' },
-      { id: 10, name: 'Layout 10', imagePlaceholder: 'Image of Layout 10' },
-    ]);
+    const router = useRouter();
+    const layouts = ref([]);
+    const selectedLayout = ref(null);
     
+    // Mock user profile für dynamische Text-Felder
+    const userProfile = computed(() => ({
+      first_name: 'Max',
+      last_name: 'Mustermann',
+      company: 'uxitra GmbH',
+      title: 'Developer',
+      email: 'max@example.de',
+      phone_number: '07161 14009',
+      mobile_number: '+49 1525 2864577',
+      adress: 'Musterstraße 1'
+    }));
+
+    const loadLayouts = async () => {
+      try {
+        const data = await ApiService.getAllLayouts();
+        
+        // Gruppiere Elemente nach layout_id
+        const layoutsMap = new Map();
+        
+        data.forEach(row => {
+          const layoutId = row.layout_id;
+          
+          if (!layoutsMap.has(layoutId)) {
+            layoutsMap.set(layoutId, {
+              id: layoutId,
+              layout_id: layoutId,
+              name: row.name || 'Unbenanntes Layout',
+              backgroundColor: row.backgroundcolor || 'white',
+              elements: []
+            });
+          }
+          
+          // Füge Element zum Layout hinzu
+          if (row.element_id) {
+            const layout = layoutsMap.get(layoutId);
+            layout.elements.push({
+              id: row.element_id,
+              type: row.typ,
+              x: parseFloat(row.pos_x) || 0,
+              y: parseFloat(row.pos_y) || 0,
+              w: parseFloat(row.size_x) || 50,
+              h: parseFloat(row.size_y) || 50,
+              content: row.uri,
+              source: row.source,
+              style: row.style || { color: 'black' }
+            });
+          }
+        });
+        
+        layouts.value = Array.from(layoutsMap.values());
+        
+        console.log('Layouts geladen:', layouts.value);
+      } catch (error) {
+        console.error('Fehler beim Laden der Layouts:', error);
+      }
+    };
+
+    // Lade Layouts von der Datenbank
+    onMounted(() => {
+      loadLayouts();
+    });
+
+    const openLayoutModal = (layout) => {
+      selectedLayout.value = layout;
+    };
+
+    const closeLayoutModal = () => {
+      selectedLayout.value = null;
+    };
+
+    const editLayout = (id) => {
+      console.log("Öffne Layout ID:", id);
+      closeLayoutModal();
+      router.push({ name: 'layout-editor', params: { id } });
+    };
+
+    const deleteLayoutConfirm = async (id) => {
+      if (confirm('Möchten Sie dieses Layout wirklich löschen?')) {
+        try {
+          await ApiService.deleteLayout(id);
+          closeLayoutModal();
+          // Lade Layouts neu
+          await loadLayouts();
+        } catch (error) {
+          console.error('Fehler beim Löschen des Layouts:', error);
+        }
+      }
+    };
+    
+    const createNewLayout = () => {
+      console.log("Navigiere zum Editor für neues Layout");
+      // Weiterleitung zum Editor ohne ID (löst das NameLayout-Modal aus)
+      router.push({ name: 'layout-editor' });
+    };
+
+
     return { 
-      layouts, 
+      layouts,
+      selectedLayout,
+      userProfile,
+      openLayoutModal,
+      closeLayoutModal,
+      editLayout,
+      deleteLayoutConfirm,
+      createNewLayout
     };
   }
 }
 </script>
 
 <style scoped>
-
+/*
+TODO: Medie queries für alle Bildschirmgrößen 
+*/
 
 .site-header{
   color: white;
@@ -91,51 +210,81 @@ export default {
 
 .layouts {
   flex-grow: 1; 
-  display: flex; /*Horrizontal*/
-  flex-wrap: wrap; /*Wrap cards to the next line*/
-  gap:30px; /*Place between cards*/
-  justify-content: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap:30px; 
+  justify-content: flex-start; 
   align-items: center;
-  max-height: 560px; 
+  max-height: auto; 
   max-width: 1024px;
   overflow-y: auto;
   padding: 0 30px;
   margin-top: 25px;
+  padding-top: 10px;
 }
 
-.business-cards {
-  /*Cards*/
-  width: 296px; 
+.add-layout {
+  width: 296px;
   height: 128px;
-  
-  /*Placeholder*/
-  background-color: white;
-  color: black;
-  padding: 15px;
   border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   text-align: center;
   font-weight: 700;
   font-size: 1.2rem;
-  background-image: linear-gradient(to right, #ffffff, #000000); /*Mimic style in cards*/
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+  transition: transform 0.2s, box-shadow 0.2s;
+  overflow: hidden;
+  border: 2px dashed #666;
+  background-color: rgba(168, 168, 168, 0.15);
+  color: #333;
 }
 
-.add-layout{
-  width: 296px; 
-  height: 128px;
-  border: solid 1px black;
-  border-radius: 8px;
-  background-color: rgba(168, 168, 168, 0.39);
+.add-layout:hover {
+  transform: translateY(-4px); 
+  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+  background-color: rgba(168, 168, 168, 0.3);
+  border-color: black;
   color: black;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+}
+
+.modal-buttons {
   display: flex;
-  align-items: center;
+  gap: 15px;
   justify-content: center;
-  text-align: center;
-  font-weight: 700;
-  font-size: 1.2rem;
+}
+
+.btn-bearbeiten {
+  background-color: #007bff;
+  color: white;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.btn-bearbeiten:hover {
+  background-color: #0056b3;
+}
+
+.btn-loeschen {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  padding: 10px 30px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1rem;
+  transition: background-color 0.2s;
+}
+
+.btn-loeschen:hover {
+  background-color: #c82333;
 }
 </style>

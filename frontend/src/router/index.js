@@ -48,7 +48,7 @@ const router = createRouter({
       ]
     },
     {
-      path: '/editor',
+      path: '/editor/:id?',
       meta: { requiresAuth: true, requiresRole: 'admin' }, 
       component: EditorLayout,
       children: [
@@ -65,7 +65,6 @@ const router = createRouter({
 
 router.beforeEach(async (to, from, next) => {
   try{
-    //TODO: Move initializing to main.js
     await KeycloakService.init(); //Initializing Keycloak
   }catch(error){
     console.error('Keycloak initialization failed in Guard.', error);
@@ -76,7 +75,13 @@ router.beforeEach(async (to, from, next) => {
     //Route requires authentication
     if(KeycloakService.isLoggedIn()){
       //User is logged in
-      next();
+      const requiredRole = to.meta.requiresRole;
+      if (requiredRole && !KeycloakService.hasRole(requiredRole)) {
+        console.warn(`Access denied. Missing role: ${requiredRole}`);
+        next({ name: 'user-home' });
+      } else {
+        next();
+      }
     }else{
       //User is not logged in, redirect to landing page
       console.log('Acces denied. Redirecting to Login.');

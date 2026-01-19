@@ -53,8 +53,8 @@
         <p class="dynamic-info">{{ selectedElement.content }} (dynamisch)</p>
       </div>
 
-      <!-- Farbe ändern (Shapes und Text) -->
-      <div class="property-section">
+      <!-- Farbe ändern (nur für Text und Formen, nicht für QR/Logo) -->
+      <div v-if="selectedElement.type !== 'qr' && selectedElement.type !== 'logo'" class="property-section">
         <label>Farbe</label>
         <div class="color-picker">
           <button 
@@ -120,12 +120,14 @@ export default {
   computed: {
     elementTypeLabel() {
       if (!this.selectedElement) return '';
+      //Mapped Types
       const types = {
         text: 'Text',
         rectangle: 'Rechteck',
         circle: 'Kreis',
         triangle: 'Dreieck'
       };
+      //Unbekannter Typ = Original String
       return types[this.selectedElement.type] || this.selectedElement.type;
     },
     currentColor() {

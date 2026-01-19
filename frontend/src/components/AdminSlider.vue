@@ -14,10 +14,9 @@
 </template>
 
 <script>
-//TODO: Admin Slider funktioniert noch nicht richtig. Übergung buggy!!!!!
+//TODO: Admin Slider funktioniert noch nicht richtig. Übergang buggy!!!!!
 import { useRouter } from 'vue-router';
 
-// This component uses v-model for simplicity, passing the boolean state (true/false)
 export default {
   name: 'AdminToggle',
   props: {
@@ -30,17 +29,12 @@ export default {
   emits: ['update:modelValue'],
 
   setup(props, { emit }) {
-
-    //Router instance fpr navigation
     const router = useRouter();
 
-    //New function for triggering emit and navigation
     const handleToggleAndNavigation = (newValue) => {
       
-      // update state in parent component
       emit('update:modelValue', newValue);
 
-      // Navigate based on new value
       if(newValue){
         //True = AdminHome
         router.push({ name: 'admin-home' });
@@ -61,25 +55,25 @@ export default {
   display: inline-block;
 }
 
-/* 1. Hide the default checkbox input */
+
 input[type="checkbox"] {
   height: 0;
   width: 0;
   visibility: hidden;
 }
 
-/* 2. Style the Slider Track (The background bar) */
+
 .slider-track {
   cursor: pointer;
-  width: 50px; /* Width of the entire switch */
-  height: 25px; /* Height of the entire switch */
-  background: #D9D9D9; /* OFF state dark color */
+  width: 50px; 
+  height: 25px; 
+  background: #D9D9D9; 
   display: block;
-  border-radius: 25px; /* Makes it pill-shaped */
+  border-radius: 25px; 
   position: relative;
 }
 
-/* 3. Style the Slider Thumb (The sliding circle/square) */
+
 .slider-thumb {
   content: '';
   position: absolute;
@@ -87,21 +81,18 @@ input[type="checkbox"] {
   left: 3px;
   width: 19px;
   height: 19px;
-  background: black; /* Thumb color */
-  border-radius: 50%; /* Makes it round */
-  transition: 0.3s; /* Smooth sliding animation */
+  background: black; 
+  border-radius: 50%;
+  transition: 0.3s;
 }
 
-/* 4. The Magic: Apply styles when the checkbox is checked (ON state) */
-/* This selects the label (slider-track) immediately following the checked input */
+
 input[type="checkbox"]:checked + .slider-track {
   background: #D9D9D9; /* ON state color */
 }
 
-/* 5. The Slide: Move the thumb to the right when checked */
-/* This selects the thumb (span) *inside* the checked slider-track */
+
 input[type="checkbox"]:checked + .slider-track .slider-thumb {
-  /* Move thumb by (Track Width - Thumb Width - Left/Right Padding/Offset) */
   background: orange;
   transform: translateX(25px); 
 }

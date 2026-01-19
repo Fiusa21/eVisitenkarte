@@ -3,6 +3,8 @@
     <div class="tabs">
       <button @click="activeTab = 'text'" :class="{ 'active-tab': activeTab === 'text' }">Nutzer Daten</button>
       <button @click="activeTab = 'shapes'" :class="{ 'active-tab': activeTab === 'shapes' }">Formen</button>
+      <button @click="activeTab = 'media'" :class="{ 'active-tab': activeTab === 'media' }">Medien</button>
+      <button @click="activeTab = 'qr'" :class="{ 'active-tab': activeTab === 'qr' }">QR</button>
     </div>
 
     <div v-if="activeTab === 'text'" class="tab-content data-options">
@@ -25,11 +27,27 @@
       <button @click="$emit('add-element', { type: 'circle' })" class="toolbox-btn shape-btn">Kreis</button>
       <button @click="$emit('add-element', { type: 'triangle' })" class="toolbox-btn shape-btn">Dreieck</button>
     </div>
+
+    <div v-if="activeTab === 'media'" class="tab-content data-options">
+      <button 
+        v-for="logo in availableLogos"
+        :key="logo"
+        @click="$emit('add-element', { type: 'logo', content: logo })" 
+        class="toolbox-btn media-btn"
+      >
+        {{ logo.replace('.png', '').replace('-', ' ').toUpperCase() }}
+      </button>
+    </div>
+
+    <div v-if="activeTab === 'qr'" class="tab-content qr-tab">
+      <QRGenerator @add-qr="(urlString) => $emit('add-element', { type: 'qr', content: urlString })" />
+    </div>
   </div>
 </template>
 
 <script>
 import { ref } from "vue";
+import QRGenerator from './QRGenerator.vue';
 
 export default {
   name: "ToolBox",
@@ -38,9 +56,17 @@ export default {
     dynamicTextOptions: Array
   },
   emits: ['add-element'],
+  components: { QRGenerator },
   setup() {
     const activeTab = ref("text");
-    return { activeTab };
+    
+    // Automatisch alle Logos aus /public/company-logos/ laden
+    const logoModules = import.meta.glob('/public/company-logos/*.png', { eager: true });
+    const availableLogos = ref(
+      Object.keys(logoModules).map(path => path.split('/').pop())
+    );
+
+    return { activeTab, availableLogos };
   }
 };
 </script>
@@ -92,6 +118,10 @@ export default {
   padding: 0 20px;
 }
 
+.qr-tab {
+  padding: 10px 0 0 0;
+}
+
 .tab-content h2 {
   font-size: 1.1em;
   font-weight: 600;
@@ -129,6 +159,17 @@ export default {
 .shape-btn {
   background-color: #ff9800; /* Orange */
   color: #333;
+}
+
+.media-btn {
+  background-color: #9c27b0; /* Lila */
+  color: white;
+}
+
+.shape-btn:hover,
+.media-btn:hover {
+  background-color: opacity(0.8);
+  transform: translateY(-1px);
 }
 
 .shape-btn:hover {
