@@ -17,7 +17,7 @@ function processLayoutAndElements(rows) {
         id: layoutId,
         layout_id: layoutId,
         name: row.name || 'Unbenanntes Layout',
-        backgroundColor: row.backgroundcolor || 'white',
+        backgroundColor: row.backgroundColor || 'white',
         elements: []
       });
     }

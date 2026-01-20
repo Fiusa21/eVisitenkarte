@@ -53,7 +53,8 @@ CREATE TABLE public.layouts (
     layout_id bigint NOT NULL,
     erstelldatum date NOT NULL,
     name character varying(30),
-    user_id_ersteller text
+    user_id_ersteller text,
+    backgroundColor character varying(20)
 );
 
 

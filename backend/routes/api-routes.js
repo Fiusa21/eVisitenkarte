@@ -26,15 +26,24 @@ router.get('/layout-management/layouts', protect, async (req, res) => {
 //LAYOUT MANAGEMENT
 router.post('/layout-management/layouts', protect, async (req, res) => {
     try {
+        // Log incoming request body to help debug server errors
+        console.log('POST /layout-management/layouts - body:', JSON.stringify(req.body));
+
+        if (!req.kauth || !req.kauth.grant || !req.kauth.grant.access_token) {
+            console.error('Auth information missing on request');
+            return res.status(401).json({ error: 'Unauthorized' });
+        }
+
         const userId = req.kauth.grant.access_token.content.sub;
 
         //destructure
-        const { name, elements } = req.body;
+        const { name, elements, backgroundColor } = req.body || {};
 
         const layoutData = {
             name: name,
             user_id_ersteller: userId,
-            erstelldatum: new Date()
+            erstelldatum: new Date(),
+            backgroundColor: backgroundColor || null
         };
 
         const newLayoutId = await layoutModel.createLayoutWithElements(layoutData, elements);
@@ -45,7 +54,8 @@ router.post('/layout-management/layouts', protect, async (req, res) => {
         });
     } catch (err) {
         console.error("Error saving layout:", err);
-        res.status(500).json({ error: err.message });
+        // Include stack in development to help debugging; message remains for client
+        res.status(500).json({ error: err.message, stack: err.stack });
     }
 });
 
@@ -53,13 +63,14 @@ router.put('/layout-management/layouts/:id', protect, async (req, res) => {
     try {
         const userId = req.kauth.grant.access_token.content.sub;
         const { id } = req.params;
-        const { name, elements } = req.body;
+        const { name, elements, backgroundColor } = req.body || {};
 
         const layoutData = {
             id: id,
             name: name,
             user_id_ersteller: userId,
-            erstelldatum: new Date()
+            erstelldatum: new Date(),
+            backgroundColor: backgroundColor || null
         };
 
         await layoutModel.updateLayoutWithElements(layoutData, elements);

@@ -5,9 +5,9 @@ const getKeys = {
    
     select: 'SELECT * FROM layouts LEFT JOIN elements ON layouts.layout_id = elements.layout_id',
     selectByID:'SELECT * FROM layouts LEFT JOIN elements ON layouts.layout_id = elements.layout_id WHERE layouts.layout_id = $1',
-    insertLayout:'INSERT INTO layouts (erstelldatum, user_id_ersteller, name) VALUES ($1, $2, $3) RETURNING layout_id;',
+    insertLayout:'INSERT INTO layouts (erstelldatum, user_id_ersteller, name, "backgroundColor") VALUES ($1, $2, $3, $4) RETURNING layout_id;',
     insertElement: 'INSERT INTO elements (element_id, typ, uri, layout_id, pos_x, pos_y, size_x, size_y, source, style) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)',
-    updateLayout: 'UPDATE layouts SET erstelldatum = $2, user_id_ersteller = $3, name = $4 WHERE layout_id = $1',
+    updateLayout: 'UPDATE layouts SET erstelldatum = $2, user_id_ersteller = $3, name = $4, "backgroundColor" = $5 WHERE layout_id = $1',
     updateElement: 'UPDATE elements SET element_id = $1, typ = $3, uri = $4, pos_x = $5, pos_y = $6, size_x = $7, size_y = $8 WHERE layout_id = $2',
     deleteLayout: 'DELETE FROM layouts WHERE layout_id = $1',
     deleteElement: 'DELETE FROM elements WHERE layout_id = $1',
@@ -45,7 +45,8 @@ module.exports = {
             const res = await client.query(getKeys.insertLayout, [
                 layoutData.erstelldatum,
                 layoutData.user_id_ersteller,
-                layoutData.name
+                layoutData.name,
+                layoutData.backgroundColor
             ]);
 
 
@@ -73,7 +74,8 @@ module.exports = {
                 layoutData.id,
                 layoutData.erstelldatum,
                 layoutData.user_id_ersteller,
-                layoutData.name
+                layoutData.name,
+                layoutData.backgroundColor
             ]);
 
             // 2. Clean slate: Delete all old elements for this layout
@@ -96,7 +98,7 @@ module.exports = {
 
   updateLayout: async (layout) => {
     const { layout_id, erstelldatum, user_id_ersteller, name } = layout;
-    await db.executeQuery(getKeys.updateLayout, [layout_id, erstelldatum, user_id_ersteller, name]);
+    await db.executeQuery(getKeys.updateLayout, [layout_id, erstelldatum, user_id_ersteller, name, layout.backgroundColor]);
   },
 
   updateElement: async (element) => {
