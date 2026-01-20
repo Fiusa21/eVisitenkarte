@@ -130,9 +130,6 @@ export default {
 </script>
 
 <style scoped>
-/*
-TODO: Medie queries für alle Bildschirmgrößen 
-*/
 
 .site-header{
   color: white;

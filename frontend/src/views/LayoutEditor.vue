@@ -413,9 +413,6 @@ export default {
 </script>
 
 <style scoped>
-/*
-TODO: Medie queries für alle Bildschirmgrößen 
-*/
 
 .layout-editor {
   display: flex;
