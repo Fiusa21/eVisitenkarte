@@ -76,7 +76,7 @@
       />
     </div>
 
-    <button @click="saveTemplate" class="save-btn-fixed">Template Speichern</button>
+    <button @click="saveTemplate" class="save-btn">Template Speichern</button>
 
   </div>
 </template>
@@ -491,10 +491,11 @@ export default {
   z-index: 100;
 }
 
-.save-btn-fixed {
+.save-btn {
   position: fixed;
   bottom: 30px;
-  right: 30px;
+  left: 50%;
+  transform: translateX(-50%);
   padding: 14px 40px;
   background-color: #06c933;
   color: white;
@@ -509,9 +510,9 @@ export default {
   z-index: 1000;
 }
 
-.save-btn-fixed:hover {
+.save-btn:hover {
   background-color: #05b02d;
-  transform: translateY(-2px);
+  transform: translateX(-50%) translateY(-2px);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
 }
 
@@ -616,19 +617,5 @@ export default {
   object-fit: contain;
   background-color: black;
 }
-
-  .layout-editor {
-    justify-content: left;
-    align-items: top;
-  }
-  .save-btn-fixed{
-    position: fixed;
-    bottom: 30px;
-    right: 50%;
-    transform: translate(50%);
-  }
-
-
-
 
 </style>
