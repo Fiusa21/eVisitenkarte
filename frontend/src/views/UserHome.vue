@@ -87,7 +87,8 @@ export default {
     const pica = Pica();
 
     const sendImage = async () => {
-      const canvasElement = modalRef.value?.canvasRef?.value;
+      const canvasElement = modalRef.value?.canvasRef;
+      console.log("Canvas found:", canvasElement);
       if (!canvasElement) return;
 
       isSending.value = true;

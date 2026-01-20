@@ -44,9 +44,6 @@ onMounted(async () => {
 </script>
 
 <style scoped>
-/*
-TODO: Medie queries für alle Bildschirmgrößen 
-*/
 
 .site-header{
     display: flex;
