@@ -3,6 +3,10 @@
     <div class="modal-content" @click.stop>
       <button class="close-button" @click="$emit('close')">✕</button>
 
+      <div class="modal-header">
+        <h3>{{ layout.name }}</h3>
+      </div>
+
       <div ref="canvasRef" class="modal-canvas" :style="{ backgroundColor: layout.backgroundColor }">
         <div
           v-for="element in layout.elements"
@@ -25,8 +29,7 @@
         </div>
       </div>
 
-      <div class="modal-info">
-        <h3>{{ layout.name }}</h3>
+      <div class="modal-actions">
         <slot name="actions"></slot>
       </div>
     </div>
@@ -200,15 +203,24 @@ watch(() => props.layout, () => {
   position: absolute;
 }
 
-.modal-info {
+.modal-header {
   color: white;
   text-align: center;
   font-family: 'Dosis', sans-serif;
+  margin-bottom: 10px;
 }
 
-.modal-info h3 {
+.modal-header h3 {
   margin: 0;
   font-size: 1.5rem;
   font-weight: 600;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
 }
 </style>

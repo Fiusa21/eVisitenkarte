@@ -51,9 +51,11 @@
       @close="closeLayoutModal"
     >
       <template #actions>
-        <button class="send-button" @click="sendImage" :disabled="isSending">
-          {{ isSending ? 'Wird gesendet...' : 'Send to display' }}
-        </button>
+        <div class="modal-buttons">
+          <button class="send-button" @click="sendImage" :disabled="isSending">
+            {{ isSending ? 'Wird gesendet...' : 'Send to display' }}
+          </button>
+        </div>
       </template>
     </LayoutPreviewModal>
   </div>
@@ -183,10 +185,6 @@ export default {
 </script>
 
 <style scoped>
-/*
-TODO: Medie queries für alle Bildschirmgrößen 
-*/
-
 .site-header{
   color: white;
   display: flex;
@@ -364,9 +362,6 @@ TODO: Medie queries für alle Bildschirmgrößen
 }
 
 .send-button {
-  position: absolute;
-  top: 400px;
-  right: 0;
   background: lawngreen;
   border: none;
   border-radius: 10%;
@@ -380,6 +375,12 @@ TODO: Medie queries für alle Bildschirmgrößen
   transition: all 0.2s;
   font-weight: bold;
   font-family: Dosis;
+}
+
+.modal-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
 }
 
 .send-button:hover {
