@@ -11,6 +11,7 @@
     <main class="main-content">
       <router-view />
     </main>
+    <ConnectivityIndicator class="fixed-indicator" />
   </div>
 </template>
 
@@ -18,11 +19,12 @@
 import { computed, ref } from 'vue';
 import AdminToggle from '@/components/AdminSlider.vue';
 import LogoutButton from '@/components/LogoutButton.vue';
+import ConnectivityIndicator from '@/components/ConnectivityIndicator.vue';
 import KeycloakService from '@/services/keycloak-service';
 
 export default {
   name: 'UserLayout',
-  components: { AdminToggle, LogoutButton },
+  components: { AdminToggle, LogoutButton, ConnectivityIndicator },
   setup() {
     const isAdminMode = ref(false); // Initial state is OFF
     const isAdmin = computed(() => KeycloakService.hasRole('admin'));
@@ -48,7 +50,7 @@ export default {
 }
 
 .main-header {
-  background-color: transparent; /* Primary color */
+  background-color: transparent; 
   color: white;
   padding: 15px 30px;
   display: flex;
@@ -101,5 +103,17 @@ nav {
 .admin-toggle {
   display: inline-flex;
   align-items: center;
+}
+
+.fixed-indicator {
+    position: fixed; 
+    bottom: 20px; 
+    right: 20px;
+    z-index: 1000; 
+    background-color: rgba(0, 0, 0, 0.7);
+    color: white; 
+    padding: 8px 12px;
+    border-radius: 8px;
+    font-size: 0.9em;
 }
 </style>
