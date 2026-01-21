@@ -315,7 +315,7 @@ export default {
               layoutsMap.set(id, {
                 layout_id: id,
                 name: row.name,
-                backgroundColor: row.backgroundcolor || 'white',
+                backgroundColor: row.backgroundColor || 'white',
                 elements: []
               });
             }
